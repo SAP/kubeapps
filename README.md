@@ -57,6 +57,10 @@ If you encounter issues, please review the [troubleshooting docs](./chart/kubeap
 
 - Review the FAQs section on the [Kubeapps chart README](./chart/kubeapps/README.md#faq).
 
+## Fork
+
+This project is a fork of the original, archived [Kubeapps project developed by VMware, Inc](https://github.com/vmware-tanzu/kubeapps). The fork is maintained by SAP SE to continue the development and maintenance of Kubeapps.
+
 ## Contributing
 
 If you are ready to jump in and test, add code, or help with documentation, follow the instructions on the [start contributing](./CONTRIBUTING.md) documentation for guidance on how to setup Kubeapps for development.

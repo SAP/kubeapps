@@ -1,5 +1,7 @@
 # Kubeapps Maintainers
 
+## Active Maintainers
+
 ## Emeritus Maintainers
 
 - Adnan Abdulhussein ([prydonius](https://github.com/prydonius))
