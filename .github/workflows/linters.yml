@@ -12,7 +12,7 @@ on:
       golangci_lint_version:
         type: string
         required: false
-        default: "1.61.0"
+        default: "v2.5.0"
   workflow_dispatch:
     inputs:
       golang_version:
@@ -23,14 +23,14 @@ on:
       golangci_lint_version:
         type: string
         required: false
-        default: "1.61.0"
+        default: "v2.5.0"
         description: "golangci-lint version to use"
 
 jobs:
   yaml-linter:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - id: yaml-lint
         uses: ibiqlik/action-yamllint@v3
         with:
@@ -45,11 +45,11 @@ jobs:
   golang-linter:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ inputs.golang_version }}
-      - uses: actions/checkout@v4
-      - uses: golangci/golangci-lint-action@v6
+      - uses: actions/checkout@v5
+      - uses: golangci/golangci-lint-action@v8
         with:
           version: ${{ inputs.golangci_lint_version }}
           args: --timeout=10m
@@ -57,9 +57,9 @@ jobs:
   license-headers-linter:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ inputs.golang_version }}
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check license Headers
         uses: apache/skywalking-eyes/header@v0.6.0
