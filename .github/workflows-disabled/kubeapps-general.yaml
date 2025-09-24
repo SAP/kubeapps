@@ -17,6 +17,23 @@ on:
         type: boolean
         required: false
         default: false
+  workflow_dispatch:
+    inputs:
+      run_gke_tests:
+        type: boolean
+        required: false
+        default: false
+        description: "Run GKE tests (requires cloud setup)"
+      run_linters:
+        type: boolean
+        required: false
+        default: true
+        description: "Run linters"
+      trigger_release:
+        type: boolean
+        required: false
+        default: false
+        description: "Trigger release process"
 
 env:
   CHARTMUSEUM_VERSION: "3.10.3"
