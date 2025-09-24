@@ -528,8 +528,8 @@ jobs:
       - name: "Load needed images into Kind"
         run: |
           set -eu
-          ./script/load-kind-image.sh docker.io/bitnami/apache:2.4.48-debian-10-r74 kubeapps-ci kubeapps-ci-additional &&
-          ./script/load-kind-image.sh docker.io/bitnami/apache:2.4.48-debian-10-r75 kubeapps-ci kubeapps-ci-additional &&
+          ./script/load-kind-image.sh docker.io/bitnami/apache:2.4.48 kubeapps-ci kubeapps-ci-additional &&
+          ./script/load-kind-image.sh docker.io/bitnami/apache:2.4.48 kubeapps-ci kubeapps-ci-additional &&
           ./script/load-kind-image.sh registry:$DOCKER_REGISTRY_VERSION kubeapps-ci kubeapps-ci-additional
       - name: "Download docker images"
         uses: actions/download-artifact@v4
