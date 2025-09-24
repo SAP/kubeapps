@@ -16,6 +16,7 @@ header:
     - LICENSE
     - LICENSES
     - NOTICE
+    - REUSE.toml
     - open_source_licenses.txt
     - "**/*.css"
     - "**/*.dccache"
