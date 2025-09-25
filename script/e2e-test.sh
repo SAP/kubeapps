@@ -435,8 +435,8 @@ fi
 
 # Install ChartMuseum
 installChartMuseum "${CHARTMUSEUM_VERSION}"
-pushChart apache 8.6.2
-pushChart apache 8.6.3
+pushChart apache 11.4.28
+pushChart apache 11.4.29
 
 # Install Kubeapps
 installOrUpgradeKubeapps "${ROOT_DIR}/chart/kubeapps"
