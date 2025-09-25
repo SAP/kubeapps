@@ -50,6 +50,19 @@ metadata:
   namespace: metallb-system
 EOF
   sleep 5 &&
+  # Create kubeapps namespace and TLS secret
+  kubectl --context "${CONTEXT}" --kubeconfig="${KUBECONFIG}" create namespace kubeapps --dry-run=client -o yaml | kubectl --context "${CONTEXT}" --kubeconfig="${KUBECONFIG}" apply -f - &&
+  # Generate self-signed certificate for localhost-tls secret
+  openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /tmp/localhost-key.pem \
+    -out /tmp/localhost-cert.pem \
+    -subj "/CN=localhost" \
+    -addext "subjectAltName=DNS:localhost,IP:127.0.0.1,DNS:kubeapps-ci.kubeapps,IP:${DEFAULT_DEX_IP}" &&
+  kubectl --context "${CONTEXT}" --kubeconfig="${KUBECONFIG}" -n kubeapps create secret tls localhost-tls \
+    --key /tmp/localhost-key.pem \
+    --cert /tmp/localhost-cert.pem &&
+  # Clean up temporary certificate files
+  rm -f /tmp/localhost-key.pem /tmp/localhost-cert.pem &&
   kubectl create rolebinding kubeapps-view-secret-oidc --context "${CONTEXT}" --kubeconfig="${KUBECONFIG}" --role view-secrets --user oidc:kubeapps-user@example.com &&
   kubectl create clusterrolebinding kubeapps-view-oidc --context "${CONTEXT}" --kubeconfig="${KUBECONFIG}" --clusterrole=view --user oidc:kubeapps-user@example.com &&
   echo "Cluster created"
