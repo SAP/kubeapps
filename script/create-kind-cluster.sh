@@ -29,6 +29,27 @@ function createKindCluster() {
   kubectl --context "${CONTEXT}" --kubeconfig="${KUBECONFIG}" apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml &&
   sleep 5 &&
   kubectl wait --context "${CONTEXT}" --kubeconfig="${KUBECONFIG}" --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s &&
+  # Install MetalLB for LoadBalancer support
+  kubectl --context "${CONTEXT}" --kubeconfig="${KUBECONFIG}" apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml &&
+  kubectl wait --context "${CONTEXT}" --kubeconfig="${KUBECONFIG}" --namespace metallb-system --for=condition=ready pod --selector=app=metallb --timeout=120s &&
+  # Configure MetalLB IP address pool
+  cat <<EOF | kubectl --context "${CONTEXT}" --kubeconfig="${KUBECONFIG}" apply -f -
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: example
+  namespace: metallb-system
+spec:
+  addresses:
+  - 172.18.255.200-172.18.255.250
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: empty
+  namespace: metallb-system
+EOF
+  sleep 5 &&
   kubectl create rolebinding kubeapps-view-secret-oidc --context "${CONTEXT}" --kubeconfig="${KUBECONFIG}" --role view-secrets --user oidc:kubeapps-user@example.com &&
   kubectl create clusterrolebinding kubeapps-view-oidc --context "${CONTEXT}" --kubeconfig="${KUBECONFIG}" --clusterrole=view --user oidc:kubeapps-user@example.com &&
   echo "Cluster created"
