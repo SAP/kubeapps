@@ -112,9 +112,9 @@ test("Create a new private package repository successfully", async ({ page }) =>
     .filter({ hasText: /^Find$/ })
     .nth(1)
     .click();
-  await page.getByPlaceholder("Find").fill("tag: 2.4.48");
+  await page.getByPlaceholder("Find").fill("tag: 2.50.1");
   await expect(page.locator(".values-editor div.modified")).toContainText(
-    "tag: 2.4.48-debian-10-r75",
+    "tag: 2.50.1-debian-12-r31",
   );
 
   // Deploy upgrade
