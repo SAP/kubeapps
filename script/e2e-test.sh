@@ -34,7 +34,15 @@ KAPP_CONTROLLER_VERSION=${KAPP_CONTROLLER_VERSION:-"v0.42.0"}
 CHARTMUSEUM_VERSION=${CHARTMUSEUM_VERSION:-"3.9.1"}
 FLUX_VERSION=${FLUX_VERSION:-"v2.2.3"}
 GKE_VERSION=${GKE_VERSION:-}
-IMG_PREFIX=${IMG_PREFIX:-"kubeapps/"}
+
+# IMG_PREFIX default previously pointed to Docker Hub:
+# IMG_PREFIX=${IMG_PREFIX:-"kubeapps/"}
+# Switch to GitHub Container Registry by default. Allow override via IMG_PREFIX.
+GHCR_OWNER=${GHCR_OWNER:-${GITHUB_REPOSITORY_OWNER:-your-ghcr-owner}}
+# Normalize owner to lowercase for GHCR
+GHCR_OWNER=$(echo "$GHCR_OWNER" | tr '[:upper:]' '[:lower:]')
+IMG_PREFIX=${IMG_PREFIX:-"ghcr.io/${GHCR_OWNER}/kubeapps/"}
+
 TESTS_GROUP=${TESTS_GROUP:-"${ALL_TESTS}"}
 DEBUG_MODE=${DEBUG_MODE:-false}
 TEST_LATEST_RELEASE=${TEST_LATEST_RELEASE:-false}

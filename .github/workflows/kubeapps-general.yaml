@@ -415,19 +415,22 @@ jobs:
       IMG_PREFIX: ${{ needs.setup.outputs.img_prefix }}
     steps:
       - run: echo "IMAGES_TO_PUSH=\"${IMAGES_TO_PUSH} ${ADDITIONAL_IMAGES_TO_PUSH}\"" >> $GITHUB_ENV
-      - name: Login to Docker Hub
+      - name: Login to GitHub Container Registry (ghcr.io)
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      - uses: actions/download-artifact@v4
-      - run: |
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Download built images
+        uses: actions/download-artifact@v5
+      - name: Load and push images
+        run: |
           set -eu
           for artifact in *; do
             echo "::debug::Processing artifact '${artifact}'"
 
             if [[ "${artifact}" != *"-image" ]]; then
-              echo "::notice ::Skipping artifact ${artifact}, it's not a docker image"
+              echo "::notice ::Skipping artifact ${artifact}, it's not a container image"
               continue
             fi
 
@@ -440,6 +443,8 @@ jobs:
             echo "::notice ::Loading image ${image}"
             docker load --input "${artifact}/${artifact}.tar"
 
+            docker images | head -n 100
+  
             dev_image=${IMG_PREFIX}${image}${IMG_MODIFIER}:${IMG_DEV_TAG}
             echo "::notice ::Pushing image ${dev_image}"
             docker push $dev_image
