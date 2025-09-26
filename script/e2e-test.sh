@@ -420,7 +420,9 @@ fi
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm dep up "${ROOT_DIR}/chart/kubeapps"
-kubectl create ns kubeapps
+# kubectl create ns kubeapps
+kubectl get ns kubeapps >/dev/null 2>&1 || kubectl create ns kubeapps
+
 GLOBAL_REPOS_NS=kubeapps-repos-global
 
 if [[ -n "${TEST_UPGRADE:-}" ]]; then
