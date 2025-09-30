@@ -1,4 +1,4 @@
-name: B&R Deprecated Bitnami os-shell
+name: B&R dep Bitnami os-shell
 
 on:
   workflow_dispatch:

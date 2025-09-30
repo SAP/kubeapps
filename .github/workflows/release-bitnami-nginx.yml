@@ -1,4 +1,4 @@
-name: Build and Release Deprecated Bitnami Nginx
+name: B&R dep Bitnami Nginx
 
 on:
   workflow_dispatch:

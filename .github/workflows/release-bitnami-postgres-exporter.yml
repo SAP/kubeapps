@@ -1,4 +1,4 @@
-name: B&R Deprecated Bitnami postgres-exporter
+name: B&R dep Bitnami postgres-exporter
 
 on:
   workflow_dispatch:
