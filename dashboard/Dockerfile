@@ -12,5 +12,5 @@ COPY . /app
 RUN yarn run prettier-check && yarn run ts-compile-check
 RUN yarn run build
 
-FROM bitnami/nginx:1.27.2
+FROM ghcr.io/sap/kubeapps/bitnami-deprecated-nginx:1.29.1
 COPY --from=build /app/build /app

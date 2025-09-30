@@ -26,8 +26,8 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}/bitnami-deprecated-nginx
           tags: |
-            type=raw,value=bitnami-deprecated-nginx-1.29.1
-            type=raw,value=bitnami-deprecated-nginx-latest
+            type=raw,value=1.29.1
+            type=raw,value=latest
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
