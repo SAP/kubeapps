@@ -3,7 +3,7 @@
 
 module github.com/vmware-tanzu/kubeapps
 
-go 1.24.7
+go 1.25.1
 
 require (
 	carvel.dev/vendir v0.42.0

@@ -10,7 +10,7 @@ on:
       golang_version:
         type: string
         required: false
-        default: "1.23"
+        default: "1.25"
       golangci_lint_version:
         type: string
         required: false
@@ -20,7 +20,7 @@ on:
       golang_version:
         type: string
         required: false
-        default: "1.23"
+        default: "1.25"
         description: "Go version to use"
       golangci_lint_version:
         type: string
