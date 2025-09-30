@@ -3,7 +3,7 @@
 
 # syntax = docker/dockerfile:1
 
-FROM 1.24.7-alpine AS builder
+FROM golang:1.24.7-alpine AS builder
 WORKDIR /go/src/github.com/vmware-tanzu/kubeapps
 COPY go.mod go.sum ./
 ARG VERSION="devel"
