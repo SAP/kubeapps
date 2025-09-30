@@ -1,4 +1,4 @@
-name: Build and Release Deprecated Bitnami Nginx
+name: B&R Deprecated Bitnami postgres-exporter
 
 on:
   workflow_dispatch:
