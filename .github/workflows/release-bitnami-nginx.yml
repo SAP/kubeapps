@@ -24,7 +24,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/${{ github.repository }}/bitnami-deprecated-nginx
           tags: |
             type=raw,value=bitnami-deprecated-nginx-1.29.1
             type=raw,value=bitnami-deprecated-nginx-latest
