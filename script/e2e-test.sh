@@ -224,7 +224,7 @@ pushChart() {
 installKappController() {
   local release=$1
   info "Installing kapp-controller ${release} ..."
-  url="https://github.com/vmware-tanzu/carvel-kapp-controller/releases/download/${release}/release.yml"
+  url="https://github.com/carvel-dev/kapp-controller/releases/download/${release}/release.yml"
   namespace=kapp-controller
 
   kubectl apply -f "${url}"

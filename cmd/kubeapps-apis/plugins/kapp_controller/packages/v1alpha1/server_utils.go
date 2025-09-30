@@ -16,12 +16,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 
+	kappctrlv1alpha1 "carvel.dev/kapp-controller/pkg/apis/kappctrl/v1alpha1"
+	packagingv1alpha1 "carvel.dev/kapp-controller/pkg/apis/packaging/v1alpha1"
+	datapackagingv1alpha1 "carvel.dev/kapp-controller/pkg/apiserver/apis/datapackaging/v1alpha1"
+	kappcmdcore "carvel.dev/kapp/pkg/kapp/cmd/core"
 	vendirversions "carvel.dev/vendir/pkg/vendir/versions/v1alpha1"
 	"github.com/Masterminds/semver/v3"
-	kappctrlv1alpha1 "github.com/vmware-tanzu/carvel-kapp-controller/pkg/apis/kappctrl/v1alpha1"
-	packagingv1alpha1 "github.com/vmware-tanzu/carvel-kapp-controller/pkg/apis/packaging/v1alpha1"
-	datapackagingv1alpha1 "github.com/vmware-tanzu/carvel-kapp-controller/pkg/apiserver/apis/datapackaging/v1alpha1"
-	kappcmdcore "github.com/vmware-tanzu/carvel-kapp/pkg/kapp/cmd/core"
 	corev1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
 	kappcorev1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/plugins/kapp_controller/packages/v1alpha1"
 	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/pkgutils"
@@ -149,7 +149,7 @@ func buildPackageIdentifier(pkgMetadata *datapackagingv1alpha1.PackageMetadata) 
 // for instance "default/tce-repo", and returns just the "repoName" part, e.g., "tce-repo"
 func getRepoNameFromAnnotation(repoRefAnnotation string) string {
 	// falling back to a "default" repo name if using kapp controller < v0.36.1
-	// See https://github.com/vmware-tanzu/carvel-kapp-controller/pull/532
+	// See https://github.com/carvel-dev/kapp-controller/pull/532
 	repoName := DEFAULT_REPO_NAME
 	if repoRefAnnotation != "" {
 		splitRepoRefAnnotation := strings.Split(repoRefAnnotation, "/")

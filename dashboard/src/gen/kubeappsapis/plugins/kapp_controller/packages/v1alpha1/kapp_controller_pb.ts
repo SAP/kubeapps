@@ -20,7 +20,7 @@ import { Message, proto3 } from "@bufbuild/protobuf";
  * KappControllerPackageRepositoryCustomDetail
  *
  * custom fields to support other carvel repository types
- * this is mirror from https://github.com/vmware-tanzu/carvel-kapp-controller/blob/develop/pkg/apis/kappctrl/v1alpha1/generated.proto
+ * this is mirror from https://github.com/carvel-dev/kapp-controller/blob/develop/pkg/apis/kappctrl/v1alpha1/generated.proto
  * todo -> find a way to define those messages by referencing proto files from kapp_controller rather than duplication
  *
  * @generated from message kubeappsapis.plugins.kapp_controller.packages.v1alpha1.KappControllerPackageRepositoryCustomDetail

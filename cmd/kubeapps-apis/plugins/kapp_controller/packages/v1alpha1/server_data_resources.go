@@ -14,11 +14,11 @@ import (
 	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/resources"
 	"k8s.io/client-go/kubernetes"
 
-	kappctrlv1alpha1 "github.com/vmware-tanzu/carvel-kapp-controller/pkg/apis/kappctrl/v1alpha1"
-	packagingv1alpha1 "github.com/vmware-tanzu/carvel-kapp-controller/pkg/apis/packaging/v1alpha1"
-	datapackagingv1alpha1 "github.com/vmware-tanzu/carvel-kapp-controller/pkg/apiserver/apis/datapackaging/v1alpha1"
-	ctlapp "github.com/vmware-tanzu/carvel-kapp/pkg/kapp/app"
-	ctlres "github.com/vmware-tanzu/carvel-kapp/pkg/kapp/resources"
+	kappctrlv1alpha1 "carvel.dev/kapp-controller/pkg/apis/kappctrl/v1alpha1"
+	packagingv1alpha1 "carvel.dev/kapp-controller/pkg/apis/packaging/v1alpha1"
+	datapackagingv1alpha1 "carvel.dev/kapp-controller/pkg/apiserver/apis/datapackaging/v1alpha1"
+	ctlapp "carvel.dev/kapp/pkg/kapp/app"
+	ctlres "carvel.dev/kapp/pkg/kapp/resources"
 	corev1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
 	k8scorev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -560,7 +560,7 @@ func getAppUsedGVs(appsClient ctlapp.Apps, packageId string, namespace string, u
 
 	// Workaround to also support pre-0.47 kapp versions, whose ConfigMap were suffixed with "-ctrl" instead of ".apps.k14s.io"
 	if !useNewCtrlAppSuffix {
-		// As per https://github.com/vmware-tanzu/carvel-kapp-controller/blob/v0.32.0/pkg/deploy/kapp.go#L151
+		// As per https://github.com/carvel-dev/kapp-controller/blob/v0.32.0/pkg/deploy/kapp.go#L151
 		appName = fmt.Sprintf("%s%s", packageId, "-ctrl")
 	}
 
@@ -574,7 +574,7 @@ func getAppUsedGVs(appsClient ctlapp.Apps, packageId string, namespace string, u
 	usedGVs, err := app.UsedGVs()
 	if err != nil {
 		// TODO(minelson): We can't currently use `errors.IsNotFound(err)` here.
-		// See https://github.com/vmware-tanzu/carvel-kapp/issues/498
+		// See https://github.com/carvel-dev/kapp/issues/498
 		// Instead we need to match on the error string :/
 		cmErrPattern := "configmaps %q not found"
 		appErrPattern := "App '%s' (namespace: %s) does not exist"

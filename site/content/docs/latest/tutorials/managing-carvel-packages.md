@@ -37,7 +37,7 @@ In order to manage Carvel Packages, first of all, you need to install kapp-contr
 According to the [Carvel kapp-controller official documentation](https://carvel.dev/kapp-controller/docs/latest/install/), you can install everything that kapp-controller requires just by running the following command:
 
 ```bash
-kubectl apply -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/latest/download/release.yml
+kubectl apply -f https://github.com/carvel-dev/kapp-controller/releases/latest/download/release.yml
 ```
 
 After running this command, you should have everything you need to manage Carvel Packages in your cluster. Next section gives you an overview of the relevant Custom Resources included in kapp-controller.

@@ -47,7 +47,7 @@ The versions used there _must_ match the ones used for building the container im
 - `HELM_VERSION_STABLE` should be updated with the [latest stable version from the Helm releases](https://github.com/helm/helm/releases).
 - `OLM_VERSION` should be updated with the [latest stable version from the OLM releases](https://github.com/operator-framework/operator-lifecycle-manager/releases).
 - `CHARTMUSEUM_VERSION` should be updated with the [latest stable version from the chartmuseum/charts releases](https://github.com/chartmuseum/charts/releases).
-- `KAPP_CONTROLLER_VERSION` should be updated with the [latest stable version from the Kapp Controller releases](https://github.com/vmware-tanzu/carvel-kapp-controller/releases).
+- `KAPP_CONTROLLER_VERSION` should be updated with the [latest stable version from the Kapp Controller releases](https://github.com/carvel-dev/kapp-controller/releases).
 - `MKCERT_VERSION` should be updated with the [latest stable version from the mkcert releases](https://github.com/FiloSottile/mkcert/releases).
 - `KUBECTL_VERSION` _should_ match the Kubernetes minor version (or minor version +1) used in `GKE_REGULAR_VERSION_XX` and listed in the [Kubernetes releases page](https://kubernetes.io/releases/).
 - `GITHUB_VERSION` should be updated with the [latest stable version from the GitHub CLI releases](https://github.com/cli/cli/releases).
