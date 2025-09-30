@@ -1,0 +1,6 @@
+# TODO
+
+## Migrate away from bitnami nginx image
+
+## Migrate away from bitnami postgres image
+
