@@ -1,7 +1,7 @@
 # Copyright 2018-2024 the Kubeapps contributors.
 # SPDX-License-Identifier: Apache-2.0
 
-FROM 20.19.5-alpine3.21 AS build
+FROM node:20.19.5-alpine3.21 AS build
 WORKDIR /app
 
 COPY package.json yarn.lock /app/
