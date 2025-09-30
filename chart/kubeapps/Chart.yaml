@@ -26,14 +26,14 @@ appVersion: DEVEL
 dependencies:
 - condition: packaging.flux.enabled
   name: redis
-  repository: oci://registry-1.docker.io/bitnamicharts
-  version: 20.x.x
+  repository: file://./charts/redis
+  version: 23.0.2
 - condition: packaging.helm.enabled
   name: postgresql
-  repository: oci://registry-1.docker.io/bitnamicharts
-  version: 16.x.x
+  repository: file://./charts/postgresql
+  version: 17.0.0
 - name: common
-  repository: oci://registry-1.docker.io/bitnamicharts
+  repository: file://./charts/common
   tags:
   - bitnami-common
   version: 2.x.x
