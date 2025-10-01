@@ -9,7 +9,7 @@ build:
     - proto
 lint:
   use:
-    - DEFAULT
+    - STANDARD
   except:
     - RPC_REQUEST_RESPONSE_UNIQUE
 deps:
