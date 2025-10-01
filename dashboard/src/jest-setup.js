@@ -115,7 +115,7 @@ if (typeof global.File === "undefined") {
 
 if (typeof global.Blob === "undefined") {
   global.Blob = class Blob {
-    constructor(blobChunks = [], options = {}) {
+    constructor(_blobChunks = [], options = {}) {
       this.size = 0;
       this.type = options.type || "";
     }
