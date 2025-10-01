@@ -62,8 +62,19 @@ require (
 	k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738
 	oras.land/oras-go v1.2.5
 	oras.land/oras-go/v2 v2.6.0
-	sigs.k8s.io/controller-runtime v0.21.0
+	sigs.k8s.io/controller-runtime v0.18.5
 	sigs.k8s.io/yaml v1.5.0
+)
+
+replace (
+	k8s.io/api => k8s.io/api v0.30.1
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.30.1
+	k8s.io/apimachinery => k8s.io/apimachinery v0.30.1
+	k8s.io/apiserver => k8s.io/apiserver v0.30.1
+	k8s.io/cli-runtime => k8s.io/cli-runtime v0.30.1
+	k8s.io/client-go => k8s.io/client-go v0.30.1
+	k8s.io/kubectl => k8s.io/kubectl v0.30.1
+	k8s.io/utils => k8s.io/utils v0.0.0-20230726121419-3b25d923346b
 )
 
 require (
@@ -123,7 +134,7 @@ require (
 	github.com/fluxcd/pkg/apis/acl v0.1.0 // indirect
 	github.com/fluxcd/pkg/apis/kustomize v1.3.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
-	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
+	github.com/fvbommel/sortorder v1.1.0 // indirect
 	github.com/go-errors/errors v1.4.2 // indirect
 	github.com/go-gorp/gorp/v3 v3.1.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
@@ -134,8 +145,11 @@ require (
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
+	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/btree v1.1.3 // indirect
 	github.com/google/gnostic-models v0.6.9 // indirect
+	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
@@ -147,6 +161,7 @@ require (
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
+	github.com/imdario/mergo v0.3.15 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/itchyny/timefmt-go v0.1.6 // indirect
 	github.com/jmoiron/sqlx v1.4.0 // indirect
@@ -202,7 +217,6 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/vito/go-interact v1.0.1 // indirect
 	github.com/vmware-tanzu/carvel-kapp-controller v0.51.0 // indirect
-	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.58.0 // indirect
@@ -227,7 +241,6 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/component-base v0.33.3 // indirect
-	k8s.io/component-helpers v0.33.3 // indirect
 	k8s.io/kube-openapi v0.0.0-20250318190949-c8a335a9a2ff // indirect
 	sigs.k8s.io/json v0.0.0-20241010143419-9aa6b5e7a4b3 // indirect
 	sigs.k8s.io/kustomize/api v0.19.0 // indirect
