@@ -299,7 +299,7 @@ describe("renders an error", () => {
 
   it("display the service account selector", () => {
     const initialEntries = [
-      `/c/${defaultProps.cluster}/ns/${defaultProps.namespace}/apps/new/${PluginNames.PACKAGES_KAPP}/${defaultProps.plugin.version}/${defaultProps.packageCluster}/${defaultProps.packageNamespace}/${defaultProps.pkgName}/versions/${defaultProps.version}`,
+      `/c/${defaultProps.cluster}/ns/${defaultProps.namespace}/apps/new/${PluginNames.PACKAGES_FLUX}/${defaultProps.plugin.version}/${defaultProps.packageCluster}/${defaultProps.packageNamespace}/${defaultProps.pkgName}/versions/${defaultProps.version}`,
     ];
     Kube.getServiceAccountNames = jest.fn().mockReturnValue({
       then: jest.fn((f: any) =>

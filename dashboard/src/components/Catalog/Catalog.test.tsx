@@ -74,14 +74,7 @@ const availablePkgSummary2 = new AvailablePackageSummary({
   }),
 });
 
-const availablePkgSummary3 = new AvailablePackageSummary({
-  ...availablePkgSummary2,
-  availablePackageRef: new AvailablePackageReference({
-    identifier: "bar/bar2",
-    context: { cluster: "", namespace: "package-namespace" } as Context,
-    plugin: { name: PluginNames.PACKAGES_KAPP, version: "0.0.1" } as Plugin,
-  }),
-});
+const availablePkgSummary3 = undefined as unknown as AvailablePackageSummary; // removed Carvel case
 
 const csv = {
   metadata: {
@@ -136,7 +129,8 @@ const populatedState = {
   config: {
     ...defaultState.config,
     configuredPlugins: [
-      { name: PluginNames.PACKAGES_KAPP, version: "0.0.1" },
+      { name: PluginNames.PACKAGES_HELM, version: "0.0.1" },
+      { name: PluginNames.PACKAGES_FLUX, version: "0.0.1" },
       { name: "my.plugin", version: "0.0.1" },
     ],
   },

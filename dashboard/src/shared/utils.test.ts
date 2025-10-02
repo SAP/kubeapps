@@ -4,7 +4,6 @@
 import { InstalledPackageStatus_StatusReason } from "gen/kubeappsapis/core/packages/v1alpha1/packages_pb";
 import { PackageRepositoryAuth_PackageRepositoryAuthType } from "gen/kubeappsapis/core/packages/v1alpha1/repositories_pb";
 import { Plugin } from "gen/kubeappsapis/core/plugins/v1alpha1/plugins_pb";
-import carvelIcon from "icons/carvel.svg";
 import fluxIcon from "icons/flux.svg";
 import helmIcon from "icons/helm.svg";
 import olmIcon from "icons/olm-icon.svg";
@@ -91,9 +90,6 @@ it("getPluginIcon", () => {
   expect(getPluginIcon(new Plugin({ name: PluginNames.PACKAGES_FLUX, version: "" }))).toBe(
     fluxIcon,
   );
-  expect(getPluginIcon(new Plugin({ name: PluginNames.PACKAGES_KAPP, version: "" }))).toBe(
-    carvelIcon,
-  );
 });
 
 it("getPluginName", () => {
@@ -103,9 +99,6 @@ it("getPluginName", () => {
   expect(getPluginName("fluflu")).toBe("unknown plugin");
   expect(getPluginName(new Plugin({ name: PluginNames.PACKAGES_HELM, version: "" }))).toBe("Helm");
   expect(getPluginName(new Plugin({ name: PluginNames.PACKAGES_FLUX, version: "" }))).toBe("Flux");
-  expect(getPluginName(new Plugin({ name: PluginNames.PACKAGES_KAPP, version: "" }))).toBe(
-    "Carvel",
-  );
 });
 
 it("getPluginPackageName", () => {
@@ -119,9 +112,6 @@ it("getPluginPackageName", () => {
   expect(getPluginPackageName(new Plugin({ name: PluginNames.PACKAGES_FLUX, version: "" }))).toBe(
     "Helm Chart via Flux",
   );
-  expect(getPluginPackageName(new Plugin({ name: PluginNames.PACKAGES_KAPP, version: "" }))).toBe(
-    "Carvel Package",
-  );
   expect(getPluginPackageName("chart", true)).toBe("Helm Charts");
   expect(getPluginPackageName("helm", true)).toBe("Helm Charts");
   expect(getPluginPackageName("operator", true)).toBe("Operators");
@@ -132,9 +122,6 @@ it("getPluginPackageName", () => {
   expect(
     getPluginPackageName(new Plugin({ name: PluginNames.PACKAGES_FLUX, version: "" }), true),
   ).toBe("Helm Charts via Flux");
-  expect(
-    getPluginPackageName(new Plugin({ name: PluginNames.PACKAGES_KAPP, version: "" }), true),
-  ).toBe("Carvel Packages");
 });
 
 it("getPluginByName", () => {
@@ -146,10 +133,6 @@ it("getPluginByName", () => {
     name: PluginNames.PACKAGES_FLUX,
     version: "v1alpha1",
   });
-  expect(getPluginByName(PluginNames.PACKAGES_KAPP)).toStrictEqual({
-    name: PluginNames.PACKAGES_KAPP,
-    version: "v1alpha1",
-  });
   expect(getPluginByName("fluflu")).toStrictEqual({
     name: "",
     version: "",
@@ -157,14 +140,11 @@ it("getPluginByName", () => {
 });
 
 it("getPluginsRequiringSA", () => {
-  expect(getPluginsRequiringSA()).toStrictEqual([PluginNames.PACKAGES_KAPP]);
+  expect(getPluginsRequiringSA()).toStrictEqual([]);
 });
 
 it("getPluginsAllowingSA", () => {
-  expect(getPluginsAllowingSA()).toStrictEqual([
-    PluginNames.PACKAGES_FLUX,
-    PluginNames.PACKAGES_KAPP,
-  ]);
+  expect(getPluginsAllowingSA()).toStrictEqual([PluginNames.PACKAGES_FLUX]);
 });
 
 it("getPluginsSupportingRollback", () => {
@@ -180,6 +160,7 @@ it("getAppStatusLabel", () => {
 });
 
 it("getSupportedPackageRepositoryAuthTypes", () => {
+  // Helm cases
   expect(
     getSupportedPackageRepositoryAuthTypes(
       new Plugin({
@@ -221,6 +202,7 @@ it("getSupportedPackageRepositoryAuthTypes", () => {
       PackageRepositoryAuth_PackageRepositoryAuthType.DOCKER_CONFIG_JSON,
     ].toString(),
   );
+  // Flux cases
   expect(
     getSupportedPackageRepositoryAuthTypes(
       new Plugin({
@@ -257,61 +239,6 @@ it("getSupportedPackageRepositoryAuthTypes", () => {
     ].toString(),
   );
   expect(
-    getSupportedPackageRepositoryAuthTypes(
-      new Plugin({
-        name: PluginNames.PACKAGES_KAPP,
-        version: "",
-      }),
-    ).toString(),
-  ).toBe([].toString());
-  expect(
-    getSupportedPackageRepositoryAuthTypes(
-      new Plugin({ name: PluginNames.PACKAGES_KAPP, version: "" }),
-      RepositoryStorageTypes.PACKAGE_REPOSITORY_STORAGE_CARVEL_GIT,
-    ).toString(),
-  ).toBe(
-    [
-      PackageRepositoryAuth_PackageRepositoryAuthType.BASIC_AUTH,
-      PackageRepositoryAuth_PackageRepositoryAuthType.SSH,
-    ].toString(),
-  );
-  expect(
-    getSupportedPackageRepositoryAuthTypes(
-      new Plugin({ name: PluginNames.PACKAGES_KAPP, version: "" }),
-      RepositoryStorageTypes.PACKAGE_REPOSITORY_STORAGE_CARVEL_HTTP,
-    ).toString(),
-  ).toBe([PackageRepositoryAuth_PackageRepositoryAuthType.BASIC_AUTH].toString());
-  expect(
-    getSupportedPackageRepositoryAuthTypes(
-      new Plugin({ name: PluginNames.PACKAGES_KAPP, version: "" }),
-      RepositoryStorageTypes.PACKAGE_REPOSITORY_STORAGE_CARVEL_IMAGE,
-    ).toString(),
-  ).toBe(
-    [
-      PackageRepositoryAuth_PackageRepositoryAuthType.BASIC_AUTH,
-      PackageRepositoryAuth_PackageRepositoryAuthType.BEARER,
-      PackageRepositoryAuth_PackageRepositoryAuthType.DOCKER_CONFIG_JSON,
-    ].toString(),
-  );
-  expect(
-    getSupportedPackageRepositoryAuthTypes(
-      new Plugin({ name: PluginNames.PACKAGES_KAPP, version: "" }),
-      RepositoryStorageTypes.PACKAGE_REPOSITORY_STORAGE_CARVEL_IMGPKGBUNDLE,
-    ).toString(),
-  ).toBe(
-    [
-      PackageRepositoryAuth_PackageRepositoryAuthType.BASIC_AUTH,
-      PackageRepositoryAuth_PackageRepositoryAuthType.BEARER,
-      PackageRepositoryAuth_PackageRepositoryAuthType.DOCKER_CONFIG_JSON,
-    ].toString(),
-  );
-  expect(
-    getSupportedPackageRepositoryAuthTypes(
-      new Plugin({ name: PluginNames.PACKAGES_KAPP, version: "" }),
-      RepositoryStorageTypes.PACKAGE_REPOSITORY_STORAGE_CARVEL_INLINE,
-    ).toString(),
-  ).toBe([].toString());
-  expect(
     getSupportedPackageRepositoryAuthTypes(new Plugin({ name: "foo", version: "" })).toString(),
   ).toBe([].toString());
 });
@@ -322,9 +249,7 @@ it("isGlobalNamespace", () => {
     carvelGlobalNamespace: "carvel-global",
   } as IConfig;
   expect(isGlobalNamespace("helm-global", PluginNames.PACKAGES_HELM, kubeappsConfig)).toBe(true);
-  expect(isGlobalNamespace("helm-global", PluginNames.PACKAGES_KAPP, kubeappsConfig)).toBe(false);
   expect(isGlobalNamespace("helm-global", PluginNames.PACKAGES_FLUX, kubeappsConfig)).toBe(false);
   expect(isGlobalNamespace("carvel-global", PluginNames.PACKAGES_HELM, kubeappsConfig)).toBe(false);
-  expect(isGlobalNamespace("carvel-global", PluginNames.PACKAGES_KAPP, kubeappsConfig)).toBe(true);
   expect(isGlobalNamespace("carvel-global", PluginNames.PACKAGES_FLUX, kubeappsConfig)).toBe(false);
 });
