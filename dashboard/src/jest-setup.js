@@ -115,6 +115,7 @@ if (typeof global.File === "undefined") {
 
 if (typeof global.Blob === "undefined") {
   global.Blob = class Blob {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     constructor(_blobChunks = [], options = {}) {
       this.size = 0;
       this.type = options.type || "";
