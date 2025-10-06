@@ -14,7 +14,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"reflect"
 	"runtime"
 	"strconv"
 	"strings"
@@ -135,12 +134,18 @@ func NamespacedName(obj ctrlclient.Object) (*types.NamespacedName, error) {
 // I understand this is not really "kosher" in general for production usage,
 // but in one specific case (cache populateWith() func) it's okay as a confidence test
 // if it turns out not, I can always remove this check, it's not critical
-const mutexLocked = 1
-
+//
+// NOTE: After Go 1.25+, the internal structure of sync.RWMutex changed, breaking
+// reflection-based approaches. Since this is only used for testing/debugging,
+// we'll use a safer approach that doesn't depend on internal implementation.
 func RWMutexWriteLocked(rw *sync.RWMutex) bool {
-	// RWMutex has a "w" sync.Mutex field for write lock
-	state := reflect.ValueOf(rw).Elem().FieldByName("w").FieldByName("state")
-	return state.Int()&mutexLocked == mutexLocked
+	// Try to acquire a read lock with timeout to detect write lock
+	// If write locked, TryRLock will fail immediately
+	if rw.TryRLock() {
+		rw.RUnlock()
+		return false // was not write locked
+	}
+	return true // TryRLock failed, likely write locked
 }
 
 // note this implementation not correct for all cases. Thank you @minelson.
@@ -149,11 +154,24 @@ func RWMutexWriteLocked(rw *sync.RWMutex) bool {
 // see https://github.com/golang/go/blob/release-branch.go1.14/src/sync/rwmutex.go#L100
 // so this code definitely needs be used with caution or better avoided
 // TODO(minelson): Note the danger of checking private variables like this
-// is that they change underneath you. This fails with go 1.20 because
+// is that they change underneath you. This fails with go 1.20+ because
 // readerCount has changed from an Int to an atomic.Int32 (struct).
-// Updated to 1.20, but warning is still applicable.
+//
+// NOTE: After Go 1.25+, we avoid reflection entirely and use a different approach.
+// This is only used for testing/debugging purposes.
 func RWMutexReadLocked(rw *sync.RWMutex) bool {
-	return reflect.ValueOf(rw).Elem().FieldByName("readerCount").FieldByName("v").Int() > 0
+	// First check if write locked - if so, no readers can be active
+	if RWMutexWriteLocked(rw) {
+		return false
+	}
+
+	// Try to acquire a write lock to detect read locks
+	// If read locked, TryLock will fail immediately
+	if rw.TryLock() {
+		rw.Unlock()
+		return false // was not read locked
+	}
+	return true // TryLock failed, must be read locked
 }
 
 // https://github.com/vmware-tanzu/kubeapps/pull/3044#discussion_r662733334
