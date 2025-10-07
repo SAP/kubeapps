@@ -31,7 +31,9 @@ export default function CatalogItems({
 }: ICatalogItemsProps) {
   const packageItems: ICatalogItemProps[] = useMemo(
     () =>
-      availablePackageSummaries.map(c => {
+      availablePackageSummaries
+        .filter(c => c && c.availablePackageRef && c.availablePackageRef.plugin)
+        .map(c => {
         return {
           // TODO: this should be simplified once the operators are also implemented as a plugin
           type: `${c.availablePackageRef?.plugin?.name}/${c.availablePackageRef?.plugin?.version}`,

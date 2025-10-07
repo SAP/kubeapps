@@ -48,6 +48,31 @@ if (typeof global.MessageChannel === "undefined") {
   };
 }
 
+// Monaco Editor mocking for Jest environment
+// Mock the diff provider to prevent "no diff result available" errors
+if (typeof window !== "undefined") {
+  // Mock Monaco Editor's diff provider
+  Object.defineProperty(window, 'MonacoEnvironment', {
+    value: {
+      getWorkerUrl: function () {
+        return 'data:text/javascript;charset=utf-8,';
+      }
+    }
+  });
+}
+
+// Mock Monaco Editor modules that cause issues in Jest
+jest.mock('monaco-editor/esm/vs/editor/browser/widget/diffEditor/diffProviderFactoryService', () => ({
+  WorkerBasedDocumentDiffProvider: class MockDiffProvider {
+    computeDiff() {
+      return Promise.resolve({
+        changes: [],
+        quitEarly: false
+      });
+    }
+  }
+}));
+
 // ReadableStream polyfill for undici
 if (typeof global.ReadableStream === "undefined") {
   global.ReadableStream = class ReadableStream {

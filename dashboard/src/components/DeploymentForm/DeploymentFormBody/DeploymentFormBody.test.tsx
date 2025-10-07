@@ -3,12 +3,19 @@
 
 import { CdsButton } from "@cds/react/button";
 import { act } from "@testing-library/react";
+// Mocking react-monaco-editor FIRST to prevent TypeScript decorator issues in Jest
+// The Monaco Editor uses decorators that don't work properly in Jest environment
+jest.mock("react-monaco-editor", () => {
+  return {
+    MonacoDiffEditor: () => <div data-testid="monaco-diff-editor" />,
+  };
+});
+
 import { JSONSchemaType } from "ajv";
 import {
   AvailablePackageDetail,
   PackageAppVersion,
 } from "gen/kubeappsapis/core/packages/v1alpha1/packages_pb";
-import { MonacoDiffEditor } from "react-monaco-editor";
 import configureMockStore from "redux-mock-store";
 import thunk from "redux-thunk";
 import { defaultStore, getStore, initialState, mountWrapper } from "shared/specs/mountWrapper";
@@ -16,57 +23,8 @@ import { IPackageState } from "shared/types";
 import BasicDeploymentForm from "./BasicDeploymentForm";
 import DeploymentFormBody, { IDeploymentFormBodyProps } from "./DeploymentFormBody";
 
-beforeEach(() => {
-  // mock the window.matchMedia for selecting the theme
-  Object.defineProperty(window, "matchMedia", {
-    writable: true,
-    configurable: true,
-    value: jest.fn().mockImplementation(query => ({
-      matches: false,
-      media: query,
-      onchange: null,
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      dispatchEvent: jest.fn(),
-    })),
-  });
-
-  // mock the window.ResizeObserver, required by the MonacoDiffEditor for the layout
-  Object.defineProperty(window, "ResizeObserver", {
-    writable: true,
-    configurable: true,
-    value: jest.fn().mockImplementation(() => ({
-      observe: jest.fn(),
-      unobserve: jest.fn(),
-      disconnect: jest.fn(),
-    })),
-  });
-
-  // mock the window.HTMLCanvasElement.getContext(), required by the MonacoDiffEditor for the layout
-  Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
-    writable: true,
-    configurable: true,
-    value: jest.fn().mockImplementation(() => ({
-      clearRect: jest.fn(),
-      fillRect: jest.fn(),
-    })),
-  });
-});
-
-// Mocking react-monaco-editor to a simple empty <div> to prevent issues with Jest
-// otherwise, an error with while registering the diff webworker is thrown
-// rel: https://github.com/microsoft/vscode/pull/192151
-jest.mock("react-monaco-editor", () => {
-  return {
-    MonacoDiffEditor: () => <div />,
-  };
-});
-
-afterEach(() => {
-  jest.restoreAllMocks();
-});
+// Import MonacoDiffEditor after the mock is established
+import { MonacoDiffEditor } from "react-monaco-editor";
 
 beforeEach(() => {
   // mock the window.matchMedia for selecting the theme
@@ -106,6 +64,7 @@ beforeEach(() => {
     })),
   });
 });
+
 
 afterEach(() => {
   jest.restoreAllMocks();

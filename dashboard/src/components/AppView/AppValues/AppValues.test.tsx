@@ -1,6 +1,15 @@
 // Copyright 2019-2022 the Kubeapps contributors.
 // SPDX-License-Identifier: Apache-2.0
 
+// Mock react-monaco-editor before any imports to prevent TypeScript decorator errors
+jest.mock("react-monaco-editor", () => {
+  const MockedMonacoEditor = () => <div data-testid="monaco-editor" />;
+  return {
+    default: MockedMonacoEditor,
+    MonacoDiffEditor: () => <div data-testid="monaco-diff-editor" />,
+  };
+});
+
 import MonacoEditor from "react-monaco-editor";
 import { SupportedThemes } from "shared/Config";
 import { defaultStore, getStore, initialState, mountWrapper } from "shared/specs/mountWrapper";
