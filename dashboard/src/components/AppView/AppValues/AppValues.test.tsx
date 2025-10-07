@@ -3,10 +3,16 @@
 
 // Mock react-monaco-editor before any imports to prevent TypeScript decorator errors
 jest.mock("react-monaco-editor", () => {
-  const MockedMonacoEditor = () => <div data-testid="monaco-editor" />;
+  const MockedMonacoEditor = (props: any) => <div data-testid="monaco-editor" {...props} />;
+  MockedMonacoEditor.displayName = "MockedMonacoEditor";
+
+  const MockedMonacoDiffEditor = (props: any) => <div data-testid="monaco-diff-editor" {...props} />;
+  MockedMonacoDiffEditor.displayName = "MockedMonacoDiffEditor";
+
   return {
+    __esModule: true,
     default: MockedMonacoEditor,
-    MonacoDiffEditor: () => <div data-testid="monaco-diff-editor" />,
+    MonacoDiffEditor: MockedMonacoDiffEditor,
   };
 });
 
