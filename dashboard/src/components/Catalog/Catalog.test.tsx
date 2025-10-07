@@ -74,7 +74,7 @@ const availablePkgSummary2 = new AvailablePackageSummary({
   }),
 });
 
-const availablePkgSummary3 = undefined as unknown as AvailablePackageSummary; // removed Carvel case
+// availablePkgSummary3 removed - was undefined after kapp-controller removal
 
 const csv = {
   metadata: {
@@ -447,23 +447,6 @@ describe("filters by application type", () => {
     const wrapper = mountWrapper(
       getStore(populatedState),
       <MemoryRouter initialEntries={[routePathParam + "?Type=Operators"]}>
-        <Routes>
-          <Route path={routePath} element={<Catalog />} />
-        </Routes>
-      </MemoryRouter>,
-      false,
-    );
-    expect(wrapper.find(InfoCard)).toHaveLength(1);
-  });
-
-  it("filters a package type", () => {
-    const packages = {
-      ...defaultPackageState,
-      items: [availablePkgSummary1, availablePkgSummary2, availablePkgSummary3],
-    };
-    const wrapper = mountWrapper(
-      getStore({ ...populatedState, packages: packages } as IStoreState),
-      <MemoryRouter initialEntries={[routePathParam + "?Type=Packages&Plugin=Carvel%20Packages"]}>
         <Routes>
           <Route path={routePath} element={<Catalog />} />
         </Routes>
