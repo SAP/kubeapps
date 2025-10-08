@@ -34,18 +34,18 @@ export default function CatalogItems({
       availablePackageSummaries
         .filter(c => c && c.availablePackageRef && c.availablePackageRef.plugin)
         .map(c => {
-        return {
-          // TODO: this should be simplified once the operators are also implemented as a plugin
-          type: `${c.availablePackageRef?.plugin?.name}/${c.availablePackageRef?.plugin?.version}`,
-          id: `package/${c.availablePackageRef?.identifier}`,
-          item: {
-            name: c.displayName,
-            cluster,
-            namespace,
-            availablePackageSummary: c,
-          } as IPackageCatalogItem,
-        } as ICatalogItemProps;
-      }),
+          return {
+            // TODO: this should be simplified once the operators are also implemented as a plugin
+            type: `${c.availablePackageRef?.plugin?.name}/${c.availablePackageRef?.plugin?.version}`,
+            id: `package/${c.availablePackageRef?.identifier}`,
+            item: {
+              name: c.displayName,
+              cluster,
+              namespace,
+              availablePackageSummary: c,
+            } as IPackageCatalogItem,
+          } as ICatalogItemProps;
+        }),
     [availablePackageSummaries, cluster, namespace],
   );
   const crdItems: ICatalogItemProps[] = useMemo(
