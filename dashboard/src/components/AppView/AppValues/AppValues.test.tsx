@@ -6,7 +6,9 @@ jest.mock("react-monaco-editor", () => {
   const MockedMonacoEditor = (props: any) => <div data-testid="monaco-editor" {...props} />;
   MockedMonacoEditor.displayName = "MockedMonacoEditor";
 
-  const MockedMonacoDiffEditor = (props: any) => <div data-testid="monaco-diff-editor" {...props} />;
+  const MockedMonacoDiffEditor = (props: any) => (
+    <div data-testid="monaco-diff-editor" {...props} />
+  );
   MockedMonacoDiffEditor.displayName = "MockedMonacoDiffEditor";
 
   return {
