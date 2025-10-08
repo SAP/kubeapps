@@ -7,7 +7,6 @@ import { defaultStore, getStore, mountWrapper } from "shared/specs/mountWrapper"
 import { IStoreState } from "shared/types";
 import SchemaEditorForm, { ISchemaEditorForm } from "./SchemaEditorForm";
 
-
 beforeEach(() => {
   // mock the window.matchMedia for selecting the theme
   Object.defineProperty(window, "matchMedia", {
