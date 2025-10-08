@@ -1,16 +1,17 @@
 // Copyright 2021-2023 the Kubeapps contributors.
 // SPDX-License-Identifier: Apache-2.0
 
+// Mock react-monaco-editor before any imports to prevent TypeScript decorator errors
+jest.mock("react-monaco-editor", () => ({
+  MonacoDiffEditor: () => <div data-testid="monaco-diff-editor" />,
+}));
+
 import { MonacoDiffEditor } from "react-monaco-editor";
 import { SupportedThemes } from "shared/Config";
 import { defaultStore, getStore, mountWrapper } from "shared/specs/mountWrapper";
 import { IStoreState } from "shared/types";
 import SchemaEditorForm, { ISchemaEditorForm } from "./SchemaEditorForm";
 
-// Mock react-monaco-editor before any imports to prevent TypeScript decorator errors
-jest.mock("react-monaco-editor", () => ({
-  MonacoDiffEditor: () => <div data-testid="monaco-diff-editor" />,
-}));
 
 beforeEach(() => {
   // mock the window.matchMedia for selecting the theme
