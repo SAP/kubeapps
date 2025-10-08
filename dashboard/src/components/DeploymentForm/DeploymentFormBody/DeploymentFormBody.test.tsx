@@ -3,19 +3,12 @@
 
 import { CdsButton } from "@cds/react/button";
 import { act } from "@testing-library/react";
-// Mocking react-monaco-editor FIRST to prevent TypeScript decorator issues in Jest
-// The Monaco Editor uses decorators that don't work properly in Jest environment
-jest.mock("react-monaco-editor", () => {
-  return {
-    MonacoDiffEditor: () => <div data-testid="monaco-diff-editor" />,
-  };
-});
-
 import { JSONSchemaType } from "ajv";
 import {
   AvailablePackageDetail,
   PackageAppVersion,
 } from "gen/kubeappsapis/core/packages/v1alpha1/packages_pb";
+import { MonacoDiffEditor } from "react-monaco-editor";
 import configureMockStore from "redux-mock-store";
 import thunk from "redux-thunk";
 import { defaultStore, getStore, initialState, mountWrapper } from "shared/specs/mountWrapper";
@@ -23,8 +16,13 @@ import { IPackageState } from "shared/types";
 import BasicDeploymentForm from "./BasicDeploymentForm";
 import DeploymentFormBody, { IDeploymentFormBodyProps } from "./DeploymentFormBody";
 
-// Import MonacoDiffEditor after the mock is established
-import { MonacoDiffEditor } from "react-monaco-editor";
+// Mocking react-monaco-editor FIRST to prevent TypeScript decorator issues in Jest
+// The Monaco Editor uses decorators that don't work properly in Jest environment
+jest.mock("react-monaco-editor", () => {
+  return {
+    MonacoDiffEditor: () => <div data-testid="monaco-diff-editor" />,
+  };
+});
 
 beforeEach(() => {
   // mock the window.matchMedia for selecting the theme
