@@ -1,11 +1,6 @@
 // Copyright 2018-2023 the Kubeapps contributors.
 // SPDX-License-Identifier: Apache-2.0
 
-// Mock react-monaco-editor before any imports to prevent TypeScript decorator errors
-jest.mock("react-monaco-editor", () => ({
-  MonacoDiffEditor: () => <div data-testid="monaco-diff-editor" />,
-}));
-
 import { CdsSelect } from "@cds/react/select";
 import { act } from "@testing-library/react";
 import actions from "actions";
@@ -28,6 +23,11 @@ import { getStore, initialState, mountWrapper } from "shared/specs/mountWrapper"
 import { FetchError, IStoreState, PluginNames } from "shared/types";
 import DeploymentForm from "./DeploymentForm";
 import DeploymentFormBody from "./DeploymentFormBody";
+
+// Mock react-monaco-editor before any imports to prevent TypeScript decorator errors
+jest.mock("react-monaco-editor", () => ({
+  MonacoDiffEditor: () => <div data-testid="monaco-diff-editor" />,
+}));
 
 const defaultProps = {
   pkgName: "foo",
