@@ -52,8 +52,8 @@ if (typeof global.MessageChannel === "undefined") {
 // Global mock for react-monaco-editor to prevent decorator errors in all test files
 jest.mock("react-monaco-editor", () => ({
   __esModule: true,
-  default: (props) => <div data-testid="monaco-editor" {...props} />,
-  MonacoDiffEditor: (props) => <div data-testid="monaco-diff-editor" {...props} />,
+  default: props => <div data-testid="monaco-editor" {...props} />,
+  MonacoDiffEditor: props => <div data-testid="monaco-diff-editor" {...props} />,
 }));
 
 // Mock the diff provider to prevent "no diff result available" errors
