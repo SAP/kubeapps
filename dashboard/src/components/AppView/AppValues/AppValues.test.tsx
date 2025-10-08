@@ -1,6 +1,12 @@
 // Copyright 2019-2022 the Kubeapps contributors.
 // SPDX-License-Identifier: Apache-2.0
 
+import MonacoEditor from "react-monaco-editor";
+import { SupportedThemes } from "shared/Config";
+import { defaultStore, getStore, initialState, mountWrapper } from "shared/specs/mountWrapper";
+import { IStoreState } from "shared/types";
+import AppValues from "./AppValues";
+
 // Mock react-monaco-editor before any imports to prevent TypeScript decorator errors
 jest.mock("react-monaco-editor", () => {
   const MockedMonacoEditor = (props: any) => <div data-testid="monaco-editor" {...props} />;
@@ -17,12 +23,6 @@ jest.mock("react-monaco-editor", () => {
     MonacoDiffEditor: MockedMonacoDiffEditor,
   };
 });
-
-import MonacoEditor from "react-monaco-editor";
-import { SupportedThemes } from "shared/Config";
-import { defaultStore, getStore, initialState, mountWrapper } from "shared/specs/mountWrapper";
-import { IStoreState } from "shared/types";
-import AppValues from "./AppValues";
 
 beforeEach(() => {
   // mock the window.matchMedia for selecting the theme
