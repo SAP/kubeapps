@@ -209,6 +209,16 @@ pushChart() {
   # ref https://gist.github.com/andre3k1/e3a1a7133fded5de5a9ee99c87c6fa0d
   sed -i "s/name: ${chart}/name: ${prefix}${chart}/" "./${chart}-${version}/${chart}/Chart.yaml"
   sed -i "0,/^\([[:space:]]*description: *\).*/s//\1${description}/" "./${chart}-${version}/${chart}/Chart.yaml"
+
+  # Update Apache Docker image references to use our deprecated image
+  if [[ "${chart}" == "apache" ]]; then
+    # Update values.yaml to use our deprecated Apache image
+    sed -i "s|registry: docker.io|registry: ghcr.io|g" "./${chart}-${version}/${chart}/values.yaml"
+    sed -i "s|repository: bitnami/apache|repository: sap/kubeapps/bitnami-deprecated-apache|g" "./${chart}-${version}/${chart}/values.yaml"
+    # Update Chart.yaml annotations for Apache image references
+    sed -i "s|docker.io/bitnami/apache:[^\"]*|ghcr.io/sap/kubeapps/bitnami-deprecated-apache:2.4|g" "./${chart}-${version}/${chart}/Chart.yaml"
+  fi
+
   helm package "./${chart}-${version}/${chart}" -d .
 
   pushChartToChartMuseum "${chart}" "${version}" "${prefix}${chart}-${version}.tgz"
