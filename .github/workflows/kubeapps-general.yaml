@@ -196,14 +196,16 @@ jobs:
       postgresql:
         image: ghcr.io/sap/kubeapps/bitnami-deprecated-postgresql:${{needs.setup.outputs.postgresql_version}}
         options: >-
-          --health-cmd "pg_isready -U postgres"
+          --health-cmd "pg_isready -h localhost -p 5432 -U postgres || pg_isready -h localhost -p 5432"
           --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-timeout 10s
+          --health-retries 10
         ports:
           - 5432:5432
         env:
           ALLOW_EMPTY_PASSWORD: "yes"
+          POSTGRESQL_DATABASE: "assets"
+          POSTGRESQL_USERNAME: "postgres"
     steps:
       - uses: actions/checkout@v4
       - name: Set up Go
@@ -559,10 +561,18 @@ jobs:
           ./script/install-multicluster-deps.sh
       - name: "Run e2e tests script"
         run: ./script/run_e2e_tests.sh
-      - name: "Print k8s KubeappsAPIs logs if the tests fail"
-        run: kubectl --context kind-kubeapps-ci --kubeconfig ${HOME}/.kube/kind-config-kubeapps-ci logs -n kubeapps deploy/kubeapps-ci-internal-kubeappsapis
-        if: failure() && env.TEST_RESULT == 1
+      - name: "Diagnose failure (Kubeapps APIs & PostgreSQL)"
+        if: failure()
+        run: |
+          chmod +x script/diagnose-e2e-failure.sh || true
+          ./script/diagnose-e2e-failure.sh kubeapps kubeapps-ci | tee diagnostics-${{ matrix.tests_group }}.log || true
         continue-on-error: true
+      - name: 'Upload Diagnostics'
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostics_${{ matrix.tests_group }}
+          path: diagnostics-${{ matrix.tests_group }}.log
       - name: 'Upload Artifacts'
         if: failure()
         uses: actions/upload-artifact@v4
