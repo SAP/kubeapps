@@ -320,10 +320,23 @@ installOrUpgradeKubeapps() {
   info "Installing Kubeapps from ${chartSource}..."
   kubectl -n kubeapps delete secret localhost-tls || true
 
+  # Build optional PostgreSQL override flags if version provided
+  local postgresql_override_flags=()
+  if [[ -n "${POSTGRESQL_VERSION:-}" ]]; then
+    postgresql_override_flags+=("--set" "postgresql.image.registry=ghcr.io")
+    postgresql_override_flags+=("--set" "postgresql.image.repository=sap/kubeapps/bitnami-deprecated-postgresql")
+    postgresql_override_flags+=("--set" "postgresql.image.tag=${POSTGRESQL_VERSION}")
+    # exporter (metrics) override (harmless if metrics.enabled=false)
+    postgresql_override_flags+=("--set" "metrics.image.registry=ghcr.io")
+    postgresql_override_flags+=("--set" "metrics.image.repository=sap/kubeapps/bitnami-deprecated-postgres-exporter")
+    postgresql_override_flags+=("--set" "metrics.image.tag=0.17.1")
+  fi
+
   # See https://stackoverflow.com/a/36296000 for "${arr[@]+"${arr[@]}"}" notation.
   cmd=(helm upgrade --install kubeapps-ci --namespace kubeapps "${chartSource}"
     "${img_flags[@]}"
     "${multiclusterFlags[@]+"${multiclusterFlags[@]}"}"
+    "${postgresql_override_flags[@]+"${postgresql_override_flags[@]}"}"
     "${@:2}"
     --set frontend.replicaCount=1
     --set dashboard.replicaCount=1
@@ -340,7 +353,12 @@ installOrUpgradeKubeapps() {
     --set global.security.allowInsecureImages=true
     --wait)
 
-  echo "${cmd[@]}"
+  echo "Helm command:"; printf '%q ' "${cmd[@]}"; echo
+  if [[ -n "${POSTGRESQL_VERSION:-}" ]]; then
+    info "Overriding PostgreSQL image -> ghcr.io/sap/kubeapps/bitnami-deprecated-postgresql:${POSTGRESQL_VERSION}";
+  else
+    warn "POSTGRESQL_VERSION not set; using chart defaults (may pull docker.io images)."
+  fi
   "${cmd[@]}"
 }
 
@@ -437,7 +455,15 @@ if [ "$USE_MULTICLUSTER_OIDC_ENV" = true ]; then
 fi
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
-helm dep up "${ROOT_DIR}/chart/kubeapps"
+# Skip helm dependency update to ensure we use local file:// subcharts (postgresql, redis, common) and not the remote locked versions
+# Previous Chart.lock referenced remote oci charts with older postgres image tags causing docker.io pulls.
+# If you need to refresh remote deps, set FORCE_REMOTE_DEPS=true before running.
+if [[ "${FORCE_REMOTE_DEPS:-false}" == "true" ]]; then
+  info "FORCE_REMOTE_DEPS=true -> running helm dependency update"
+  helm dep up "${ROOT_DIR}/chart/kubeapps"
+else
+  info "Skipping helm dependency update to keep local subcharts (postgresql/redis/common)."
+fi
 # kubectl create ns kubeapps
 kubectl get ns kubeapps >/dev/null 2>&1 || kubectl create ns kubeapps
 
@@ -788,15 +814,25 @@ if [[ -z "${GKE_VERSION-}" && ("${TESTS_GROUP}" == "${ALL_TESTS}" || "${TESTS_GR
 
   info "Updating Kubeapps to exclude Kubeapps cluster from the list of clusters"
 
-  # Update Kubeapps
   kubeappsChartPath="${ROOT_DIR}/chart/kubeapps"
   info "Installing Kubeapps from ${kubeappsChartPath}..."
   kubectl -n kubeapps delete secret localhost-tls || true
 
-  # See https://stackoverflow.com/a/36296000 for "${arr[@]+"${arr[@]}"}" notation.
+  # Apply PostgreSQL overrides here as well to avoid fallback to docker.io image
+  postgresql_override_flags=( )
+  if [[ -n "${POSTGRESQL_VERSION:-}" ]]; then
+    postgresql_override_flags+=("--set" "postgresql.image.registry=ghcr.io")
+    postgresql_override_flags+=("--set" "postgresql.image.repository=sap/kubeapps/bitnami-deprecated-postgresql")
+    postgresql_override_flags+=("--set" "postgresql.image.tag=${POSTGRESQL_VERSION}")
+    postgresql_override_flags+=("--set" "metrics.image.registry=ghcr.io")
+    postgresql_override_flags+=("--set" "metrics.image.repository=sap/kubeapps/bitnami-deprecated-postgres-exporter")
+    postgresql_override_flags+=("--set" "metrics.image.tag=0.17.1")
+  fi
+
   cmd=(helm upgrade --install kubeapps-ci --namespace kubeapps "${kubeappsChartPath}"
     "${img_flags[@]}"
     "${basicAuthFlags[@]+"${basicAuthFlags[@]}"}"
+    "${postgresql_override_flags[@]+"${postgresql_override_flags[@]}"}"
     --set clusters[0].name=second-cluster
     --set clusters[0].apiServiceURL=https://${ADDITIONAL_CLUSTER_IP}:6443
     --set clusters[0].insecure=true
@@ -817,7 +853,10 @@ if [[ -z "${GKE_VERSION-}" && ("${TESTS_GROUP}" == "${ALL_TESTS}" || "${TESTS_GR
     --set global.security.allowInsecureImages=true
     --wait)
 
-  echo "${cmd[@]}"
+  echo "Helm command (multi-cluster no kubeapps):"; printf '%q ' "${cmd[@]}"; echo
+  if [[ -n "${POSTGRESQL_VERSION:-}" ]]; then
+    info "PostgreSQL override active (multi-cluster no kubeapps): ghcr.io/sap/kubeapps/bitnami-deprecated-postgresql:${POSTGRESQL_VERSION}";
+  fi
   "${cmd[@]}"
 
   info "Waiting for updated Kubeapps components to be ready..."

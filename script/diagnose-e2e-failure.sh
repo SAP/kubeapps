@@ -61,6 +61,13 @@ else
   kubectl get pods -n "${NS}" -l ${POSTGRES_LABEL} -o jsonpath='{range .items[*]}{.metadata.name} {.spec.containers[0].image}{"\n"}{end}' 2>/dev/null || true
 fi
 
+section "PostgreSQL Helm values (image overrides)"
+if helm status "${RELEASE}" -n "${NS}" >/dev/null 2>&1; then
+  helm get values "${RELEASE}" -n "${NS}" --all | grep -E "postgresql.image|metrics.image" || true
+else
+  warn "Helm release ${RELEASE} not found for values extraction"
+fi
+
 section "Services & Endpoints"
 { kubectl get svc -n "${NS}"; echo; kubectl get ep -n "${NS}"; } || true
 
