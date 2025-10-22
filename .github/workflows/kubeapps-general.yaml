@@ -196,7 +196,7 @@ jobs:
       postgresql:
         image: ghcr.io/sap/kubeapps/bitnami-deprecated-postgresql:${{needs.setup.outputs.postgresql_version}}
         options: >-
-          --health-cmd "pg_isready -U postgres
+          --health-cmd "pg_isready -U postgres"
           --health-interval 10s
           --health-timeout 10s
           --health-retries 10
