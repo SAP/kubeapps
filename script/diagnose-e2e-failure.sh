@@ -13,7 +13,7 @@ warn() { echo -e "${YELLOW}WARN:${NC} $*"; }
 error() { echo -e "${RED}ERROR:${NC} $*"; }
 
 section "Basic cluster info"
-kubectl version --short || true
+kubectl version || true
 kubectl get nodes -o wide || true
 
 section "Namespace ${NS} summary"
