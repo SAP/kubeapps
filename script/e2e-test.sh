@@ -43,6 +43,10 @@ GHCR_OWNER=${GHCR_OWNER:-${GITHUB_REPOSITORY_OWNER:-your-ghcr-owner}}
 GHCR_OWNER=$(echo "$GHCR_OWNER" | tr '[:upper:]' '[:lower:]')
 IMG_PREFIX=${IMG_PREFIX:-"ghcr.io/${GHCR_OWNER}/kubeapps/"}
 
+# Added explicit versions for deprecated images (override via env if needed)
+NGINX_VERSION=${NGINX_VERSION:-"1.29.1"}
+AUTH_PROXY_VERSION=${AUTH_PROXY_VERSION:-"7.12.0"}
+
 TESTS_GROUP=${TESTS_GROUP:-"${ALL_TESTS}"}
 DEBUG_MODE=${DEBUG_MODE:-false}
 TEST_LATEST_RELEASE=${TEST_LATEST_RELEASE:-false}
@@ -423,6 +427,13 @@ img_flags=(
   "--set" "kubeappsapis.image.repository=${images[4]}"
   "--set" "ociCatalog.image.tag=${IMG_DEV_TAG}"
   "--set" "ociCatalog.image.repository=${images[5]}"
+  # Explicit overrides to ensure helm upgrade does not retain upstream bitnami nginx/oauth2-proxy images
+  "--set" "frontend.image.registry=ghcr.io"
+  "--set" "frontend.image.repository=sap/kubeapps/bitnami-deprecated-nginx"
+  "--set" "frontend.image.tag=${NGINX_VERSION}"
+  "--set" "authProxy.image.registry=ghcr.io"
+  "--set" "authProxy.image.repository=sap/kubeapps/bitnami-deprecated-oauth2-proxy"
+  "--set" "authProxy.image.tag=${AUTH_PROXY_VERSION}"
 )
 
 additional_flags_file=$(generateAdditionalValuesFile)
