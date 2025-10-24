@@ -221,6 +221,14 @@ pushChart() {
     sed -i "s|repository: bitnami/apache|repository: sap/kubeapps/bitnami-deprecated-apache|g" "./${chart}-${version}/${chart}/values.yaml"
     # Update Chart.yaml annotations for Apache image references
     sed -i "s|docker.io/bitnami/apache:[^\"]*|ghcr.io/sap/kubeapps/bitnami-deprecated-apache:2.4|g" "./${chart}-${version}/${chart}/Chart.yaml"
+    # Inject allowInsecureImages override (new)
+    if ! grep -q 'allowInsecureImages' "./${chart}-${version}/${chart}/values.yaml"; then
+      if grep -q '^global:' "./${chart}-${version}/${chart}/values.yaml"; then
+        sed -i '/^global:/a\  security:\n    allowInsecureImages: true' "./${chart}-${version}/${chart}/values.yaml"
+      else
+        printf "\n# e2e override\nglobal:\n  security:\n    allowInsecureImages: true\n" >> "./${chart}-${version}/${chart}/values.yaml"
+      fi
+    fi
   fi
 
   helm package "./${chart}-${version}/${chart}" -d .
