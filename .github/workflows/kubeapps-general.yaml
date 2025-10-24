@@ -35,6 +35,9 @@ on:
         required: false
         default: false
         description: "Trigger release process"
+  push:
+    branches:
+      - enable_basic_github_actions
 
 env:
   CHARTMUSEUM_VERSION: "3.10.3"
@@ -171,7 +174,7 @@ jobs:
           echo "VERSION: ${{steps.set-outputs.outputs.version}}"
 
   linters:
-    if: inputs.run_linters
+    if: inputs.run_linters && github.ref_name != 'enable_basic_github_actions'
     needs:
       - setup
     uses: ./.github/workflows/linters.yml
@@ -180,7 +183,7 @@ jobs:
       golangci_lint_version: ${{ needs.setup.outputs.golangci_lint_version }}
 
   linters_result:
-    if: inputs.run_linters && always()
+    if: inputs.run_linters && github.ref_name != 'enable_basic_github_actions' && always()
     needs: linters
     runs-on: ubuntu-latest
     steps:
