@@ -219,6 +219,7 @@ pushChart() {
     # Update values.yaml to use our deprecated Apache image
     sed -i "s|registry: docker.io|registry: ghcr.io|g" "./${chart}-${version}/${chart}/values.yaml"
     sed -i "s|repository: bitnami/apache|repository: sap/kubeapps/bitnami-deprecated-apache|g" "./${chart}-${version}/${chart}/values.yaml"
+    sed -i "s|metrics.image.repository=bitnami/apache-exporter|metrics.image.repository=sap/kubeapps/bitnami-deprecated-apache-exporter|g" "./${chart}-${version}/${chart}/values.yaml"
     # Update Chart.yaml annotations for Apache image references
     sed -i "s|docker.io/bitnami/apache:[^\"]*|ghcr.io/sap/kubeapps/bitnami-deprecated-apache:2.4|g" "./${chart}-${version}/${chart}/Chart.yaml"
     # Inject allowInsecureImages override (new)
