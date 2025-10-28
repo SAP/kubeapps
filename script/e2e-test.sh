@@ -230,12 +230,11 @@ pushChart() {
       fi
     fi
   fi
-    if ! grep -q 'allowInsecureImages' "./${chart}-${version}/${chart}/values.yaml"; then
-      if grep -q '^global:' "./${chart}-${version}/${chart}/values.yaml"; then
-        sed -i '/^global:/a\  security:\n    allowInsecureImages: true' "./${chart}-${version}/${chart}/values.yaml"
-      else
-        printf "\n# e2e override\nglobal:\n  security:\n    allowInsecureImages: true\n" >> "./${chart}-${version}/${chart}/values.yaml"
-      fi
+  if ! grep -q 'allowInsecureImages' "./${chart}-${version}/${chart}/values.yaml"; then
+    if grep -q '^global:' "./${chart}-${version}/${chart}/values.yaml"; then
+      sed -i '/^global:/a\  security:\n    allowInsecureImages: true' "./${chart}-${version}/${chart}/values.yaml"
+    else
+      printf "\n# e2e override\nglobal:\n  security:\n    allowInsecureImages: true\n" >> "./${chart}-${version}/${chart}/values.yaml"
     fi
   fi
 
