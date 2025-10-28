@@ -499,7 +499,8 @@ if [[ -n "${TEST_UPGRADE:-}" ]]; then
   # To test the upgrade, first install the latest version published
   info "Installing latest Kubeapps chart available"
   installOrUpgradeKubeapps bitnami/kubeapps \
-    "--set" "apprepository.initialRepos={}"
+    "--set" "apprepository.initialRepos={}" \
+    "--set" "global.security.allowInsecureImages=true"
 
   info "Waiting for Kubeapps components to be ready (bitnami chart)..."
   k8s_wait_for_deployment kubeapps kubeapps-ci
