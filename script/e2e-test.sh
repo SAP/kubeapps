@@ -201,46 +201,43 @@ pushChart() {
   info "Adding ${chart}-${version} to ChartMuseum ..."
   pullBitnamiChart "${chart}" "${version}"
 
-  # Mutate the chart name and description, then re-package the tarball
-  # For instance, the apache's Chart.yaml file becomes modified to:
-  #   name: kubeapps-apache
-  #   description: foo apache chart for CI
-  # consequently, the new packaged chart is "${prefix}${chart}-${version}.tgz"
-  # This workaround should mitigate https://github.com/vmware-tanzu/kubeapps/issues/3339
+  # Repackage chart with modified name/description
   mkdir "./${chart}-${version}"
   tar zxf "${chart}-${version}.tgz" -C "./${chart}-${version}"
-  # this relies on GNU sed, which is not the default on MacOS
-  # ref https://gist.github.com/andre3k1/e3a1a7133fded5de5a9ee99c87c6fa0d
-  sed -i "s/name: ${chart}/name: ${prefix}${chart}/" "./${chart}-${version}/${chart}/Chart.yaml"
-  sed -i "0,/^\([[:space:]]*description: *\).*/s//\1${description}/" "./${chart}-${version}/${chart}/Chart.yaml"
 
-  # Update Apache Docker image references to use our deprecated image
-  if [[ "${chart}" == "apache" ]]; then
-    # Update values.yaml to use our deprecated Apache image
-    sed -i "s|registry: docker.io|registry: ghcr.io|g" "./${chart}-${version}/${chart}/values.yaml"
-    sed -i "s|repository: bitnami/apache|repository: sap/kubeapps/bitnami-deprecated-apache|g" "./${chart}-${version}/${chart}/values.yaml"
-    sed -i "s|metrics.image.repository=bitnami/apache-exporter|metrics.image.repository=sap/kubeapps/bitnami-deprecated-apache-exporter|g" "./${chart}-${version}/${chart}/values.yaml"
-    # Update Chart.yaml annotations for Apache image references
-    sed -i "s|docker.io/bitnami/apache:[^\"]*|ghcr.io/sap/kubeapps/bitnami-deprecated-apache:2.4|g" "./${chart}-${version}/${chart}/Chart.yaml"
-    # Inject allowInsecureImages override (new)
-    if ! grep -q 'allowInsecureImages' "./${chart}-${version}/${chart}/values.yaml"; then
-      if grep -q '^global:' "./${chart}-${version}/${chart}/values.yaml"; then
-        sed -i '/^global:/a\  security:\n    allowInsecureImages: true' "./${chart}-${version}/${chart}/values.yaml"
-      else
-        printf "\n# e2e override\nglobal:\n  security:\n    allowInsecureImages: true\n" >> "./${chart}-${version}/${chart}/values.yaml"
-      fi
+  # Portable sed wrapper (GNU + BSD/macOS)
+  sed_inplace() {
+    local expr=$1 file=$2
+    if ! sed -i "${expr}" "${file}" 2>/dev/null; then
+      sed -i '' "${expr}" "${file}"
     fi
+  }
+
+  sed_inplace "s/name: ${chart}/name: ${prefix}${chart}/" "./${chart}-${version}/${chart}/Chart.yaml"
+  sed_inplace "0,/^\([[:space:]]*description: *\).*/s//\1${description}/" "./${chart}-${version}/${chart}/Chart.yaml"
+
+  local values_path="./${chart}-${version}/${chart}/values.yaml"
+
+  # Apache deprecated image substitutions (portable sed)
+  if [[ "${chart}" == "apache" ]]; then
+    sed_inplace 's|registry: docker.io|registry: ghcr.io|g' "${values_path}"
+    sed_inplace 's|repository: bitnami/apache|repository: sap/kubeapps/bitnami-deprecated-apache|g' "${values_path}"
+    sed_inplace 's|metrics.image.repository=bitnami/apache-exporter|metrics.image.repository=sap/kubeapps/bitnami-deprecated-apache-exporter|g' "${values_path}"
+    sed_inplace 's|docker.io/bitnami/apache:[^\"]*|ghcr.io/sap/kubeapps/bitnami-deprecated-apache:2.4|g' "./${chart}-${version}/${chart}/Chart.yaml"
   fi
-  if ! grep -q 'allowInsecureImages' "./${chart}-${version}/${chart}/values.yaml"; then
-    if grep -q '^global:' "./${chart}-${version}/${chart}/values.yaml"; then
-      sed -i '/^global:/a\  security:\n    allowInsecureImages: true' "./${chart}-${version}/${chart}/values.yaml"
+
+  # Ensure allowInsecureImages=true (flip existing or inject). Avoid duplicate blocks.
+  if grep -qE '^[[:space:]]*allowInsecureImages:' "${values_path}"; then
+    sed_inplace 's/^[[:space:]]*allowInsecureImages:.*$/  allowInsecureImages: true/' "${values_path}"
+  else
+    if grep -q '^global:' "${values_path}"; then
+      awk 'BEGIN{done=0} {print; if(!done && /^global:/){print "  security:\n    allowInsecureImages: true"; done=1}}' "${values_path}" > "${values_path}.tmp" && mv "${values_path}.tmp" "${values_path}"
     else
-      printf "\n# e2e override\nglobal:\n  security:\n    allowInsecureImages: true\n" >> "./${chart}-${version}/${chart}/values.yaml"
+      printf "\n# e2e override\nglobal:\n  security:\n    allowInsecureImages: true\n" >> "${values_path}"
     fi
   fi
 
   helm package "./${chart}-${version}/${chart}" -d .
-
   pushChartToChartMuseum "${chart}" "${version}" "${prefix}${chart}-${version}.tgz"
 }
 
