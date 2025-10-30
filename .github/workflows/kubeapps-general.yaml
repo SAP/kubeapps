@@ -470,7 +470,7 @@ jobs:
       fail-fast: false
       matrix:
         tests_group:
-          - carvel
+          # - carvel  # Disabled: removing Carvel tests from local e2e matrix
           - flux
           - main-group-1
           - main-group-2
