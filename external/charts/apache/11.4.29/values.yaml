@@ -12,7 +12,7 @@
 ## @param global.storageClass DEPRECATED: use global.defaultStorageClass instead
 ##
 global:
-  imageRegistry: ""
+  imageRegistry: "ghcr.io"
   ## E.g.
   ## imagePullSecrets:
   ##   - myRegistryKeySecretName
@@ -34,7 +34,7 @@ global:
   security:
     ## @param global.security.allowInsecureImages By default, this chart verifies that the original container images that were designed, tested, and validated are used. This option makes the chart skip the verification step and proceed
     ##
-    allowInsecureImages: false
+    allowInsecureImages: true
 
 ## @section Common parameters
 
@@ -69,9 +69,9 @@ extraDeploy: []
 ## @param image.debug Enable image debug mode
 ##
 image:
-  registry: docker.io
-  repository: bitnami/apache
-  tag: 2.4.65-debian-12-r2
+  registry: ghcr.io
+  repository: sap/kubeapps/bitnami-deprecated-apache
+  tag: 2.4
   digest: ""
   ## Specify a imagePullPolicy
   ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
