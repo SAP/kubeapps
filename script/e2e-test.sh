@@ -219,17 +219,10 @@ pushChart() {
 
   local values_path="./${chart}-${version}/${chart}/values.yaml"
 
-  # Apache deprecated image substitutions (portable sed)
-  if [[ "${chart}" == "apache" ]]; then
-    sed_inplace 's|registry: docker.io|registry: ghcr.io|g' "${values_path}"
-    sed_inplace 's|repository: bitnami/apache|repository: sap/kubeapps/bitnami-deprecated-apache|g' "${values_path}"
-    sed_inplace 's|metrics.image.repository=bitnami/apache-exporter|metrics.image.repository=sap/kubeapps/bitnami-deprecated-apache-exporter|g' "${values_path}"
-    sed_inplace 's|docker.io/bitnami/apache:[^\"]*|ghcr.io/sap/kubeapps/bitnami-deprecated-apache:2.4|g' "./${chart}-${version}/${chart}/Chart.yaml"
-  fi
-
   # Ensure allowInsecureImages=true (flip existing or inject). Avoid duplicate blocks.
   if grep -qE '^[[:space:]]*allowInsecureImages:' "${values_path}"; then
-    sed_inplace 's/^[[:space:]]*allowInsecureImages:.*$/  allowInsecureImages: true/' "${values_path}"
+    # Preserve original indentation while forcing value to true.
+    sed_inplace 's/^\([[:space:]]*\)allowInsecureImages:.*/\1allowInsecureImages: true/' "${values_path}"
   else
     if grep -q '^global:' "${values_path}"; then
       awk 'BEGIN{done=0} {print; if(!done && /^global:/){print "  security:\n    allowInsecureImages: true"; done=1}}' "${values_path}" > "${values_path}.tmp" && mv "${values_path}.tmp" "${values_path}"
