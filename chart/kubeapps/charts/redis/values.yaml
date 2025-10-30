@@ -112,9 +112,9 @@ diagnosticMode:
 ## @param image.debug Enable image debug mode
 ##
 image:
-  registry: docker.io
-  repository: bitnami/redis
-  tag: 8.2.1-debian-12-r0
+  registry: ghcr.io
+  repository: sap/kubeapps/bitnami-deprecated-redis
+  tag: 8.2
   digest: ""
   ## Specify a imagePullPolicy
   ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
@@ -1184,9 +1184,9 @@ sentinel:
   ## @param sentinel.image.debug Enable image debug mode
   ##
   image:
-    registry: docker.io
-    repository: bitnami/redis-sentinel
-    tag: 8.2.1-debian-12-r0
+    registry: ghcr.io
+    repository: sap/kubeapps/deprecated-bitnami-redis-sentinel
+    tag: 8.2
     digest: ""
     ## Specify a imagePullPolicy
     ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
@@ -1783,9 +1783,9 @@ metrics:
   ## @param metrics.image.pullSecrets Redis(R) Exporter image pull secrets
   ##
   image:
-    registry: docker.io
-    repository: bitnami/redis-exporter
-    tag: 1.76.0-debian-12-r0
+    registry: ghcr.io
+    repository: sap/kubeapps/bitnami-deprecated-redis-exporter
+    tag: 1
     digest: ""
     pullPolicy: IfNotPresent
     ## Optionally specify an array of imagePullSecrets.
