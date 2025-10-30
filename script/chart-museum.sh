@@ -11,6 +11,7 @@ CHARTMUSEUM_NS=${CHARTMUSEUM_NS:-"chart-museum"}
 CHARTMUSEUM_VERSION=${CHARTMUSEUM_VERSION:-"3.9.1"}
 CHARTMUSEUM_HOSTNAME=${CHARTMUSEUM_HOSTNAME:-"chart-museum"}
 CHARTMUSEUM_IP=${LOAD_BALANCER_IP}
+ROOT_DIR="${ROOT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." >/dev/null && pwd)}"
 
 # Pull a Bitnami chart to a local TGZ file
 # Arguments:
@@ -28,13 +29,29 @@ pullBitnamiChart() {
 
   local CHART_NAME=$1
   local CHART_VERSION=$2
+  local LOCAL_SRC_DIR="${ROOT_DIR}/external/charts/${CHART_NAME}"
 
-  echo "Pulling Bitnami chart ${CHART_NAME} v${CHART_VERSION} to local"
+  echo "Staging local chart '${CHART_NAME}' v${CHART_VERSION} from ${LOCAL_SRC_DIR}"
+
+  if [ ! -d "${LOCAL_SRC_DIR}" ]; then
+    echo "ERROR: Expected local chart directory '${LOCAL_SRC_DIR}' not found. Place the chart under external/charts/${CHART_NAME}." >&2
+    exit 1
+  fi
 
   CHART_FILE="${CHART_NAME}-${CHART_VERSION}.tgz"
-  CHART_URL="https://charts.bitnami.com/bitnami/${CHART_FILE}"
-  echo ">> Storing locally ${CHART_NAME}-${CHART_VERSION} chart from URL $CHART_URL"
-  curl -LO "${CHART_URL}"
+  rm -rf "./${CHART_NAME}-${CHART_VERSION}" "${CHART_FILE}" 2>/dev/null || true
+  mkdir -p "./${CHART_NAME}-${CHART_VERSION}"
+  cp -R "${LOCAL_SRC_DIR}" "./${CHART_NAME}-${CHART_VERSION}/${CHART_NAME}"
+
+  local STAGED_CHART_YAML="./${CHART_NAME}-${CHART_VERSION}/${CHART_NAME}/Chart.yaml"
+  if [ -f "${STAGED_CHART_YAML}" ]; then
+    if ! sed -i "s/^version:.*/version: ${CHART_VERSION}/" "${STAGED_CHART_YAML}" 2>/dev/null; then sed -i '' "s/^version:.*/version: ${CHART_VERSION}/" "${STAGED_CHART_YAML}"; fi
+  else
+    echo "WARNING: ${STAGED_CHART_YAML} not found; helm package may fail." >&2
+  fi
+
+  tar -czf "${CHART_FILE}" -C "./${CHART_NAME}-${CHART_VERSION}" "${CHART_NAME}"
+  echo ">> Created local chart archive ${CHART_FILE} (source: ${LOCAL_SRC_DIR})"
 }
 
 # Delete chart from ChartsMuseum
