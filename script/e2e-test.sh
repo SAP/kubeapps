@@ -489,10 +489,11 @@ GLOBAL_REPOS_NS=kubeapps-repos-global
 
 if [[ -n "${TEST_UPGRADE:-}" ]]; then
   # To test the upgrade, first install the latest version published
+  # TODO: Replace current call of "${ROOT_DIR}/chart/kubeapps" with prev code but pulling the helm chart from sap github
   info "Installing latest Kubeapps chart available"
-  installOrUpgradeKubeapps bitnami/kubeapps \
-    "--set" "apprepository.initialRepos={}" \
-    "--set" "global.security.allowInsecureImages=true"
+  # installOrUpgradeKubeapps bitnami/kubeapps "--set" "apprepository.initialRepos={}" "--set" "global.security.allowInsecureImages=true"
+
+  installOrUpgradeKubeapps "${ROOT_DIR}/chart/kubeapps"
 
   info "Waiting for Kubeapps components to be ready (bitnami chart)..."
   k8s_wait_for_deployment kubeapps kubeapps-ci
