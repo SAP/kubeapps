@@ -29,19 +29,21 @@ pullBitnamiChart() {
 
   local CHART_NAME=$1
   local CHART_VERSION=$2
-  local LOCAL_SRC_DIR="${ROOT_DIR}/external/charts/${CHART_NAME}"
+  # Updated: use version-specific source directory
+  local LOCAL_SRC_DIR="${ROOT_DIR}/external/charts/${CHART_NAME}/${CHART_VERSION}"
 
   echo "Staging local chart '${CHART_NAME}' v${CHART_VERSION} from ${LOCAL_SRC_DIR}"
 
   if [ ! -d "${LOCAL_SRC_DIR}" ]; then
-    echo "ERROR: Expected local chart directory '${LOCAL_SRC_DIR}' not found. Place the chart under external/charts/${CHART_NAME}." >&2
+    echo "ERROR: Expected local chart directory '${LOCAL_SRC_DIR}' not found. Place the chart under external/charts/${CHART_NAME}/${CHART_VERSION}." >&2
     exit 1
   fi
 
   CHART_FILE="${CHART_NAME}-${CHART_VERSION}.tgz"
   rm -rf "./${CHART_NAME}-${CHART_VERSION}" "${CHART_FILE}" 2>/dev/null || true
-  mkdir -p "./${CHART_NAME}-${CHART_VERSION}"
-  cp -R "${LOCAL_SRC_DIR}" "./${CHART_NAME}-${CHART_VERSION}/${CHART_NAME}"
+  mkdir -p "./${CHART_NAME}-${CHART_VERSION}/${CHART_NAME}"
+  # Copy contents of version directory (avoid nesting version folder inside chart dir)
+  cp -R "${LOCAL_SRC_DIR}/." "./${CHART_NAME}-${CHART_VERSION}/${CHART_NAME}/"
 
   local STAGED_CHART_YAML="./${CHART_NAME}-${CHART_VERSION}/${CHART_NAME}/Chart.yaml"
   if [ -f "${STAGED_CHART_YAML}" ]; then

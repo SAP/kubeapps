@@ -201,7 +201,8 @@ pushChart() {
   info "Adding ${chart}-${version} to ChartMuseum ..."
   pullBitnamiChart "${chart}" "${version}"
 
-  # Repackage chart with modified name/description
+  # Clean extraction dir (new) to avoid collision if same name left from earlier runs
+  rm -rf "./${chart}-${version}"
   mkdir "./${chart}-${version}"
   tar zxf "${chart}-${version}.tgz" -C "./${chart}-${version}"
 
