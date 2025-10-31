@@ -121,7 +121,6 @@ jobs:
           PR_SOURCE_REPO_NAME: ${{ github.event.pull_request.head.repo.full_name }}
         run: |
 
-          echo "Current GitHub Repo is ${GITHUB_REPOSITORY}" >> $GITHUB_OUTPUT
           if [[ "${GITHUB_REPOSITORY}" == "${KUBEAPPS_REPO}" ]]; then
             echo "img_prefix=${IMG_PREFIX}" >> $GITHUB_OUTPUT
           else
