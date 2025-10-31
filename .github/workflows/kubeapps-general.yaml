@@ -52,7 +52,7 @@ env:
   DEBUG_MODE: "false"
   SSH_KEY_KUBEAPPS_DEPLOY_FILENAME: "id_rsa_kubeapps_deploy_key"
   SSH_KEY_FORKED_CHARTS_DEPLOY_FILENAME: "id_rsa_forked_charts_deploy_key"
-  KUBEAPPS_REPO: "vmware-tanzu/kubeapps"
+  KUBEAPPS_REPO: "sap/kubeapps"
   BRANCH_KUBEAPPS_REPO: "main"
   README_GENERATOR_REPO: "bitnami-labs/readme-generator-for-helm"
   DOCKER_REGISTRY_VERSION: "2.8.3"
