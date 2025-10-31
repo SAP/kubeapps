@@ -73,7 +73,7 @@ env:
   IMG_DEV_TAG: "build-${{ github.sha }}"
   # Apart from using a dev tag we use a different image ID to avoid polluting the tag history of the production tag
   IMG_MODIFIER: "-ci"
-  IMG_PREFIX: "kubeapps/"
+  IMG_PREFIX: "ghcr.io/SAP/kubeapps/"
   # We use IMG_PREFIX_FOR_FORKS for development purposes, it's used when the workflow is run from a fork of the kubeapps repo
   IMG_PREFIX_FOR_FORKS: "your-dockerhub-username/"
   # Currently, we only build the images for linux/amd64 because building cross-platform images is extremely slow...
