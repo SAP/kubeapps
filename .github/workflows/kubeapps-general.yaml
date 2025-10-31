@@ -73,7 +73,7 @@ env:
   IMG_DEV_TAG: "build-${{ github.sha }}"
   # Apart from using a dev tag we use a different image ID to avoid polluting the tag history of the production tag
   IMG_MODIFIER: "-ci"
-  IMG_PREFIX: "ghcr.io/SAP/kubeapps/"
+  IMG_PREFIX: "kubeapps/"
   # We use IMG_PREFIX_FOR_FORKS for development purposes, it's used when the workflow is run from a fork of the kubeapps repo
   IMG_PREFIX_FOR_FORKS: "your-dockerhub-username/"
   # Currently, we only build the images for linux/amd64 because building cross-platform images is extremely slow...
@@ -410,9 +410,9 @@ jobs:
           name: ${{steps.setup.outputs.img_name}}-image
           path: ${{ steps.setup.outputs.img_file }}
 
-  # Push images to docker.io/kubeapps/[image]-ci:[dev-tag]
+  # Push images to ghcr.io/sap/[image]-ci:[dev-tag]
   push_dev_images:
-    # If the workflow is triggered from a PR from an external fork, secrets won't be available, so we cannot log into dockerhub
+    # If the workflow is triggered from a PR from an external fork, secrets won't be available, so we cannot log into ghcr
     if: needs.setup.outputs.triggered_from_fork == 'false'
     runs-on: ubuntu-latest
     needs:
@@ -423,6 +423,9 @@ jobs:
     env:
       ADDITIONAL_IMAGES_TO_PUSH: integration-tests
       IMG_PREFIX: ${{ needs.setup.outputs.img_prefix }}
+      IMG_MODIFIER: ${{ needs.setup.outputs.img_modifier }}
+      IMG_DEV_TAG: ${{ needs.setup.outputs.img_dev_tag }}
+      GHCR_PREFIX: "ghcr.io/sap/"
     steps:
       - run: echo "IMAGES_TO_PUSH=\"${IMAGES_TO_PUSH} ${ADDITIONAL_IMAGES_TO_PUSH}\"" >> $GITHUB_ENV
       - name: Login to GitHub Container Registry (ghcr.io)
@@ -433,7 +436,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Download built images
         uses: actions/download-artifact@v5
-      - name: Load and push images
+      - name: Load, retag and push images
         run: |
           set -eu
           for artifact in *; do
@@ -453,11 +456,17 @@ jobs:
             echo "::notice ::Loading image ${image}"
             docker load --input "${artifact}/${artifact}.tar"
 
-            docker images | head -n 100
-  
-            dev_image=${IMG_PREFIX}${image}${IMG_MODIFIER}:${IMG_DEV_TAG}
-            echo "::notice ::Pushing image ${dev_image}"
-            docker push $dev_image
+            # Original image tag (as built)
+            original_image=${IMG_PREFIX}${image}${IMG_MODIFIER}:${IMG_DEV_TAG}
+
+            # New image tag for ghcr.io/sap/ (preserving the full original structure)
+            ghcr_image=${GHCR_PREFIX}${IMG_PREFIX}${image}${IMG_MODIFIER}:${IMG_DEV_TAG}
+
+            echo "::notice ::Retagging image from ${original_image} to ${ghcr_image}"
+            docker tag ${original_image} ${ghcr_image}
+
+            echo "::notice ::Pushing image ${ghcr_image}"
+            docker push ${ghcr_image}
           done
 
   local_e2e_tests:
