@@ -3,6 +3,11 @@
 
 ---
 name: General
+
+permissions:
+  contents: read
+  packages: write
+
 on:
   workflow_call:
     inputs:
