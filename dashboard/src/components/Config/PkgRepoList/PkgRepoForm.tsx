@@ -650,16 +650,6 @@ export function PkgRepoForm(props: IPkgRepoFormProps) {
         setIsNamespaceScoped(true);
         break;
       }
-      case PluginNames.PACKAGES_KAPP:
-        if (!type) {
-          setType(RepositoryStorageTypes.PACKAGE_REPOSITORY_STORAGE_CARVEL_IMGPKGBUNDLE);
-        }
-
-        // update the isNampespaced field based on the plugin
-        setIsNamespaceScoped(
-          !isGlobalNamespace(namespace, PluginNames.PACKAGES_KAPP, currentNsConfig),
-        );
-        break;
     }
   };
   const handleRepoScopeChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
@@ -910,24 +900,6 @@ export function PkgRepoForm(props: IPkgRepoFormProps) {
                       required={true}
                     />
                   </CdsRadio>
-                  <CdsRadio>
-                    <label htmlFor="kubeapps-plugin-kappcontroller">
-                      {getPluginPackageName(PluginNames.PACKAGES_KAPP, true)}
-                    </label>
-                    <input
-                      id="kubeapps-plugin-kappcontroller"
-                      type="radio"
-                      name="plugin"
-                      value={PluginNames.PACKAGES_KAPP || ""}
-                      checked={plugin?.name === PluginNames.PACKAGES_KAPP}
-                      onChange={handlePluginRadioButtonChange}
-                      disabled={
-                        !!repo.packageRepoRef?.plugin ||
-                        !configuredPluginsNames.includes(PluginNames.PACKAGES_KAPP)
-                      }
-                      required={true}
-                    />
-                  </CdsRadio>
                 </CdsRadioGroup>
                 {plugin?.name && (
                   <>
@@ -1035,102 +1007,6 @@ export function PkgRepoForm(props: IPkgRepoFormProps) {
                               required={(
                                 [PluginNames.PACKAGES_HELM, PluginNames.PACKAGES_FLUX] as string[]
                               ).includes(plugin?.name)}
-                            />
-                          </CdsRadio>
-                        </>
-                      )}
-                      {plugin?.name === PluginNames.PACKAGES_KAPP && (
-                        <>
-                          <CdsRadio>
-                            <label htmlFor="kubeapps-repo-type-imgpkgbundle">Imgpkg Bundle</label>
-                            <input
-                              id="kubeapps-repo-type-imgpkgbundle"
-                              type="radio"
-                              name="type"
-                              disabled={!!repo?.type}
-                              value={
-                                RepositoryStorageTypes.PACKAGE_REPOSITORY_STORAGE_CARVEL_IMGPKGBUNDLE ||
-                                ""
-                              }
-                              checked={
-                                type ===
-                                RepositoryStorageTypes.PACKAGE_REPOSITORY_STORAGE_CARVEL_IMGPKGBUNDLE
-                              }
-                              onChange={handleTypeRadioButtonChange}
-                              required={plugin?.name === PluginNames.PACKAGES_KAPP}
-                            />
-                          </CdsRadio>
-                          <CdsRadio>
-                            <label htmlFor="kubeapps-repo-type-image">Image</label>
-                            <input
-                              id="kubeapps-repo-type-image"
-                              type="radio"
-                              name="type"
-                              disabled={!!repo?.type}
-                              value={
-                                RepositoryStorageTypes.PACKAGE_REPOSITORY_STORAGE_CARVEL_IMAGE || ""
-                              }
-                              checked={
-                                type ===
-                                RepositoryStorageTypes.PACKAGE_REPOSITORY_STORAGE_CARVEL_IMAGE
-                              }
-                              onChange={handleTypeRadioButtonChange}
-                              required={plugin?.name === PluginNames.PACKAGES_KAPP}
-                            />
-                          </CdsRadio>
-                          <CdsRadio>
-                            <label htmlFor="kubeapps-repo-type-http">HTTP</label>
-                            <input
-                              id="kubeapps-repo-type-http"
-                              type="radio"
-                              name="type"
-                              disabled={!!repo?.type}
-                              value={
-                                RepositoryStorageTypes.PACKAGE_REPOSITORY_STORAGE_CARVEL_HTTP || ""
-                              }
-                              checked={
-                                type ===
-                                RepositoryStorageTypes.PACKAGE_REPOSITORY_STORAGE_CARVEL_HTTP
-                              }
-                              onChange={handleTypeRadioButtonChange}
-                              required={plugin?.name === PluginNames.PACKAGES_KAPP}
-                            />
-                          </CdsRadio>
-                          <CdsRadio>
-                            <label htmlFor="kubeapps-repo-type-git">Git</label>
-                            <input
-                              id="kubeapps-repo-type-git"
-                              type="radio"
-                              name="type"
-                              disabled={!!repo?.type}
-                              value={
-                                RepositoryStorageTypes.PACKAGE_REPOSITORY_STORAGE_CARVEL_GIT || ""
-                              }
-                              checked={
-                                type ===
-                                RepositoryStorageTypes.PACKAGE_REPOSITORY_STORAGE_CARVEL_GIT
-                              }
-                              onChange={handleTypeRadioButtonChange}
-                              required={plugin?.name === PluginNames.PACKAGES_KAPP}
-                            />
-                          </CdsRadio>
-                          <CdsRadio>
-                            <label htmlFor="kubeapps-repo-type-inline">Inline</label>
-                            <input
-                              id="kubeapps-repo-type-inline"
-                              type="radio"
-                              name="type"
-                              disabled={true} // inline is always disabled for write
-                              value={
-                                RepositoryStorageTypes.PACKAGE_REPOSITORY_STORAGE_CARVEL_INLINE ||
-                                ""
-                              }
-                              checked={
-                                type ===
-                                RepositoryStorageTypes.PACKAGE_REPOSITORY_STORAGE_CARVEL_INLINE
-                              }
-                              onChange={handleTypeRadioButtonChange}
-                              required={plugin?.name === PluginNames.PACKAGES_KAPP}
                             />
                           </CdsRadio>
                         </>

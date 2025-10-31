@@ -53,7 +53,6 @@ const mockStore = configureMockStore([thunk]);
 let store: any;
 const plugin = { name: PluginNames.PACKAGES_HELM, version: "0.0.1" } as Plugin;
 const fluxPlugin = { name: PluginNames.PACKAGES_FLUX, version: "v1beta1" } as Plugin;
-const carvelPlugin = { name: PluginNames.PACKAGES_KAPP, version: "v1beta1" } as Plugin;
 
 const packageRepoRef = {
   identifier: "repo-abc",
@@ -533,23 +532,6 @@ describe("addRepo", () => {
         namespace: "my-namespace",
         isNamespaceScoped: false,
         plugin: fluxPlugin,
-      });
-    });
-
-    it("sets carvel repos as global if using the carvelGlobalNamespace", async () => {
-      await store.dispatch(
-        repoActions.addRepo({
-          ...pkgRepoFormData,
-          namespace: carvelGlobalNamespace,
-          isNamespaceScoped: false,
-          plugin: carvelPlugin as Plugin,
-        }),
-      );
-      expect(PackageRepositoriesService.addPackageRepository).toHaveBeenCalledWith("default", {
-        ...pkgRepoFormData,
-        namespace: carvelGlobalNamespace,
-        isNamespaceScoped: false,
-        plugin: carvelPlugin,
       });
     });
   });

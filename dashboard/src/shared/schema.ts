@@ -37,7 +37,9 @@ export function retrieveBasicFormParams(
       let examples = schemaProperty.examples;
       if (schemaExamples?.length > 0) {
         examples = schemaExamples?.map((item: any) =>
-          typeof item === "object" ? item?.[propertyKey]?.toString() ?? "" : item?.toString() ?? "",
+          typeof item === "object"
+            ? (item?.[propertyKey]?.toString() ?? "")
+            : (item?.toString() ?? ""),
         );
       }
 

@@ -13,8 +13,6 @@ toc:
         page: Get Started with Kubeapps
       - url: /tutorials/using-an-oidc-provider
         page: Using an OIDC provider
-      - url: /tutorials/managing-carvel-packages
-        page: Managing Carvel packages
       - url: /tutorials/managing-flux-packages
         page: Managing Flux packages
       - url: /tutorials/managing-package-repositories

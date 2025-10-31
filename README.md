@@ -1,8 +1,8 @@
 # <img src="site/content/docs/latest/img/logo.svg" width="40" align="left"/> Kubeapps
 
-[![Main Pipeline](https://github.com/vmware-tanzu/kubeapps/actions/workflows/kubeapps-main.yaml/badge.svg)](https://github.com/vmware-tanzu/kubeapps/actions/workflows/kubeapps-main.yaml)
-[![Full Integration Pipeline](https://github.com/vmware-tanzu/kubeapps/actions/workflows/kubeapps-full-integration.yaml/badge.svg)](https://github.com/vmware-tanzu/kubeapps/actions/workflows/kubeapps-full-integration.yaml)
-[![CodeQL](https://github.com/vmware-tanzu/kubeapps/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/vmware-tanzu/kubeapps/actions/workflows/codeql-scheduled.yml)
+[![Main Pipeline](https://github.com/SAP/kubeapps/actions/workflows/kubeapps-main.yaml/badge.svg)](https://github.com/SAP/kubeapps/actions/workflows/kubeapps-main.yaml)
+[![Full Integration Pipeline](https://github.com/SAP/kubeapps/actions/workflows/kubeapps-full-integration.yaml/badge.svg)](https://github.com/SAP/kubeapps/actions/workflows/kubeapps-full-integration.yaml)
+[![CodeQL](https://github.com/SAP/kubeapps/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/SAP/kubeapps/actions/workflows/codeql-scheduled.yml)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/7e0e2833-1d75-43f6-b006-632d359bb83b/deploy-status)](https://app.netlify.com/sites/kubeapps-dev/deploys)
 [![REUSE status](https://api.reuse.software/badge/github.com/SAP/kubeapps)](https://api.reuse.software/info/github.com/SAP/kubeapps)
 
@@ -15,12 +15,16 @@ Kubeapps is an in-cluster web-based application that enables users with a one-ti
 
 With Kubeapps you can:
 
-- Browse and deploy different packages like [Helm](https://github.com/helm/helm) charts, [Flux](https://fluxcd.io/) or [Carvel](https://carvel.dev/) packages from public or private repositories (including [VMware Marketplace™](https://marketplace.cloud.vmware.com) and [Bitnami Application Catalog](https://bitnami.com/application-catalog))
+- Browse and deploy different packages like [Helm](https://github.com/helm/helm) charts or [Flux](https://fluxcd.io/) managed Helm releases from public or private repositories (including [VMware Marketplace™](https://marketplace.cloud.vmware.com) and [Bitnami Application Catalog](https://bitnami.com/application-catalog))
 - Customize deployments through an intuitive user interface
 - Browse, upgrade and delete applications installed in the cluster
 - Browse and deploy [Kubernetes Operators](https://operatorhub.io/)
 - Secure authentication to Kubeapps using a [standalone OAuth2/OIDC provider](./site/content/docs/latest/tutorials/using-an-OIDC-provider.md) or [using Pinniped](./site/content/docs/latest/howto/OIDC/using-an-OIDC-provider-with-pinniped.md)
 - Secure authorization based on Kubernetes [Role-Based Access Control](./site/content/docs/latest/howto/access-control.md)
+
+> Note on Carvel: the Carvel/kapp_controller plugin has been removed
+>
+> We removed the Carvel (kapp_controller) plugin from this fork due to it not being actively maintained and causing issues. If you need Carvel support, you’re welcome to re-introduce the plugin by updating the Carvel-related code to the latest upstream APIs and committing to its ongoing maintenance (testing, docs, security updates). PRs are welcome.
 
 **_Note:_** Kubeapps 2.0 and onwards supports Helm 3 only. While only the Helm 3 API is supported, in most cases, charts made for Helm 2 will still work.
 

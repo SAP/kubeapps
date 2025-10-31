@@ -7,6 +7,11 @@ import { defaultStore, getStore, mountWrapper } from "shared/specs/mountWrapper"
 import { IStoreState } from "shared/types";
 import AdvancedDeploymentForm, { IAdvancedDeploymentForm } from "./AdvancedDeploymentForm";
 
+// Mock react-monaco-editor before any imports to prevent TypeScript decorator errors
+jest.mock("react-monaco-editor", () => ({
+  MonacoDiffEditor: () => <div data-testid="monaco-diff-editor" />,
+}));
+
 beforeEach(() => {
   // mock the window.matchMedia for selecting the theme
   Object.defineProperty(window, "matchMedia", {

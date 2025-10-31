@@ -26,7 +26,7 @@ test("Upgrades an application", async ({ page }) => {
   // Select an older version to be installed
   await page.waitForSelector('select[name="package-versions"]');
   const defaultVersion = await page.inputValue('select[name="package-versions"]');
-  await page.selectOption('select[name="package-versions"]', "8.6.2");
+  await page.selectOption('select[name="package-versions"]', "11.4.28");
   const olderVersion = await page.inputValue('select[name="package-versions"]');
   expect(defaultVersion).not.toBe(olderVersion);
 

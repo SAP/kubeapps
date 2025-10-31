@@ -55,7 +55,7 @@ test("Create a new private package repository successfully", async ({ page }) =>
 
   // Deploy package
   await page.click('cds-button:has-text("Deploy")');
-  await page.selectOption('select[name="package-versions"]', "8.6.2");
+  await page.selectOption('select[name="package-versions"]', "11.4.28");
   const releaseNameLocator = page.locator("#releaseName");
   await releaseNameLocator.waitFor();
   await expect(releaseNameLocator).toHaveText("");
@@ -64,7 +64,7 @@ test("Create a new private package repository successfully", async ({ page }) =>
   await releaseNameLocator.fill(appName);
 
   // Select version and deploy
-  await page.locator('select[name="package-versions"]').selectOption("8.6.2");
+  await page.locator('select[name="package-versions"]').selectOption("11.4.28");
   await page.locator('cds-button:has-text("Deploy")').click();
 
   // Assertions
@@ -90,15 +90,15 @@ test("Create a new private package repository successfully", async ({ page }) =>
   // Check first current installed version
   await page.waitForSelector('select[name="package-versions"]');
   const packageVersionValue = await page.inputValue('select[name="package-versions"]');
-  expect(packageVersionValue).toEqual("8.6.2");
+  expect(packageVersionValue).toEqual("11.4.28");
 
   // Select new version
-  await page.selectOption('select[name="package-versions"]', "8.6.3");
+  await page.selectOption('select[name="package-versions"]', "11.4.29");
 
   // Ensure that the new value is selected
   await page.waitForSelector('select[name="package-versions"]');
   const newPackageVersionValue = await page.inputValue('select[name="package-versions"]');
-  expect(newPackageVersionValue).toEqual("8.6.3");
+  expect(newPackageVersionValue).toEqual("11.4.29");
   await page.click('li:has-text("YAML editor")');
 
   // Use the built-in search function in monaco to find the text we are looking for
@@ -112,9 +112,9 @@ test("Create a new private package repository successfully", async ({ page }) =>
     .filter({ hasText: /^Find$/ })
     .nth(1)
     .click();
-  await page.getByPlaceholder("Find").fill("tag: 2.4.48");
+  await page.getByPlaceholder("Find").fill("tag: 2.50.1");
   await expect(page.locator(".values-editor div.modified")).toContainText(
-    "tag: 2.4.48-debian-10-r75",
+    "tag: 2.50.1-debian-12-r31",
   );
 
   // Deploy upgrade

@@ -53,17 +53,6 @@ it("renders a Flux subtitle", () => {
   expect(wrapper.text()).toContain("Helm Chart");
 });
 
-it("renders a Carvel subtitle", () => {
-  const wrapper = mount(
-    <PageHeader
-      {...defaultProps}
-      plugin={{ name: "kapp_controller.packages", version: "0.0.1" } as Plugin}
-    />,
-  );
-  expect(wrapper.find("img").prop("src")).toBe("carvel.svg");
-  expect(wrapper.text()).toContain("Carvel Package");
-});
-
 it("renders an Operator subtitle", () => {
   const wrapper = mount(<PageHeader {...defaultProps} operator={true} />);
   expect(wrapper.find("img").prop("src")).toBe("olm-icon.svg");

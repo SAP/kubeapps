@@ -3,7 +3,7 @@
 
 # syntax = docker/dockerfile:1
 
-FROM bitnami/golang:1.23.2 AS builder
+FROM ghcr.io/sap/kubeapps/bitnami-deprecated-golang:1.25-debian-12 AS builder
 WORKDIR /go/src/github.com/vmware-tanzu/kubeapps
 COPY go.mod go.sum ./
 ARG VERSION="devel"
@@ -13,13 +13,13 @@ ARG TARGETARCH
 ARG lint
 
 # https://github.com/bufbuild/buf/releases/
-ARG BUF_VERSION="1.45.0"
+ARG BUF_VERSION="1.57.2"
 
 # https://github.com/golangci/golangci-lint/releases
-ARG GOLANGCILINT_VERSION="1.61.0"
+ARG GOLANGCILINT_VERSION="2.5.0"
 
 # https://github.com/grpc-ecosystem/grpc-health-probe/releases/
-ARG GRPC_HEALTH_PROBE_VERSION="0.4.34"
+ARG GRPC_HEALTH_PROBE_VERSION="0.4.40"
 
 # Install lint tools
 RUN if [ ! -z ${lint:-} ]; then \
@@ -60,15 +60,6 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     -ldflags "-X github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/cmd.version=$VERSION" \
     ./cmd/kubeapps-apis
 
-# Build 'kapp-controller' plugin, version 'v1alpha1'
-RUN --mount=type=cache,target=/go/pkg/mod \
-    --mount=type=cache,target=/root/.cache/go-build \
-    GOPROXY="https://proxy.golang.org,direct" \
-    go build \
-    -ldflags "-X github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/cmd.version=$VERSION" \
-    -o /kapp-controller-packages-v1alpha1-plugin.so -buildmode=plugin \
-    ./cmd/kubeapps-apis/plugins/kapp_controller/packages/v1alpha1/*.go
-
 ## Build 'fluxv2' plugin, version 'v1alpha1'
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
@@ -101,7 +92,6 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 FROM bitnami/minideb:bookworm
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /go/src/github.com/vmware-tanzu/kubeapps/kubeapps-apis /kubeapps-apis
-COPY --from=builder /kapp-controller-packages-v1alpha1-plugin.so /plugins/kapp-controller-packages/
 COPY --from=builder /fluxv2-packages-v1alpha1-plugin.so /plugins/fluxv2-packages/
 COPY --from=builder /helm-packages-v1alpha1-plugin.so /plugins/helm-packages/
 COPY --from=builder /resources-v1alpha1-plugin.so /plugins/resources/

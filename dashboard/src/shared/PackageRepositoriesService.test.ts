@@ -21,14 +21,7 @@ import {
   ProxyOptions,
   RepositoryFilterRule,
 } from "gen/kubeappsapis/plugins/helm/packages/v1alpha1/helm_pb";
-import {
-  KappControllerPackageRepositoryCustomDetail,
-  PackageRepositoryFetch,
-  PackageRepositoryImgpkg,
-  VersionSelection,
-  VersionSelectionSemver,
-  VersionSelectionSemverPrereleases,
-} from "gen/kubeappsapis/plugins/kapp_controller/packages/v1alpha1/kapp_controller_pb";
+// Removed kapp_controller imports
 import KubeappsGrpcClient from "./KubeappsGrpcClient";
 import { PackageRepositoriesService } from "./PackageRepositoriesService";
 import { IPkgRepoFormData, PluginNames, RepositoryStorageTypes } from "./types";
@@ -65,25 +58,6 @@ const helmCustomDetail: HelmPackageRepositoryCustomDetail = new HelmPackageRepos
     runAsGroup: undefined,
     runAsNonRoot: undefined,
     runAsUser: undefined,
-  }),
-});
-
-const kappCustomDetail = new KappControllerPackageRepositoryCustomDetail({
-  fetch: new PackageRepositoryFetch({
-    imgpkgBundle: new PackageRepositoryImgpkg({
-      tagSelection: new VersionSelection({
-        semver: new VersionSelectionSemver({
-          constraints: ">= 1.0.0",
-          prereleases: new VersionSelectionSemverPrereleases({
-            identifiers: ["alpha", "beta"],
-          }),
-        }),
-      }),
-    }),
-    git: undefined,
-    http: undefined,
-    image: undefined,
-    inline: undefined,
   }),
 });
 
@@ -312,15 +286,6 @@ describe("buildEncodedCustomDetail encoding", () => {
     expect(encodedCustomDetail).toBe(undefined);
   });
 
-  it("returns encoded empty value if no custom details (kapp)", async () => {
-    const encodedCustomDetail = PackageRepositoriesService["buildEncodedCustomDetail"]({
-      ...pkgRepoFormData,
-      plugin: new Plugin({ name: PluginNames.PACKAGES_KAPP, version: "v1alpha1" }),
-      customDetail: undefined,
-    });
-    expect(encodedCustomDetail).toBe(undefined);
-  });
-
   it("encodes the custom details (helm)", async () => {
     const encodedCustomDetail = PackageRepositoriesService["buildEncodedCustomDetail"]({
       ...pkgRepoFormData,
@@ -334,18 +299,6 @@ describe("buildEncodedCustomDetail encoding", () => {
     expect(HelmPackageRepositoryCustomDetail.fromBinary(encodedCustomDetail!.value)).toStrictEqual(
       helmCustomDetail,
     );
-  });
-
-  it("encodes the custom details (kapp)", async () => {
-    const encodedCustomDetail = PackageRepositoriesService["buildEncodedCustomDetail"]({
-      ...pkgRepoFormData,
-      plugin: new Plugin({ name: PluginNames.PACKAGES_KAPP, version: "v1alpha1" }),
-      customDetail: kappCustomDetail,
-    });
-    expect(encodedCustomDetail?.typeUrl).toBe(
-      "kubeappsapis.plugins.kapp_controller.packages.v1alpha1.KappControllerPackageRepositoryCustomDetail",
-    );
-    expect(encodedCustomDetail?.value).toStrictEqual(kappCustomDetail);
   });
 
   it("getRepositoriesPermissions", async () => {

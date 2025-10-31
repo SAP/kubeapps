@@ -6,6 +6,7 @@ extends: default
 ignore: |
   #  Ignore folders
   **/chart/kubeapps/
+  **/external/charts/
   **/integration/charts/simplechart/
   **/integration/charts/simplechart-customvalues/
   **/integration/charts/simplechart-multicustomvalues/

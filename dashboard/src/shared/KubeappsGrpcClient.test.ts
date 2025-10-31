@@ -24,12 +24,10 @@ describe("kubeapps grpc client creation", () => {
     const kubeappsGrpcClient = new KubeappsGrpcClient();
     const packagesServiceClients = [
       kubeappsGrpcClient.getHelmPackagesServiceClientImpl(),
-      kubeappsGrpcClient.getKappControllerPackagesServiceClientImpl(),
       kubeappsGrpcClient.getFluxv2PackagesServiceClientImpl(),
     ];
     const repositoriesServiceClients = [
       kubeappsGrpcClient.getHelmRepositoriesServiceClientImpl(),
-      kubeappsGrpcClient.getKappControllerRepositoriesServiceClientImpl(),
       kubeappsGrpcClient.getFluxV2RepositoriesServiceClientImpl(),
     ];
     packagesServiceClients.every(sc => expect(sc).not.toBeNull());

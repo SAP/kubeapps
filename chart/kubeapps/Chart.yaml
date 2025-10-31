@@ -18,22 +18,22 @@ annotations:
     - name: kubeapps-pinniped-proxy
       image: docker.io/bitnami/kubeapps-pinniped-proxy:2.12.1-debian-12-r0
     - name: nginx
-      image: docker.io/bitnami/nginx:1.27.3-debian-12-r0
+      image: ghcr.io/sap/kubeapps/bitnami-deprecated-nginx:1.29.1
     - name: oauth2-proxy
-      image: docker.io/bitnami/oauth2-proxy:7.7.1-debian-12-r4
+      image: ghcr.io/sap/kubeapps/bitnami-deprecated-oauth2-proxy:7.12.0
 apiVersion: v2
 appVersion: DEVEL
 dependencies:
 - condition: packaging.flux.enabled
   name: redis
-  repository: oci://registry-1.docker.io/bitnamicharts
-  version: 20.x.x
+  repository: file://./charts/redis
+  version: 23.0.2
 - condition: packaging.helm.enabled
   name: postgresql
-  repository: oci://registry-1.docker.io/bitnamicharts
-  version: 16.x.x
+  repository: file://./charts/postgresql
+  version: 17.0.0
 - name: common
-  repository: oci://registry-1.docker.io/bitnamicharts
+  repository: file://./charts/common
   tags:
   - bitnami-common
   version: 2.x.x

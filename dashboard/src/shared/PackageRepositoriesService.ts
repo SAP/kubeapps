@@ -25,7 +25,6 @@ import {
   HelmPackageRepositoryCustomDetail,
   ProxyOptions,
 } from "gen/kubeappsapis/plugins/helm/packages/v1alpha1/helm_pb";
-import { KappControllerPackageRepositoryCustomDetail } from "gen/kubeappsapis/plugins/kapp_controller/packages/v1alpha1/kapp_controller_pb";
 import { FluxPackageRepositoryCustomDetail } from "gen/kubeappsapis/plugins/fluxv2/packages/v1alpha1/fluxv2_pb";
 import KubeappsGrpcClient from "./KubeappsGrpcClient";
 import { IPkgRepoFormData, PluginNames } from "./types";
@@ -328,11 +327,6 @@ export class PackageRepositoriesService {
           value: helmCustomDetail.toBinary(),
         } as Any;
       }
-      case PluginNames.PACKAGES_KAPP:
-        return {
-          typeUrl: KappControllerPackageRepositoryCustomDetail.typeName,
-          value: request.customDetail,
-        } as Any;
       case PluginNames.PACKAGES_FLUX:
         return {
           typeUrl: FluxPackageRepositoryCustomDetail.typeName,

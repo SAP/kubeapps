@@ -74,14 +74,7 @@ const availablePkgSummary2 = new AvailablePackageSummary({
   }),
 });
 
-const availablePkgSummary3 = new AvailablePackageSummary({
-  ...availablePkgSummary2,
-  availablePackageRef: new AvailablePackageReference({
-    identifier: "bar/bar2",
-    context: { cluster: "", namespace: "package-namespace" } as Context,
-    plugin: { name: PluginNames.PACKAGES_KAPP, version: "0.0.1" } as Plugin,
-  }),
-});
+// availablePkgSummary3 removed - was undefined after kapp-controller removal
 
 const csv = {
   metadata: {
@@ -136,7 +129,8 @@ const populatedState = {
   config: {
     ...defaultState.config,
     configuredPlugins: [
-      { name: PluginNames.PACKAGES_KAPP, version: "0.0.1" },
+      { name: PluginNames.PACKAGES_HELM, version: "0.0.1" },
+      { name: PluginNames.PACKAGES_FLUX, version: "0.0.1" },
       { name: "my.plugin", version: "0.0.1" },
     ],
   },
@@ -453,23 +447,6 @@ describe("filters by application type", () => {
     const wrapper = mountWrapper(
       getStore(populatedState),
       <MemoryRouter initialEntries={[routePathParam + "?Type=Operators"]}>
-        <Routes>
-          <Route path={routePath} element={<Catalog />} />
-        </Routes>
-      </MemoryRouter>,
-      false,
-    );
-    expect(wrapper.find(InfoCard)).toHaveLength(1);
-  });
-
-  it("filters a package type", () => {
-    const packages = {
-      ...defaultPackageState,
-      items: [availablePkgSummary1, availablePkgSummary2, availablePkgSummary3],
-    };
-    const wrapper = mountWrapper(
-      getStore({ ...populatedState, packages: packages } as IStoreState),
-      <MemoryRouter initialEntries={[routePathParam + "?Type=Packages&Plugin=Carvel%20Packages"]}>
         <Routes>
           <Route path={routePath} element={<Catalog />} />
         </Routes>

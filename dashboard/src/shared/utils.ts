@@ -6,7 +6,6 @@ import { proto3 } from "@bufbuild/protobuf";
 import { InstalledPackageStatus_StatusReason } from "gen/kubeappsapis/core/packages/v1alpha1/packages_pb";
 import { PackageRepositoryAuth_PackageRepositoryAuthType } from "gen/kubeappsapis/core/packages/v1alpha1/repositories_pb";
 import { Plugin } from "gen/kubeappsapis/core/plugins/v1alpha1/plugins_pb";
-import carvelIcon from "icons/carvel.svg";
 import fluxIcon from "icons/flux.svg";
 import helmIcon from "icons/helm.svg";
 import olmIcon from "icons/olm-icon.svg";
@@ -125,8 +124,6 @@ export function getPluginIcon(plugin?: Plugin | string) {
         return helmIcon;
       case PluginNames.PACKAGES_FLUX:
         return fluxIcon;
-      case PluginNames.PACKAGES_KAPP:
-        return carvelIcon;
       default:
         return placeholder;
     }
@@ -152,8 +149,6 @@ export function getPluginName(plugin?: Plugin | string) {
         return "Helm";
       case PluginNames.PACKAGES_FLUX:
         return "Flux";
-      case PluginNames.PACKAGES_KAPP:
-        return "Carvel";
       default:
         return plugin?.name;
     }
@@ -170,8 +165,6 @@ export function getPluginPackageName(plugin?: Plugin | PluginNames | string, plu
         return plural ? "Helm Charts" : "Helm Chart";
       case PluginNames.PACKAGES_FLUX:
         return plural ? "Helm Charts via Flux" : "Helm Chart via Flux";
-      case PluginNames.PACKAGES_KAPP:
-        return plural ? "Carvel Packages" : "Carvel Package";
       case "operator":
         return plural ? "Operators" : "Operator";
       default:
@@ -183,8 +176,6 @@ export function getPluginPackageName(plugin?: Plugin | PluginNames | string, plu
         return plural ? "Helm Charts" : "Helm Chart";
       case PluginNames.PACKAGES_FLUX:
         return plural ? "Helm Charts via Flux" : "Helm Chart via Flux";
-      case PluginNames.PACKAGES_KAPP:
-        return plural ? "Carvel Packages" : "Carvel Package";
       default:
         return `${plugin?.name ? plugin.name : "unknown"} ${plural ? "packages" : "package"}`;
     }
@@ -204,11 +195,6 @@ export function getPluginByName(pluginName: PluginNames | string) {
         name: PluginNames.PACKAGES_FLUX,
         version: "v1alpha1",
       } as Plugin;
-    case PluginNames.PACKAGES_KAPP:
-      return {
-        name: PluginNames.PACKAGES_KAPP,
-        version: "v1alpha1",
-      } as Plugin;
     default:
       return {
         name: "",
@@ -218,12 +204,12 @@ export function getPluginByName(pluginName: PluginNames | string) {
 }
 
 export function getPluginsAllowingSA(): string[] {
-  return [PluginNames.PACKAGES_FLUX, PluginNames.PACKAGES_KAPP];
+  return [PluginNames.PACKAGES_FLUX];
 }
 
 // getPluginsRequiringSA should return a subset of getPluginsAllowingSA
 export function getPluginsRequiringSA(): string[] {
-  return [PluginNames.PACKAGES_KAPP];
+  return [];
 }
 
 export function getPluginsSupportingRollback(): string[] {
@@ -269,41 +255,6 @@ export function getSupportedPackageRepositoryAuthTypes(
             PackageRepositoryAuth_PackageRepositoryAuthType.TLS,
           ];
       }
-    case PluginNames.PACKAGES_KAPP:
-      // the available auth options in Carvel are type-specific
-      // extracted from https://github.com/vmware-tanzu/carvel-kapp-controller/blob/v0.40.0/pkg/apis/kappctrl/v1alpha1/types_fetch.go
-      // by looking for "Secret may include one"
-      // also see https://carvel.dev/kapp-controller/docs/v0.43.2/app-overview/#specfetch
-      switch (type) {
-        // "Secret with auth details. allowed keys: ssh-privatekey, ssh-knownhosts, username, password"
-        case RepositoryStorageTypes.PACKAGE_REPOSITORY_STORAGE_CARVEL_GIT:
-          return [
-            PackageRepositoryAuth_PackageRepositoryAuthType.BASIC_AUTH,
-            PackageRepositoryAuth_PackageRepositoryAuthType.SSH,
-          ];
-        // "Secret may include one or more keys: username, password"
-        case RepositoryStorageTypes.PACKAGE_REPOSITORY_STORAGE_CARVEL_HTTP:
-          return [PackageRepositoryAuth_PackageRepositoryAuthType.BASIC_AUTH];
-        // "Secret may include one or more keys: username, password, token"
-        case RepositoryStorageTypes.PACKAGE_REPOSITORY_STORAGE_CARVEL_IMAGE:
-          return [
-            PackageRepositoryAuth_PackageRepositoryAuthType.BASIC_AUTH,
-            PackageRepositoryAuth_PackageRepositoryAuthType.BEARER,
-            PackageRepositoryAuth_PackageRepositoryAuthType.DOCKER_CONFIG_JSON,
-          ];
-        // "Secret may include one or more keys: username, password, token"
-        case RepositoryStorageTypes.PACKAGE_REPOSITORY_STORAGE_CARVEL_IMGPKGBUNDLE:
-          return [
-            PackageRepositoryAuth_PackageRepositoryAuthType.BASIC_AUTH,
-            PackageRepositoryAuth_PackageRepositoryAuthType.BEARER,
-            PackageRepositoryAuth_PackageRepositoryAuthType.DOCKER_CONFIG_JSON,
-          ];
-        // inline is not supported for write
-        case RepositoryStorageTypes.PACKAGE_REPOSITORY_STORAGE_CARVEL_INLINE:
-          return [];
-        default:
-          return [];
-      }
     default:
       return [];
   }
@@ -321,8 +272,6 @@ export function isGlobalNamespace(namespace: string, pluginName: string, kubeapp
   switch (pluginName) {
     case PluginNames.PACKAGES_HELM:
       return namespace === kubeappsConfig.helmGlobalNamespace;
-    case PluginNames.PACKAGES_KAPP:
-      return namespace === kubeappsConfig.carvelGlobalNamespace;
     // Currently, Flux doesn't support global repositories
     case PluginNames.PACKAGES_FLUX:
       return false;
@@ -339,8 +288,6 @@ export function getGlobalNamespaceOrNamespace(
   switch (pluginName) {
     case PluginNames.PACKAGES_HELM:
       return kubeappsConfig.helmGlobalNamespace;
-    case PluginNames.PACKAGES_KAPP:
-      return kubeappsConfig.carvelGlobalNamespace;
     // Currently, Flux doesn't support global repositories, so returning the namespace so we have a value
     case PluginNames.PACKAGES_FLUX:
       return namespace;

@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 image:
-  repository: bitnami/nginx
-  tag: "latest"
+  repository: ghcr.io/sap/kubeapps/bitnami-deprecated-nginx
+  tag: "1.29.1"
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []

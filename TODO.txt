@@ -1,0 +1,10 @@
+# TODO
+
+## Migrate away from bitnami nginx image
+
+## Migrate away from bitnami postgres image
+
+## Fix github action deprecation info for nginx
+
+https://github.com/SAP/kubeapps/actions/workflows/release-bitnami-nginx.yml
+

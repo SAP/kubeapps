@@ -1,9 +1,8 @@
 # Copyright 2021-2023 the Kubeapps contributors.
 # SPDX-License-Identifier: Apache-2.0
 
-# Build the helm and kapp package plugins with the output in the devel directory.
+# Build the helm and flux package plugins with the output in the devel directory.
 build-plugins:
-	go build -o devel/kapp-controller-packages-v1alpha1-plugin.so -buildmode=plugin plugins/kapp_controller/packages/v1alpha1/*.go
 	go build -o devel/fluxv2-packages-v1alpha1-plugin.so -buildmode=plugin plugins/fluxv2/packages/v1alpha1/*.go
 	go build -o devel/helm-packages-v1alpha1-plugin.so -buildmode=plugin plugins/helm/packages/v1alpha1/*.go
 

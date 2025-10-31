@@ -237,7 +237,6 @@ it("disables unavailable plugins", async () => {
   });
   expect(wrapper.find("#kubeapps-plugin-helm").prop("disabled")).toBe(false);
   expect(wrapper.find("#kubeapps-plugin-fluxv2").prop("disabled")).toBe(true);
-  expect(wrapper.find("#kubeapps-plugin-kappcontroller").prop("disabled")).toBe(true);
 });
 
 it("should call the install method", async () => {

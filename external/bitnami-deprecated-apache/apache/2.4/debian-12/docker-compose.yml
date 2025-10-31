@@ -1,0 +1,8 @@
+# Copyright Broadcom, Inc. All Rights Reserved.
+# SPDX-License-Identifier: APACHE-2.0
+
+services:
+  apache:
+    image: docker.io/bitnami/apache:2.4-debian-12
+    ports:
+      - '80:8080'

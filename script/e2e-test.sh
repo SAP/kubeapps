@@ -34,7 +34,19 @@ KAPP_CONTROLLER_VERSION=${KAPP_CONTROLLER_VERSION:-"v0.42.0"}
 CHARTMUSEUM_VERSION=${CHARTMUSEUM_VERSION:-"3.9.1"}
 FLUX_VERSION=${FLUX_VERSION:-"v2.2.3"}
 GKE_VERSION=${GKE_VERSION:-}
-IMG_PREFIX=${IMG_PREFIX:-"kubeapps/"}
+
+# IMG_PREFIX default previously pointed to Docker Hub:
+# IMG_PREFIX=${IMG_PREFIX:-"kubeapps/"}
+# Switch to GitHub Container Registry by default. Allow override via IMG_PREFIX.
+GHCR_OWNER=${GHCR_OWNER:-${GITHUB_REPOSITORY_OWNER:-your-ghcr-owner}}
+# Normalize owner to lowercase for GHCR
+GHCR_OWNER=$(echo "$GHCR_OWNER" | tr '[:upper:]' '[:lower:]')
+IMG_PREFIX=${IMG_PREFIX:-"ghcr.io/${GHCR_OWNER}/kubeapps/"}
+
+# Added explicit versions for deprecated images (override via env if needed)
+NGINX_VERSION=${NGINX_VERSION:-"1.29.1"}
+AUTH_PROXY_VERSION=${AUTH_PROXY_VERSION:-"7.12.0"}
+
 TESTS_GROUP=${TESTS_GROUP:-"${ALL_TESTS}"}
 DEBUG_MODE=${DEBUG_MODE:-false}
 TEST_LATEST_RELEASE=${TEST_LATEST_RELEASE:-false}
@@ -189,20 +201,37 @@ pushChart() {
   info "Adding ${chart}-${version} to ChartMuseum ..."
   pullBitnamiChart "${chart}" "${version}"
 
-  # Mutate the chart name and description, then re-package the tarball
-  # For instance, the apache's Chart.yaml file becomes modified to:
-  #   name: kubeapps-apache
-  #   description: foo apache chart for CI
-  # consequently, the new packaged chart is "${prefix}${chart}-${version}.tgz"
-  # This workaround should mitigate https://github.com/vmware-tanzu/kubeapps/issues/3339
+  # Clean extraction dir (new) to avoid collision if same name left from earlier runs
+  rm -rf "./${chart}-${version}"
   mkdir "./${chart}-${version}"
   tar zxf "${chart}-${version}.tgz" -C "./${chart}-${version}"
-  # this relies on GNU sed, which is not the default on MacOS
-  # ref https://gist.github.com/andre3k1/e3a1a7133fded5de5a9ee99c87c6fa0d
-  sed -i "s/name: ${chart}/name: ${prefix}${chart}/" "./${chart}-${version}/${chart}/Chart.yaml"
-  sed -i "0,/^\([[:space:]]*description: *\).*/s//\1${description}/" "./${chart}-${version}/${chart}/Chart.yaml"
-  helm package "./${chart}-${version}/${chart}" -d .
 
+  # Portable sed wrapper (GNU + BSD/macOS)
+  sed_inplace() {
+    local expr=$1 file=$2
+    if ! sed -i "${expr}" "${file}" 2>/dev/null; then
+      sed -i '' "${expr}" "${file}"
+    fi
+  }
+
+  sed_inplace "s/name: ${chart}/name: ${prefix}${chart}/" "./${chart}-${version}/${chart}/Chart.yaml"
+  sed_inplace "0,/^\([[:space:]]*description: *\).*/s//\1${description}/" "./${chart}-${version}/${chart}/Chart.yaml"
+
+  local values_path="./${chart}-${version}/${chart}/values.yaml"
+
+  # Ensure allowInsecureImages=true (flip existing or inject). Avoid duplicate blocks.
+  if grep -qE '^[[:space:]]*allowInsecureImages:' "${values_path}"; then
+    # Preserve original indentation while forcing value to true.
+    sed_inplace 's/^\([[:space:]]*\)allowInsecureImages:.*/\1allowInsecureImages: true/' "${values_path}"
+  else
+    if grep -q '^global:' "${values_path}"; then
+      awk 'BEGIN{done=0} {print; if(!done && /^global:/){print "  security:\n    allowInsecureImages: true"; done=1}}' "${values_path}" > "${values_path}.tmp" && mv "${values_path}.tmp" "${values_path}"
+    else
+      printf "\n# e2e override\nglobal:\n  security:\n    allowInsecureImages: true\n" >> "${values_path}"
+    fi
+  fi
+
+  helm package "./${chart}-${version}/${chart}" -d .
   pushChartToChartMuseum "${chart}" "${version}" "${prefix}${chart}-${version}.tgz"
 }
 
@@ -216,7 +245,7 @@ pushChart() {
 installKappController() {
   local release=$1
   info "Installing kapp-controller ${release} ..."
-  url="https://github.com/vmware-tanzu/carvel-kapp-controller/releases/download/${release}/release.yml"
+  url="https://github.com/carvel-dev/kapp-controller/releases/download/${release}/release.yml"
   namespace=kapp-controller
 
   kubectl apply -f "${url}"
@@ -302,10 +331,23 @@ installOrUpgradeKubeapps() {
   info "Installing Kubeapps from ${chartSource}..."
   kubectl -n kubeapps delete secret localhost-tls || true
 
+  # Build optional PostgreSQL override flags if version provided
+  local postgresql_override_flags=()
+  if [[ -n "${POSTGRESQL_VERSION:-}" ]]; then
+    postgresql_override_flags+=("--set" "postgresql.image.registry=ghcr.io")
+    postgresql_override_flags+=("--set" "postgresql.image.repository=sap/kubeapps/bitnami-deprecated-postgresql")
+    postgresql_override_flags+=("--set" "postgresql.image.tag=${POSTGRESQL_VERSION}")
+    # exporter (metrics) override (harmless if metrics.enabled=false)
+    postgresql_override_flags+=("--set" "metrics.image.registry=ghcr.io")
+    postgresql_override_flags+=("--set" "metrics.image.repository=sap/kubeapps/bitnami-deprecated-postgres-exporter")
+    postgresql_override_flags+=("--set" "metrics.image.tag=0.17.1")
+  fi
+
   # See https://stackoverflow.com/a/36296000 for "${arr[@]+"${arr[@]}"}" notation.
   cmd=(helm upgrade --install kubeapps-ci --namespace kubeapps "${chartSource}"
     "${img_flags[@]}"
     "${multiclusterFlags[@]+"${multiclusterFlags[@]}"}"
+    "${postgresql_override_flags[@]+"${postgresql_override_flags[@]}"}"
     "${@:2}"
     --set frontend.replicaCount=1
     --set dashboard.replicaCount=1
@@ -322,7 +364,12 @@ installOrUpgradeKubeapps() {
     --set global.security.allowInsecureImages=true
     --wait)
 
-  echo "${cmd[@]}"
+  echo "Helm command:"; printf '%q ' "${cmd[@]}"; echo
+  if [[ -n "${POSTGRESQL_VERSION:-}" ]]; then
+    info "Overriding PostgreSQL image -> ghcr.io/sap/kubeapps/bitnami-deprecated-postgresql:${POSTGRESQL_VERSION}";
+  else
+    warn "POSTGRESQL_VERSION not set; using chart defaults (may pull docker.io images)."
+  fi
   "${cmd[@]}"
 }
 
@@ -387,6 +434,13 @@ img_flags=(
   "--set" "kubeappsapis.image.repository=${images[4]}"
   "--set" "ociCatalog.image.tag=${IMG_DEV_TAG}"
   "--set" "ociCatalog.image.repository=${images[5]}"
+  # Explicit overrides to ensure helm upgrade does not retain upstream bitnami nginx/oauth2-proxy images
+  "--set" "frontend.image.registry=ghcr.io"
+  "--set" "frontend.image.repository=sap/kubeapps/bitnami-deprecated-nginx"
+  "--set" "frontend.image.tag=${NGINX_VERSION}"
+  "--set" "authProxy.image.registry=ghcr.io"
+  "--set" "authProxy.image.repository=sap/kubeapps/bitnami-deprecated-oauth2-proxy"
+  "--set" "authProxy.image.tag=${AUTH_PROXY_VERSION}"
 )
 
 additional_flags_file=$(generateAdditionalValuesFile)
@@ -419,15 +473,27 @@ if [ "$USE_MULTICLUSTER_OIDC_ENV" = true ]; then
 fi
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
-helm dep up "${ROOT_DIR}/chart/kubeapps"
-kubectl create ns kubeapps
+# Skip helm dependency update to ensure we use local file:// subcharts (postgresql, redis, common) and not the remote locked versions
+# Previous Chart.lock referenced remote oci charts with older postgres image tags causing docker.io pulls.
+# If you need to refresh remote deps, set FORCE_REMOTE_DEPS=true before running.
+if [[ "${FORCE_REMOTE_DEPS:-false}" == "true" ]]; then
+  info "FORCE_REMOTE_DEPS=true -> running helm dependency update"
+  helm dep up "${ROOT_DIR}/chart/kubeapps"
+else
+  info "Skipping helm dependency update to keep local subcharts (postgresql/redis/common)."
+fi
+# kubectl create ns kubeapps
+kubectl get ns kubeapps >/dev/null 2>&1 || kubectl create ns kubeapps
+
 GLOBAL_REPOS_NS=kubeapps-repos-global
 
 if [[ -n "${TEST_UPGRADE:-}" ]]; then
   # To test the upgrade, first install the latest version published
+  # TODO: Replace current call of "${ROOT_DIR}/chart/kubeapps" with prev code but pulling the helm chart from sap github
   info "Installing latest Kubeapps chart available"
-  installOrUpgradeKubeapps bitnami/kubeapps \
-    "--set" "apprepository.initialRepos={}"
+  # installOrUpgradeKubeapps bitnami/kubeapps "--set" "apprepository.initialRepos={}" "--set" "global.security.allowInsecureImages=true"
+
+  installOrUpgradeKubeapps "${ROOT_DIR}/chart/kubeapps"
 
   info "Waiting for Kubeapps components to be ready (bitnami chart)..."
   k8s_wait_for_deployment kubeapps kubeapps-ci
@@ -435,8 +501,8 @@ fi
 
 # Install ChartMuseum
 installChartMuseum "${CHARTMUSEUM_VERSION}"
-pushChart apache 8.6.2
-pushChart apache 8.6.3
+pushChart apache 11.4.28
+pushChart apache 11.4.29
 
 # Install Kubeapps
 installOrUpgradeKubeapps "${ROOT_DIR}/chart/kubeapps"
@@ -598,6 +664,7 @@ getTestCommand() {
     ADMIN_TOKEN=${admin_token} \
     VIEW_TOKEN=${view_token} \
     EDIT_TOKEN=${edit_token} \
+    ALLOW_INSECURE_IMAGES=true \
     yarn test \"tests/${tests_group}/\"
     "
 }
@@ -768,15 +835,25 @@ if [[ -z "${GKE_VERSION-}" && ("${TESTS_GROUP}" == "${ALL_TESTS}" || "${TESTS_GR
 
   info "Updating Kubeapps to exclude Kubeapps cluster from the list of clusters"
 
-  # Update Kubeapps
   kubeappsChartPath="${ROOT_DIR}/chart/kubeapps"
   info "Installing Kubeapps from ${kubeappsChartPath}..."
   kubectl -n kubeapps delete secret localhost-tls || true
 
-  # See https://stackoverflow.com/a/36296000 for "${arr[@]+"${arr[@]}"}" notation.
+  # Apply PostgreSQL overrides here as well to avoid fallback to docker.io image
+  postgresql_override_flags=( )
+  if [[ -n "${POSTGRESQL_VERSION:-}" ]]; then
+    postgresql_override_flags+=("--set" "postgresql.image.registry=ghcr.io")
+    postgresql_override_flags+=("--set" "postgresql.image.repository=sap/kubeapps/bitnami-deprecated-postgresql")
+    postgresql_override_flags+=("--set" "postgresql.image.tag=${POSTGRESQL_VERSION}")
+    postgresql_override_flags+=("--set" "metrics.image.registry=ghcr.io")
+    postgresql_override_flags+=("--set" "metrics.image.repository=sap/kubeapps/bitnami-deprecated-postgres-exporter")
+    postgresql_override_flags+=("--set" "metrics.image.tag=0.17.1")
+  fi
+
   cmd=(helm upgrade --install kubeapps-ci --namespace kubeapps "${kubeappsChartPath}"
     "${img_flags[@]}"
     "${basicAuthFlags[@]+"${basicAuthFlags[@]}"}"
+    "${postgresql_override_flags[@]+"${postgresql_override_flags[@]}"}"
     --set clusters[0].name=second-cluster
     --set clusters[0].apiServiceURL=https://${ADDITIONAL_CLUSTER_IP}:6443
     --set clusters[0].insecure=true
@@ -797,7 +874,10 @@ if [[ -z "${GKE_VERSION-}" && ("${TESTS_GROUP}" == "${ALL_TESTS}" || "${TESTS_GR
     --set global.security.allowInsecureImages=true
     --wait)
 
-  echo "${cmd[@]}"
+  echo "Helm command (multi-cluster no kubeapps):"; printf '%q ' "${cmd[@]}"; echo
+  if [[ -n "${POSTGRESQL_VERSION:-}" ]]; then
+    info "PostgreSQL override active (multi-cluster no kubeapps): ghcr.io/sap/kubeapps/bitnami-deprecated-postgresql:${POSTGRESQL_VERSION}";
+  fi
   "${cmd[@]}"
 
   info "Waiting for updated Kubeapps components to be ready..."

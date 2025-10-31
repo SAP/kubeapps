@@ -216,9 +216,9 @@ frontend:
   ## @param frontend.image.debug Enable image debug mode
   ##
   image:
-    registry: docker.io
-    repository: bitnami/nginx
-    tag: 1.27.3-debian-12-r0
+    registry: ghcr.io
+    repository: sap/kubeapps/bitnami-deprecated-nginx
+    tag: 1.29.1
     digest: ""
     ## Specify a imagePullPolicy
     ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
@@ -1422,9 +1422,9 @@ authProxy:
   ## @param authProxy.image.pullSecrets OAuth2 Proxy image pull secrets
   ##
   image:
-    registry: docker.io
-    repository: bitnami/oauth2-proxy
-    tag: 7.7.1-debian-12-r4
+    registry: ghcr.io
+    repository: sap/kubeapps/bitnami-deprecated-oauth2-proxy
+    tag: 7.12.0
     digest: ""
     ## Specify a imagePullPolicy
     ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
