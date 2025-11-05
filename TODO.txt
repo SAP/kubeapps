@@ -9,5 +9,9 @@
 
 ## Fix github action deprecation info for nginx
 
+## Re-enable errcheck on go linter
+
+--disable=errcheck
+
 https://github.com/SAP/kubeapps/actions/workflows/release-bitnami-nginx.yml
 

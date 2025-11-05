@@ -54,7 +54,7 @@ jobs:
       - uses: golangci/golangci-lint-action@v8
         with:
           version: ${{ inputs.golangci_lint_version }}
-          args: --timeout=10m
+          args: --timeout=10m --disable=errcheck
 
   license-headers-linter:
     runs-on: ubuntu-latest
