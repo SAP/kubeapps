@@ -19,8 +19,6 @@ import (
 	"helm.sh/helm/v3/pkg/chart/loader"
 	corev1 "k8s.io/api/core/v1"
 	log "k8s.io/klog/v2"
-
-	k8scorev1 "k8s.io/api/core/v1"
 )
 
 // ChartDetails contains the information to retrieve a Chart
@@ -225,7 +223,7 @@ func (c *ChartClientFactory) New(tarballUrl string, userAgent string) ChartClien
 }
 
 // GetChart retrieves a chart
-func GetChart(chartDetails *ChartDetails, appRepo *appRepov1.AppRepository, caCertSecret *k8scorev1.Secret, authSecret *k8scorev1.Secret, chartClient ChartClient) (*chart.Chart, error) {
+func GetChart(chartDetails *ChartDetails, appRepo *appRepov1.AppRepository, caCertSecret *corev1.Secret, authSecret *corev1.Secret, chartClient ChartClient) (*chart.Chart, error) {
 	err := chartClient.Init(appRepo, caCertSecret, authSecret)
 	if err != nil {
 		return nil, err

@@ -476,10 +476,10 @@ func (s *Server) updateRepo(ctx context.Context, repoRef *corev1.PackageReposito
 		// following fixes for issue5746, the provider is allowed to be configured on update if not previously configured
 		if provider != "" && provider != "generic" {
 			if request.Msg.Auth != nil && request.Msg.Auth.Type != corev1.PackageRepositoryAuth_PACKAGE_REPOSITORY_AUTH_TYPE_UNSPECIFIED {
-				return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Auth provider cannot be configured in combination with another auth method"))
+				return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("auth provider cannot be configured in combination with another auth method"))
 			}
 			if repo.Spec.Provider != "" && repo.Spec.Provider != "generic" && repo.Spec.Provider != provider {
-				return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Auth provider cannot be changed."))
+				return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("auth provider cannot be changed"))
 			}
 			repo.Spec.Provider = provider
 		} else {

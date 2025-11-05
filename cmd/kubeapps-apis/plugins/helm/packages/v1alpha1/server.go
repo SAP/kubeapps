@@ -370,12 +370,12 @@ func (s *Server) GetAvailablePackageVersions(ctx context.Context, request *conne
 
 	namespace := request.Msg.GetAvailablePackageRef().GetContext().GetNamespace()
 	if namespace == "" || request.Msg.GetAvailablePackageRef().GetIdentifier() == "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Required context or identifier not provided"))
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("required context or identifier not provided"))
 	}
 	cluster := request.Msg.GetAvailablePackageRef().GetContext().GetCluster()
 	// Currently we support available packages on the kubeapps cluster only.
 	if cluster != "" && cluster != s.globalPackagingCluster {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Requests for versions of available packages on clusters other than %q not supported. Requested cluster was %q.", s.globalPackagingCluster, cluster))
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("requests for versions of available packages on clusters other than %q not supported. Requested cluster was %q", s.globalPackagingCluster, cluster))
 	}
 
 	// After requesting a specific namespace, we have to ensure the user can actually access to it
@@ -809,12 +809,12 @@ func (s *Server) UpdateInstalledPackage(ctx context.Context, request *connect.Re
 
 	availablePkgRef := detailResponse.Msg.GetInstalledPackageDetail().GetAvailablePackageRef()
 	if availablePkgRef == nil {
-		return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("Unable to find the available package used to deploy %q in the namespace %q.", releaseName, installedRef.GetContext().GetNamespace()))
+		return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("unable to find the available package used to deploy %q in the namespace %q", releaseName, installedRef.GetContext().GetNamespace()))
 	}
 
 	typedClient, err := s.clientGetter.Typed(request.Header(), s.globalPackagingCluster)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Unable to create kubernetes clientset: %w", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unable to create kubernetes clientset: %w", err))
 	}
 	chartID := availablePkgRef.GetIdentifier()
 	repoName, chartName, err := pkgutils.SplitPackageIdentifier(chartID)

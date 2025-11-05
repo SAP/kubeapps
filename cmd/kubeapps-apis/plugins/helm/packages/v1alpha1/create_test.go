@@ -131,7 +131,7 @@ func TestCreateInstalledPackage(t *testing.T) {
 
 			if tc.expectedRelease != nil {
 				// Verify the expected request was made to Helm (our contract to the helm lib).
-				releases, err := actionConfig.Releases.Driver.List(func(*release.Release) bool { return true })
+				releases, err := actionConfig.Releases.List(func(*release.Release) bool { return true })
 				if err != nil {
 					t.Fatalf("%+v", err)
 				}

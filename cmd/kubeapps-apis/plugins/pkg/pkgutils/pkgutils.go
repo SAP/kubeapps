@@ -76,7 +76,7 @@ func SortByPackageVersion(versions []models.ChartVersion) ([]*PackageSemVersion,
 		})
 	}
 	sort.Slice(sortedVersions, func(i, j int) bool {
-		return sortedVersions[i].Version.GreaterThan(sortedVersions[j].Version)
+		return sortedVersions[i].GreaterThan(sortedVersions[j].Version)
 	})
 	return sortedVersions, nil
 }
@@ -126,7 +126,7 @@ func PackageAppVersionsSummary(versions []models.ChartVersion, versionInSummary 
 
 		// Include the version and update the version map.
 		pav = append(pav, &corev1.PackageAppVersion{
-			PkgVersion: version.Version.String(),
+			PkgVersion: version.String(),
 			AppVersion: version.AppVersion,
 		})
 
