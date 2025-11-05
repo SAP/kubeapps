@@ -212,7 +212,7 @@ func unescapeOrDefaultValue(value string) string {
 	// https://github.com/vmware-tanzu/kubeapps/pull/3863#pullrequestreview-819141298
 	// and instance of the issue cropping up via Harbor at
 	// https://github.com/vmware-tanzu/kubeapps/issues/5897
-	value = strings.Replace(value, "%2F", "%252F", -1)
+	value = strings.ReplaceAll(value, "%2F", "%252F")
 	unescapedValue, err := url.PathUnescape(value)
 	if err != nil {
 		return value

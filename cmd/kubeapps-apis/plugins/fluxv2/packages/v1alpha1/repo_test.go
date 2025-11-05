@@ -2459,7 +2459,7 @@ func newRepo(name string, namespace string, spec *sourcev1beta2.HelmRepositorySp
 		},
 	}
 	if namespace != "" {
-		helmRepository.ObjectMeta.Namespace = namespace
+		helmRepository.Namespace = namespace
 	}
 
 	// Just FYI, if spec is not specified, the repo object will have a default one, e.g.

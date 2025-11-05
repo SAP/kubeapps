@@ -146,7 +146,7 @@ func NewClusterConfig(inClusterConfig *rest.Config, userToken string, cluster st
 
 	config.Host = clusterConfig.APIServiceURL
 	config.TLSClientConfig = rest.TLSClientConfig{}
-	config.TLSClientConfig.Insecure = clusterConfig.Insecure
+	config.Insecure = clusterConfig.Insecure
 	if clusterConfig.CertificateAuthorityDataDecoded != "" {
 		config.CAData = []byte(clusterConfig.CertificateAuthorityDataDecoded)
 		config.CAFile = clusterConfig.CAFile

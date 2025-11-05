@@ -259,7 +259,7 @@ func TestTransientHttpFailuresAreRetriedForChartCache(t *testing.T) {
 				if !nofail && failuresAllowed > 0 {
 					failuresAllowed--
 					w.WriteHeader(503)
-					_, err = w.Write([]byte(fmt.Sprintf("The server is not ready to handle the request: [%d try left before OK]", failuresAllowed)))
+					_, err = fmt.Fprintf(w, "The server is not ready to handle the request: [%d try left before OK]", failuresAllowed)
 					if err != nil {
 						t.Fatalf("%+v", err)
 					}
@@ -966,15 +966,16 @@ func TestChartWithRelativeURL(t *testing.T) {
 	}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.RequestURI == "/index.yaml" {
+		switch r.RequestURI {
+		case "/index.yaml":
 			fmt.Fprintln(w, string(indexYAMLBytes))
-		} else if r.RequestURI == "/charts/airflow-1.0.0.tgz" {
+		case "/charts/airflow-1.0.0.tgz":
 			w.WriteHeader(200)
 			_, err = w.Write(tarGzBytes)
 			if err != nil {
 				t.Fatalf("%+v", err)
 			}
-		} else {
+		default:
 			w.WriteHeader(404)
 		}
 	}))
@@ -1137,7 +1138,7 @@ func newChart(name, namespace string, spec *sourcev1beta2.HelmChartSpec, status 
 		},
 	}
 	if namespace != "" {
-		helmChart.ObjectMeta.Namespace = namespace
+		helmChart.Namespace = namespace
 	}
 
 	if spec != nil {

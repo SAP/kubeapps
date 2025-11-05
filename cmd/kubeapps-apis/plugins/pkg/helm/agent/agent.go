@@ -169,7 +169,7 @@ func NewConfigFlagsFromCluster(namespace string, clusterConfig *rest.Config) gen
 
 	// CertFile and KeyFile must be nil for the BearerToken to be used for authentication and authorization instead of the pod's service account.
 	configFlags := &genericclioptions.ConfigFlags{
-		Insecure:         &clusterConfig.TLSClientConfig.Insecure,
+		Insecure:         &clusterConfig.Insecure,
 		Timeout:          stringptr("0"),
 		Namespace:        stringptr(namespace),
 		APIServer:        stringptr(clusterConfig.Host),

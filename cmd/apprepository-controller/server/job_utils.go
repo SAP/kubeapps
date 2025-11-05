@@ -298,10 +298,10 @@ func jobLabels(apprepo *apprepov1alpha1.AppRepository, config Config) map[string
 // kubeapps namespace, then the secret will have been copied from another namespace
 // into the kubeapps namespace and have a slightly different name.
 func secretKeyRefForRepo(keyRef corev1.SecretKeySelector, apprepo *apprepov1alpha1.AppRepository, config Config) *corev1.SecretKeySelector {
-	if apprepo.ObjectMeta.Namespace == config.KubeappsNamespace {
+	if apprepo.Namespace == config.KubeappsNamespace {
 		return &keyRef
 	}
-	keyRef.LocalObjectReference.Name = helm.SecretNameForNamespacedRepo(apprepo.ObjectMeta.Name, apprepo.ObjectMeta.Namespace)
+	keyRef.Name = helm.SecretNameForNamespacedRepo(apprepo.Name, apprepo.Namespace)
 	return &keyRef
 }
 

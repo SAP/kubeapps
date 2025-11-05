@@ -15,8 +15,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	pkgsGRPCv1alpha1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
 	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/plugins/resources/v1alpha1"
-	core "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -101,7 +100,7 @@ func TestCreateSecret(t *testing.T) {
 			fakeClient := typfake.NewSimpleClientset(tc.existingObjects...)
 			if tc.k8sError != nil {
 				fakeClient.CoreV1().(*fakecorev1.FakeCoreV1).PrependReactor("create", "secrets", func(action clientGoTesting.Action) (handled bool, ret runtime.Object, err error) {
-					return true, &v1.Secret{}, tc.k8sError
+					return true, &corev1.Secret{}, tc.k8sError
 				})
 			}
 			s := Server{
@@ -158,7 +157,7 @@ func TestGetSecretNames(t *testing.T) {
 				},
 			},
 			existingObjects: []runtime.Object{
-				&core.Secret{
+				&corev1.Secret{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Namespace",
 						APIVersion: "v1",
@@ -167,12 +166,12 @@ func TestGetSecretNames(t *testing.T) {
 						Name:      "secret-1",
 						Namespace: "default",
 					},
-					Type: core.SecretTypeOpaque,
+					Type: corev1.SecretTypeOpaque,
 					StringData: map[string]string{
 						"ignored": "we don't use it",
 					},
 				},
-				&core.Secret{
+				&corev1.Secret{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Namespace",
 						APIVersion: "v1",
@@ -181,9 +180,9 @@ func TestGetSecretNames(t *testing.T) {
 						Name:      "secret-2",
 						Namespace: "default",
 					},
-					Type: core.SecretTypeDockerConfigJson,
+					Type: corev1.SecretTypeDockerConfigJson,
 				},
-				&core.Secret{
+				&corev1.Secret{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Namespace",
 						APIVersion: "v1",
@@ -192,7 +191,7 @@ func TestGetSecretNames(t *testing.T) {
 						Name:      "secret-other-namespace",
 						Namespace: "other-namespace",
 					},
-					Type: core.SecretTypeDockerConfigJson,
+					Type: corev1.SecretTypeDockerConfigJson,
 				},
 			},
 			expectedResponse: &v1alpha1.GetSecretNamesResponse{
@@ -235,7 +234,7 @@ func TestGetSecretNames(t *testing.T) {
 			fakeClient := typfake.NewSimpleClientset(tc.existingObjects...)
 			if tc.k8sError != nil {
 				fakeClient.CoreV1().(*fakecorev1.FakeCoreV1).PrependReactor("list", "secrets", func(action clientGoTesting.Action) (handled bool, ret runtime.Object, err error) {
-					return true, &v1.SecretList{}, tc.k8sError
+					return true, &corev1.SecretList{}, tc.k8sError
 				})
 			}
 			s := Server{

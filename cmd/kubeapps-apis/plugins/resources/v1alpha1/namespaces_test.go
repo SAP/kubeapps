@@ -23,8 +23,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	pkgsGRPCv1alpha1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
 	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/plugins/resources/v1alpha1"
-	core "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -57,7 +56,7 @@ func TestCheckNamespaceExists(t *testing.T) {
 				},
 			},
 			existingObjects: []runtime.Object{
-				&core.Namespace{
+				&corev1.Namespace{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Namespace",
 						APIVersion: "v1",
@@ -116,7 +115,7 @@ func TestCheckNamespaceExists(t *testing.T) {
 			fakeClient := typfake.NewSimpleClientset(tc.existingObjects...)
 			if tc.k8sError != nil {
 				fakeClient.CoreV1().(*fakecorev1.FakeCoreV1).PrependReactor("get", "namespaces", func(action clientGoTesting.Action) (handled bool, ret runtime.Object, err error) {
-					return true, &v1.Namespace{}, tc.k8sError
+					return true, &corev1.Namespace{}, tc.k8sError
 				})
 			}
 			s := Server{
@@ -168,7 +167,7 @@ func TestCreateNamespace(t *testing.T) {
 			expectedResponse: emptyResponse,
 			validator: func(action clientGoTesting.Action) (handled bool, ret runtime.Object, err error) {
 				createAction := action.(clientGoTesting.CreateActionImpl)
-				createNamespace := createAction.GetObject().(*v1.Namespace)
+				createNamespace := createAction.GetObject().(*corev1.Namespace)
 				assert.Nil(t, createNamespace.ObjectMeta.Labels)
 				return false, nil, err
 			},
@@ -188,7 +187,7 @@ func TestCreateNamespace(t *testing.T) {
 			expectedResponse: emptyResponse,
 			validator: func(action clientGoTesting.Action) (handled bool, ret runtime.Object, err error) {
 				createAction := action.(clientGoTesting.CreateActionImpl)
-				createNamespace := createAction.GetObject().(*v1.Namespace)
+				createNamespace := createAction.GetObject().(*corev1.Namespace)
 				assert.Contains(t, createNamespace.ObjectMeta.Labels, "label1")
 				assert.Contains(t, createNamespace.ObjectMeta.Labels, "label2")
 				return false, nil, err
@@ -241,7 +240,7 @@ func TestCreateNamespace(t *testing.T) {
 			fakeClient := typfake.NewSimpleClientset(tc.existingObjects...)
 			if tc.k8sError != nil {
 				fakeClient.CoreV1().(*fakecorev1.FakeCoreV1).PrependReactor("create", "namespaces", func(action clientGoTesting.Action) (handled bool, ret runtime.Object, err error) {
-					return true, &v1.Namespace{}, tc.k8sError
+					return true, &corev1.Namespace{}, tc.k8sError
 				})
 			}
 			if tc.validator != nil {
@@ -293,7 +292,7 @@ func TestGetNamespaceNames(t *testing.T) {
 			name:    "returns existing namespaces if user has RBAC",
 			request: defaultRequest,
 			existingObjects: []runtime.Object{
-				&core.Namespace{
+				&corev1.Namespace{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Namespace",
 						APIVersion: "v1",
@@ -301,11 +300,11 @@ func TestGetNamespaceNames(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "default",
 					},
-					Status: v1.NamespaceStatus{
-						Phase: v1.NamespaceActive,
+					Status: corev1.NamespaceStatus{
+						Phase: corev1.NamespaceActive,
 					},
 				},
-				&core.Namespace{
+				&corev1.Namespace{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Namespace",
 						APIVersion: "v1",
@@ -313,8 +312,8 @@ func TestGetNamespaceNames(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "kubeapps",
 					},
-					Status: v1.NamespaceStatus{
-						Phase: v1.NamespaceActive,
+					Status: corev1.NamespaceStatus{
+						Phase: corev1.NamespaceActive,
 					},
 				},
 			},
@@ -343,7 +342,7 @@ func TestGetNamespaceNames(t *testing.T) {
 		{
 			name: "it should return the list of only active namespaces if accessible",
 			existingObjects: []runtime.Object{
-				&core.Namespace{
+				&corev1.Namespace{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Namespace",
 						APIVersion: "v1",
@@ -351,11 +350,11 @@ func TestGetNamespaceNames(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "foo",
 					},
-					Status: v1.NamespaceStatus{
-						Phase: v1.NamespaceActive,
+					Status: corev1.NamespaceStatus{
+						Phase: corev1.NamespaceActive,
 					},
 				},
-				&core.Namespace{
+				&corev1.Namespace{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Namespace",
 						APIVersion: "v1",
@@ -363,8 +362,8 @@ func TestGetNamespaceNames(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "terminating-ns",
 					},
-					Status: v1.NamespaceStatus{
-						Phase: v1.NamespaceTerminating,
+					Status: corev1.NamespaceStatus{
+						Phase: corev1.NamespaceTerminating,
 					},
 				},
 			},
@@ -377,7 +376,7 @@ func TestGetNamespaceNames(t *testing.T) {
 		{
 			name: "it should return the list of namespaces matching the trusted namespaces header",
 			existingObjects: []runtime.Object{
-				&core.Namespace{
+				&corev1.Namespace{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Namespace",
 						APIVersion: "v1",
@@ -385,8 +384,8 @@ func TestGetNamespaceNames(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "foo",
 					},
-					Status: v1.NamespaceStatus{
-						Phase: v1.NamespaceActive,
+					Status: corev1.NamespaceStatus{
+						Phase: corev1.NamespaceActive,
 					},
 				},
 			},
@@ -405,7 +404,7 @@ func TestGetNamespaceNames(t *testing.T) {
 		{
 			name: "it should return the existing list of namespaces when trusted namespaces header does not match pattern",
 			existingObjects: []runtime.Object{
-				&core.Namespace{
+				&corev1.Namespace{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Namespace",
 						APIVersion: "v1",
@@ -413,8 +412,8 @@ func TestGetNamespaceNames(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "foo",
 					},
-					Status: v1.NamespaceStatus{
-						Phase: v1.NamespaceActive,
+					Status: corev1.NamespaceStatus{
+						Phase: corev1.NamespaceActive,
 					},
 				},
 			},
@@ -432,7 +431,7 @@ func TestGetNamespaceNames(t *testing.T) {
 		{
 			name: "it should return the existing list of namespaces when trusted namespaces header does not match name",
 			existingObjects: []runtime.Object{
-				&core.Namespace{
+				&corev1.Namespace{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Namespace",
 						APIVersion: "v1",
@@ -440,8 +439,8 @@ func TestGetNamespaceNames(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "foo",
 					},
-					Status: v1.NamespaceStatus{
-						Phase: v1.NamespaceActive,
+					Status: corev1.NamespaceStatus{
+						Phase: corev1.NamespaceActive,
 					},
 				},
 			},
@@ -459,7 +458,7 @@ func TestGetNamespaceNames(t *testing.T) {
 		{
 			name: "it should return the existing list of namespaces when trusted namespaces header name is empty",
 			existingObjects: []runtime.Object{
-				&core.Namespace{
+				&corev1.Namespace{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Namespace",
 						APIVersion: "v1",
@@ -467,8 +466,8 @@ func TestGetNamespaceNames(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "foo",
 					},
-					Status: v1.NamespaceStatus{
-						Phase: v1.NamespaceActive,
+					Status: corev1.NamespaceStatus{
+						Phase: corev1.NamespaceActive,
 					},
 				},
 			},
@@ -486,7 +485,7 @@ func TestGetNamespaceNames(t *testing.T) {
 		{
 			name: "it should return the existing list of namespaces when trusted namespaces pattern is empty",
 			existingObjects: []runtime.Object{
-				&core.Namespace{
+				&corev1.Namespace{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Namespace",
 						APIVersion: "v1",
@@ -494,8 +493,8 @@ func TestGetNamespaceNames(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "foo",
 					},
-					Status: v1.NamespaceStatus{
-						Phase: v1.NamespaceActive,
+					Status: corev1.NamespaceStatus{
+						Phase: corev1.NamespaceActive,
 					},
 				},
 			},
@@ -513,7 +512,7 @@ func TestGetNamespaceNames(t *testing.T) {
 		{
 			name: "it should return some of the namespaces from trusted namespaces header when not all match the pattern",
 			existingObjects: []runtime.Object{
-				&core.Namespace{
+				&corev1.Namespace{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Namespace",
 						APIVersion: "v1",
@@ -521,8 +520,8 @@ func TestGetNamespaceNames(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "foo",
 					},
-					Status: v1.NamespaceStatus{
-						Phase: v1.NamespaceActive,
+					Status: corev1.NamespaceStatus{
+						Phase: corev1.NamespaceActive,
 					},
 				},
 			},
@@ -541,7 +540,7 @@ func TestGetNamespaceNames(t *testing.T) {
 		{
 			name: "it should return existing namespaces if no trusted ns header but trusted configuration is in place",
 			existingObjects: []runtime.Object{
-				&core.Namespace{
+				&corev1.Namespace{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Namespace",
 						APIVersion: "v1",
@@ -549,8 +548,8 @@ func TestGetNamespaceNames(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "foo",
 					},
-					Status: v1.NamespaceStatus{
-						Phase: v1.NamespaceActive,
+					Status: corev1.NamespaceStatus{
+						Phase: corev1.NamespaceActive,
 					},
 				},
 			},
@@ -567,7 +566,7 @@ func TestGetNamespaceNames(t *testing.T) {
 		{
 			name: "it should ignore incoming trusted namespaces header when no trusted configuration is in place",
 			existingObjects: []runtime.Object{
-				&core.Namespace{
+				&corev1.Namespace{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Namespace",
 						APIVersion: "v1",
@@ -575,8 +574,8 @@ func TestGetNamespaceNames(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "foo",
 					},
-					Status: v1.NamespaceStatus{
-						Phase: v1.NamespaceActive,
+					Status: corev1.NamespaceStatus{
+						Phase: corev1.NamespaceActive,
 					},
 				},
 			},
@@ -595,7 +594,7 @@ func TestGetNamespaceNames(t *testing.T) {
 			fakeClient := typfake.NewSimpleClientset(tc.existingObjects...)
 			if tc.k8sError != nil {
 				fakeClient.CoreV1().(*fakecorev1.FakeCoreV1).PrependReactor("list", "namespaces", func(action clientGoTesting.Action) (handled bool, ret runtime.Object, err error) {
-					return true, &v1.NamespaceList{}, tc.k8sError
+					return true, &corev1.NamespaceList{}, tc.k8sError
 				})
 			}
 
@@ -700,7 +699,7 @@ func TestCanI(t *testing.T) {
 			fakeClient := typfake.NewSimpleClientset()
 			if tc.k8sError != nil {
 				fakeClient.CoreV1().(*fakecorev1.FakeCoreV1).PrependReactor("list", "namespaces", func(action clientGoTesting.Action) (handled bool, ret runtime.Object, err error) {
-					return true, &v1.NamespaceList{}, tc.k8sError
+					return true, &corev1.NamespaceList{}, tc.k8sError
 				})
 			}
 

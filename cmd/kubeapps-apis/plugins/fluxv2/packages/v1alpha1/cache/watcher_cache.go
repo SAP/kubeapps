@@ -385,7 +385,7 @@ func (c *NamespacedResourceWatcherCache) Watch(options metav1.ListOptions) (watc
 
 	ctrlClient, err := c.config.ClientGetter.ControllerRuntime(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("Unable to get client due to: %w", err))
+		return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("unable to get client due to: %w", err))
 	}
 
 	// this will start a watcher on all namespaces
@@ -404,7 +404,7 @@ func (c *NamespacedResourceWatcherCache) resync(bootstrap bool) (string, error) 
 	// confidence test: I'd like to make sure this is called within the context
 	// of resync, i.e. resync.Cond.L is locked by this goroutine.
 	if !common.RWMutexWriteLocked(c.resyncCond.L.(*sync.RWMutex)) {
-		return "", connect.NewError(connect.CodeInternal, fmt.Errorf("Invalid state of the cache in resync()"))
+		return "", connect.NewError(connect.CodeInternal, fmt.Errorf("invalid state of the cache in resync()"))
 	}
 
 	// no need to do any of this on bootstrap, queue should be empty
@@ -421,7 +421,7 @@ func (c *NamespacedResourceWatcherCache) resync(bootstrap bool) (string, error) 
 		c.queue.Reset()
 
 		if err := c.config.OnResyncFunc(); err != nil {
-			return "", connect.NewError(connect.CodeInternal, fmt.Errorf("Invocation of [OnResync] failed due to: %w", err))
+			return "", connect.NewError(connect.CodeInternal, fmt.Errorf("invocation of [OnResync] failed due to: %w", err))
 		}
 	}
 

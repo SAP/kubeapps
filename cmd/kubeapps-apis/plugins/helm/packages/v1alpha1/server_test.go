@@ -26,8 +26,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/vmware-tanzu/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
-	appRepov1alpha1 "github.com/vmware-tanzu/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
+	apprepov1alpha1 "github.com/vmware-tanzu/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
 	corev1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
 	plugins "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/plugins/v1alpha1"
 	helmv1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/plugins/helm/packages/v1alpha1"
@@ -231,7 +230,7 @@ func makeChartRowsJSON(t *testing.T, charts []*models.Chart, pageToken string, p
 func makeServer(t *testing.T, authorized bool, actionConfig *action.Configuration, objects ...k8sruntime.Object) (*Server, sqlmock.Sqlmock, func()) {
 	// Creating the dynamic client
 	scheme := k8sruntime.NewScheme()
-	err := v1alpha1.AddToScheme(scheme)
+	err := apprepov1alpha1.AddToScheme(scheme)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -272,7 +271,7 @@ func makeServer(t *testing.T, authorized bool, actionConfig *action.Configuratio
 	}, mock, cleanup
 }
 
-func newServerWithSecretsAndRepos(t *testing.T, secrets []k8sruntime.Object, repos []*v1alpha1.AppRepository) *Server {
+func newServerWithSecretsAndRepos(t *testing.T, secrets []k8sruntime.Object, repos []*apprepov1alpha1.AppRepository) *Server {
 	typedClient := typfake.NewSimpleClientset(secrets...)
 
 	var unstructuredObjs []k8sruntime.Object
@@ -306,7 +305,7 @@ func newServerWithSecretsAndRepos(t *testing.T, secrets []k8sruntime.Object, rep
 	apiExtIfc := apiextfake.NewSimpleClientset(helmAppRepositoryCRD)
 	ctrlClient := newCtrlClient(repos)
 	scheme := k8sruntime.NewScheme()
-	err := v1alpha1.AddToScheme(scheme)
+	err := apprepov1alpha1.AddToScheme(scheme)
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
@@ -315,8 +314,8 @@ func newServerWithSecretsAndRepos(t *testing.T, secrets []k8sruntime.Object, rep
 		scheme,
 		map[schema.GroupVersionResource]string{
 			{
-				Group:    v1alpha1.SchemeGroupVersion.Group,
-				Version:  v1alpha1.SchemeGroupVersion.Version,
+				Group:    apprepov1alpha1.SchemeGroupVersion.Group,
+				Version:  apprepov1alpha1.SchemeGroupVersion.Version,
 				Resource: AppRepositoryResource,
 			}: AppRepositoryResource + "List",
 		},
@@ -346,7 +345,7 @@ type ClientReaction struct {
 	reaction k8stesting.ReactionFunc
 }
 
-func newServerWithAppRepoReactors(unstructuredObjs []k8sruntime.Object, repos []*v1alpha1.AppRepository, typedObjects []k8sruntime.Object, typedClientReactions []*ClientReaction, dynClientReactions []*ClientReaction) *Server {
+func newServerWithAppRepoReactors(unstructuredObjs []k8sruntime.Object, repos []*apprepov1alpha1.AppRepository, typedObjects []k8sruntime.Object, typedClientReactions []*ClientReaction, dynClientReactions []*ClientReaction) *Server {
 	typedClient := typfake.NewSimpleClientset(typedObjects...)
 
 	for _, reaction := range typedClientReactions {
@@ -356,7 +355,7 @@ func newServerWithAppRepoReactors(unstructuredObjs []k8sruntime.Object, repos []
 	apiExtIfc := apiextfake.NewSimpleClientset(helmAppRepositoryCRD)
 	ctrlClient := newCtrlClient(repos)
 	scheme := k8sruntime.NewScheme()
-	err := v1alpha1.AddToScheme(scheme)
+	err := apprepov1alpha1.AddToScheme(scheme)
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
@@ -369,8 +368,8 @@ func newServerWithAppRepoReactors(unstructuredObjs []k8sruntime.Object, repos []
 		scheme,
 		map[schema.GroupVersionResource]string{
 			{
-				Group:    v1alpha1.SchemeGroupVersion.Group,
-				Version:  v1alpha1.SchemeGroupVersion.Version,
+				Group:    apprepov1alpha1.SchemeGroupVersion.Group,
+				Version:  apprepov1alpha1.SchemeGroupVersion.Version,
 				Resource: AppRepositoryResource,
 			}: AppRepositoryResource + "List",
 		},
@@ -2308,7 +2307,7 @@ func TestGetAvailablePackageMetadatas(t *testing.T) {
 	})
 	defer fakeServer.Close()
 
-	var repoNonOCI = &appRepov1alpha1.AppRepository{
+	var repoNonOCI = &apprepov1alpha1.AppRepository{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: appReposAPIVersion,
 			Kind:       AppRepositoryKind,
@@ -2318,13 +2317,13 @@ func TestGetAvailablePackageMetadatas(t *testing.T) {
 			Namespace:       "kubeapps",
 			ResourceVersion: "1",
 		},
-		Spec: appRepov1alpha1.AppRepositorySpec{
+		Spec: apprepov1alpha1.AppRepositorySpec{
 			URL:         "https://test-repo",
 			Type:        "helm",
 			Description: "description 1",
 		},
 	}
-	var repoOCI = &appRepov1alpha1.AppRepository{
+	var repoOCI = &apprepov1alpha1.AppRepository{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: appReposAPIVersion,
 			Kind:       AppRepositoryKind,
@@ -2334,7 +2333,7 @@ func TestGetAvailablePackageMetadatas(t *testing.T) {
 			Namespace:       "kubeapps",
 			ResourceVersion: "1",
 		},
-		Spec: appRepov1alpha1.AppRepositorySpec{
+		Spec: apprepov1alpha1.AppRepositorySpec{
 			URL:         fakeServer.URL,
 			Type:        "oci",
 			Description: "description 1",
@@ -2350,14 +2349,14 @@ func TestGetAvailablePackageMetadatas(t *testing.T) {
 
 	testCases := []struct {
 		name                 string
-		repos                []*appRepov1alpha1.AppRepository
+		repos                []*apprepov1alpha1.AppRepository
 		request              *corev1.GetAvailablePackageMetadatasRequest
 		expectedResponse     *corev1.GetAvailablePackageMetadatasResponse
 		expectedResponseCode connect.Code
 	}{
 		{
 			name: "it returns invalid for an invalid identifier",
-			repos: []*appRepov1alpha1.AppRepository{
+			repos: []*apprepov1alpha1.AppRepository{
 				repoNonOCI,
 			},
 			request: &corev1.GetAvailablePackageMetadatasRequest{
@@ -2374,7 +2373,7 @@ func TestGetAvailablePackageMetadatas(t *testing.T) {
 		},
 		{
 			name: "it returns unimplemented for non-OCI repositories",
-			repos: []*appRepov1alpha1.AppRepository{
+			repos: []*apprepov1alpha1.AppRepository{
 				repoNonOCI,
 			},
 			request: &corev1.GetAvailablePackageMetadatasRequest{
@@ -2391,7 +2390,7 @@ func TestGetAvailablePackageMetadatas(t *testing.T) {
 		},
 		{
 			name: "it returns metadata for OCI repositories",
-			repos: []*appRepov1alpha1.AppRepository{
+			repos: []*apprepov1alpha1.AppRepository{
 				repoOCI,
 			},
 			request: &corev1.GetAvailablePackageMetadatasRequest{

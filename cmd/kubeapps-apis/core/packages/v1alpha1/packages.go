@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"net/http"
 
-	. "github.com/ahmetb/go-linq/v3"
+	linq "github.com/ahmetb/go-linq/v3"
 	"github.com/bufbuild/connect-go"
 	pluginsv1alpha1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/core/plugins/v1alpha1"
 	packages "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
@@ -95,7 +95,7 @@ func (s packagesServer) GetAvailablePackageSummaries(ctx context.Context, reques
 	}
 
 	// Delete duplicate categories and sort by name
-	From(categories).Distinct().OrderBy(func(i interface{}) interface{} { return i }).ToSlice(&categories)
+	linq.From(categories).Distinct().OrderBy(func(i interface{}) interface{} { return i }).ToSlice(&categories)
 
 	return connect.NewResponse(&packages.GetAvailablePackageSummariesResponse{
 		AvailablePackageSummaries: pkgs,

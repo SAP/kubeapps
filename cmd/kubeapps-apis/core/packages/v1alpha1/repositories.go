@@ -9,7 +9,7 @@ import (
 	"sort"
 	"sync"
 
-	. "github.com/ahmetb/go-linq/v3"
+	linq "github.com/ahmetb/go-linq/v3"
 	"github.com/bufbuild/connect-go"
 
 	pluginsv1alpha1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/core/plugins/v1alpha1"
@@ -140,7 +140,7 @@ func (s repositoriesServer) GetPackageRepositorySummaries(ctx context.Context, r
 		summaries = append(summaries, pluginSummaries...)
 	}
 
-	From(summaries).
+	linq.From(summaries).
 		// Order by repo name, regardless of the plugin
 		OrderBy(func(repo interface{}) interface{} {
 			return repo.(*packages.PackageRepositorySummary).Name + repo.(*packages.PackageRepositorySummary).PackageRepoRef.Plugin.Name
