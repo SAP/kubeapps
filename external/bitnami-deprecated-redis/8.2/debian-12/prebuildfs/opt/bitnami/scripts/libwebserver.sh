@@ -1,6 +1,6 @@
 #!/bin/bash
 # Copyright Broadcom, Inc. All Rights Reserved.
-# SPDX-License-Identifier: APACHE-2.0
+# SPDX-License-Identifier: Apache-2.0
 #
 # Bitnami web server handler library
 
