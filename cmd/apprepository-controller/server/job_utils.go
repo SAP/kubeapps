@@ -246,13 +246,13 @@ func generateJobSpec(apprepo *apprepov1alpha1.AppRepository, config Config, rest
 	// Get the predefined pod spec for the apprepo definition if exists
 	podTemplateSpec := apprepo.Spec.SyncJobPodTemplate
 	// Add labels
-	if len(podTemplateSpec.ObjectMeta.Labels) == 0 {
-		podTemplateSpec.ObjectMeta.Labels = map[string]string{}
+	if len(podTemplateSpec.Labels) == 0 {
+		podTemplateSpec.Labels = map[string]string{}
 	}
 	for k, v := range jobLabels(apprepo, config) {
-		podTemplateSpec.ObjectMeta.Labels[k] = v
+		podTemplateSpec.Labels[k] = v
 	}
-	podTemplateSpec.ObjectMeta.Annotations = config.ParsedCustomAnnotations
+	podTemplateSpec.Annotations = config.ParsedCustomAnnotations
 	// If there's an issue, won't restart
 	podTemplateSpec.Spec.RestartPolicy = restartPolicy
 	// Populate container spec
@@ -274,7 +274,7 @@ func generateJobSpec(apprepo *apprepov1alpha1.AppRepository, config Config, rest
 
 	return batchv1.JobSpec{
 		TTLSecondsAfterFinished: ttlLifetimeJobs(config),
-		ActiveDeadlineSeconds: activeDeadlineSeconds(config),
+		ActiveDeadlineSeconds:   activeDeadlineSeconds(config),
 		Template:                podTemplateSpec,
 	}
 }

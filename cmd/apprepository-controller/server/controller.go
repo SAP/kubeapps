@@ -320,9 +320,9 @@ func (c *Controller) handleAppRepoOwnedObject(obj interface{}) {
 			return
 		}
 
-		if apprepo.ObjectMeta.DeletionTimestamp != nil {
+		if apprepo.DeletionTimestamp != nil {
 			apprepoKey := fmt.Sprintf("%s/%s", apprepo.GetNamespace(), apprepo.GetName())
-			log.Infof("Ignoring AppRepository %q, it was already marked for deletion at timestamp %q", apprepoKey, apprepo.ObjectMeta.DeletionTimestamp)
+			log.Infof("Ignoring AppRepository %q, it was already marked for deletion at timestamp %q", apprepoKey, apprepo.DeletionTimestamp)
 			return
 		}
 

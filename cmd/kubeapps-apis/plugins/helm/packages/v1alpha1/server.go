@@ -339,7 +339,7 @@ func (s *Server) GetAvailablePackageDetail(ctx context.Context, request *connect
 			log.Errorf("Error parsing versions as semver: %v", err)
 			version = chart.ChartVersions[0].Version
 		} else {
-			version = sortedVersions[0].Version.String()
+			version = sortedVersions[0].String()
 		}
 	}
 	fileID := fileIDForChart(unescapedChartID, version)
@@ -444,7 +444,7 @@ func AvailablePackageDetailFromChart(chart *models.Chart, chartFiles *models.Cha
 			}
 		} else {
 			pkg.Version = &corev1.PackageAppVersion{
-				PkgVersion: sortedVersions[0].Version.String(),
+				PkgVersion: sortedVersions[0].String(),
 				AppVersion: sortedVersions[0].AppVersion,
 			}
 		}
@@ -556,7 +556,7 @@ func (s *Server) GetInstalledPackageSummaries(ctx context.Context, request *conn
 				}
 			} else {
 				installedPkgSummaries[i].LatestVersion = &corev1.PackageAppVersion{
-					PkgVersion: sortedVersions[0].Version.String(),
+					PkgVersion: sortedVersions[0].String(),
 					AppVersion: sortedVersions[0].AppVersion,
 				}
 			}
@@ -694,7 +694,7 @@ func (s *Server) GetInstalledPackageDetail(ctx context.Context, request *connect
 				}
 			} else {
 				installedPkgDetail.LatestVersion = &corev1.PackageAppVersion{
-					PkgVersion: sortedVersions[0].Version.String(),
+					PkgVersion: sortedVersions[0].String(),
 					AppVersion: sortedVersions[0].AppVersion,
 				}
 			}
