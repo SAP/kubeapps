@@ -94,6 +94,7 @@ env:
   GKE_ZONE: "us-east1-c"
   GKE_PROJECT: "vmware-kubeapps-ci"
   GKE_CLUSTER: "kubeapps-test"
+  CHART_OCI_REPO: "ghcr.io/sap/kubeapps"
 
 jobs:
   setup:
@@ -623,8 +624,9 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/download-artifact@v4
       - run: |
           set -eu
@@ -646,128 +648,62 @@ jobs:
             docker load --input "${artifact}/${artifact}.tar"
 
             dev_image=${IMG_PREFIX}${image}${IMG_MODIFIER}:${IMG_DEV_TAG}
-            prod_image=${IMG_PREFIX}${image}:${IMG_PROD_TAG}
+            prod_image=${GHCR_PREFIX}${IMG_PREFIX}${image}:${IMG_PROD_TAG}
             docker tag ${dev_image} ${prod_image}
 
             echo "::notice ::Pushing image ${prod_image}"
             docker push $prod_image
           done
 
-  sync_chart_from_bitnami:
-    needs:
-      - setup
-    if: needs.setup.outputs.running_on_main == 'true' || inputs.trigger_release
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: "Install CLI tools"
-        env:
-          GPG_KEY_PUBLIC: ${{ secrets.GPG_KEY_PUBLIC }}
-          GPG_KEY_PRIVATE: ${{ secrets.GPG_KEY_PRIVATE }}
-        run: |
-          set -eu
-          source ./script/lib/libcitools.sh
-
-          installGithubCLI ${GITHUB_VERSION}
-          installSemver ${SEMVER_VERSION}
-          installGPGKey
-      - name: "Install SSH key: Forked Charts Deploy Key"
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.SSH_KEY_FORKED_CHARTS_DEPLOY }}
-          name: ${{ needs.setup.outputs.ssh_key_forked_charts_deploy_filename }}
-          known_hosts: |
-            |1|2YkQ4jjACcc/1rgSBszyeEuKxW4=|hO4GB0XMwQj1gYQDmaS304aU8Tc= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
-          if_key_exists: ignore
-      - # This is a key pair
-        # public key uploaded to GitHub as a deployment key with write permissions,
-        # private key stored as a secret.
-        name: Start ssh-agent and configure the key
-        run: |
-          set -eu
-          eval "$(ssh-agent -s)"
-          # Deployment key uploaded to the kubeapps-bot/charts repository
-          ssh-add ~/.ssh/${SSH_KEY_FORKED_CHARTS_DEPLOY_FILENAME}
-      - # Assuming there is a personal access token created in GitHub granted with the scopes
-        # "repo:status", "public_repo" and "read:org"
-        name: Run the check_upstream_chart script
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -eu
-          ./script/chart_upstream_checker.sh \
-              ${CI_BOT_USERNAME} \
-              ${CI_BOT_EMAIL} \
-              ${CI_BOT_GPG} \
-              ${SSH_KEY_FORKED_CHARTS_DEPLOY_FILENAME} \
-              ${CHARTS_REPO_ORIGINAL} \
-              ${BRANCH_CHARTS_REPO_ORIGINAL} \
-              ${CHARTS_REPO_FORKED} \
-              ${BRANCH_CHARTS_REPO_FORKED} \
-              ${KUBEAPPS_REPO} \
-              ${BRANCH_KUBEAPPS_REPO} \
-              ${README_GENERATOR_REPO} \
-
-  sync_chart_to_bitnami:
+  push_chart:
+    if: inputs.trigger_release
     needs:
       - setup
       - local_e2e_tests
-      - GKE_REGULAR_VERSION
-      - GKE_STABLE_VERSION
-    if: inputs.trigger_release
     runs-on: ubuntu-latest
+    env:
+      CHART_DIR: chart/kubeapps
     steps:
       - uses: actions/checkout@v4
-      - name: "Install CLI tools"
-        env:
-          GPG_KEY_PUBLIC: ${{ secrets.GPG_KEY_PUBLIC }}
-          GPG_KEY_PRIVATE: ${{ secrets.GPG_KEY_PRIVATE }}
+      - name: Install Helm
         run: |
           set -eu
           source ./script/lib/libcitools.sh
-
-          installGithubCLI ${GITHUB_VERSION}
-          installSemver ${SEMVER_VERSION}
-          installGPGKey
-      - name: "Install SSH key: Forked Charts Deploy Key"
-        uses: shimataro/ssh-key-action@v2
+          installHelm ${HELM_VERSION_STABLE} helm-stable
+      - name: Show chart version
+        run: |
+          set -eu
+          grep '^version:' ${CHART_DIR}/Chart.yaml || true
+      - name: Login to GHCR (OCI) for Helm
+        run: |
+          set -eu
+          helm registry login ghcr.io --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}"
+      - name: Update chart dependencies
+        run: |
+          set -eu
+          helm dependency update ${CHART_DIR}
+      - name: Package chart
+        run: |
+          set -eu
+          helm package ${CHART_DIR} --destination /tmp
+          ls -l /tmp | grep kubeapps- || true
+      - name: Push chart to GHCR
+        run: |
+          set -eu
+          CHART_PACKAGE=$(ls /tmp/kubeapps-*.tgz)
+          echo "Pushing ${CHART_PACKAGE} to oci://${CHART_OCI_REPO}"
+          helm push "${CHART_PACKAGE}" oci://${CHART_OCI_REPO}
+      - name: Upload chart artifact
+        uses: actions/upload-artifact@v4
         with:
-          key: ${{ secrets.SSH_KEY_FORKED_CHARTS_DEPLOY }}
-          name: ${{ needs.setup.outputs.ssh_key_forked_charts_deploy_filename }}
-          known_hosts: |
-            |1|2YkQ4jjACcc/1rgSBszyeEuKxW4=|hO4GB0XMwQj1gYQDmaS304aU8Tc= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
-          if_key_exists: ignore
-      - # This is a key pair
-        # public key uploaded to GitHub as a deployment key with write permissions,
-        # private key stored as a secret.
-        name: Start ssh-agent and configure the key
-        run: |
-          set -eu
-          eval "$(ssh-agent -s)"
-          # Deployment key uploaded to the kubeapps-bot/charts repository
-          ssh-add ~/.ssh/${SSH_KEY_FORKED_CHARTS_DEPLOY_FILENAME}
-      - name: Run the chart_sync script
-        env:
-          # Assuming there is a personal access token created in GitHub granted with the scopes
-          # "repo:status", "public_repo" and "read:org"
-          GITHUB_TOKEN: ${{ secrets.KUBEAPPS_BOT_GITHUB_TOKEN }}
-        run: |
-          set -eu
-          ./script/chart_sync.sh \
-              ${CI_BOT_USERNAME} \
-              ${CI_BOT_EMAIL} \
-              ${CI_BOT_GPG} \
-              ${SSH_KEY_FORKED_CHARTS_DEPLOY_FILENAME} \
-              ${CHARTS_REPO_ORIGINAL} \
-              ${BRANCH_CHARTS_REPO_ORIGINAL} \
-              ${CHARTS_REPO_FORKED} \
-              ${BRANCH_CHARTS_REPO_FORKED} \
+          name: kubeapps-chart
+          path: /tmp/kubeapps-*.tgz
 
   release:
     if: inputs.trigger_release
     needs:
       - setup
-      - sync_chart_to_bitnami
+      - push_chart
       - local_e2e_tests
       - GKE_REGULAR_VERSION
       - GKE_STABLE_VERSION
@@ -799,7 +735,6 @@ jobs:
       - build_docker_images
       - build_dashboard_image
       - build_e2e_runner_image
-      - sync_chart_from_bitnami
     runs-on: ubuntu-latest
     outputs:
       CHARTMUSEUM_VERSION: ${{ steps.set-outputs.outputs.CHARTMUSEUM_VERSION }}
