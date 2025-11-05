@@ -341,10 +341,10 @@ func (s *Server) updateRepo(ctx context.Context,
 	imagePullSecret *k8scorev1.Secret,
 	repo *HelmRepository) (*corev1.PackageRepositoryReference, error) {
 	if repo.url == "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Repository url may not be empty"))
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("repository url may not be empty"))
 	}
 	if repo.name.Name == "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Repository name may not be empty"))
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("repository name may not be empty"))
 	}
 	typedClient, err := s.clientGetter.Typed(headers, repo.cluster)
 	if err != nil {
@@ -353,7 +353,7 @@ func (s *Server) updateRepo(ctx context.Context,
 
 	var secret *k8scorev1.Secret
 	if authSecret != nil && caSecret != nil && authSecret.Name != caSecret.Name {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Inconsistent state. auth secret and ca secret must be the same."))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("inconsistent state. auth secret and ca secret must be the same"))
 	} else if authSecret != nil {
 		secret = authSecret
 	} else if caSecret != nil {

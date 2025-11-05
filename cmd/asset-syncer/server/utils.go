@@ -395,7 +395,7 @@ type OciAPIClient struct {
 	// The GrpcClient is used when querying our OCI Catalog service, which
 	// aims to work around some of the shortfalls of the OCI Distribution spec
 	// API
-	GrpcClient ocicatalog.OCICatalogServiceClient
+	GrpcClient          ocicatalog.OCICatalogServiceClient
 	AuthorizationHeader string
 }
 
@@ -753,7 +753,7 @@ func orderVersions(versions []string) ([]string, error) {
 
 // Charts retrieve the list of actual charts needing syncing in the repo.
 func (r *OCIRegistry) Charts(ctx context.Context, fetchLatestOnly bool, chartResults chan pullChartResult) ([]string, error) {
-	repoURL, err := parseRepoURL(r.AppRepositoryInternal.URL)
+	repoURL, err := parseRepoURL(r.URL)
 	if err != nil {
 		return nil, err
 	}

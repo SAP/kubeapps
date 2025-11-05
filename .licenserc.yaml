@@ -44,6 +44,7 @@ header:
     - "dashboard/src/setupProxy.js"
     - "integration/charts/**/_helpers.tpl"
     - "pkg/kube/dockerconfig.go"
+    - "external/**" # REUSE will verify its Apache-2.0; therefore ignoring here broadcoms orginal header
 
 dependency:
   files:

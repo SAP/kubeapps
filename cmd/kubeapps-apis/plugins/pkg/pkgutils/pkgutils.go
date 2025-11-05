@@ -207,7 +207,7 @@ func AvailablePackageSummaryFromChart(chart *models.Chart, plugin *plugins.Plugi
 			}
 		} else {
 			pkg.LatestVersion = &corev1.PackageAppVersion{
-				PkgVersion: sortedVersions[0].Version.String(),
+				PkgVersion: sortedVersions[0].String(),
 				AppVersion: sortedVersions[0].AppVersion,
 			}
 		}
@@ -389,7 +389,7 @@ func defaultValues(x interface{}, s *structuralschema.Structural) {
 
 // isNonNullalbeNull returns true if the item is nil AND it's nullable
 func isNonNullableNull(x interface{}, s *structuralschema.Structural) bool {
-	return x == nil && s != nil && !s.Generic.Nullable
+	return x == nil && s != nil && !s.Nullable
 }
 
 // isKindInt returns true if the item is an int

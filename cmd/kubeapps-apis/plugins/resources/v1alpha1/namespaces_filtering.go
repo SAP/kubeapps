@@ -83,7 +83,7 @@ func getTrustedNamespacesFromHeader(ctx context.Context, headerName, headerPatte
 		for _, n := range trustedNamespaces {
 			// Check if the namespace matches the regex
 			rns := r.FindStringSubmatch(strings.TrimSpace(n))
-			if rns == nil || len(rns) < 2 {
+			if len(rns) < 2 {
 				continue
 			}
 			ns := corev1.Namespace{

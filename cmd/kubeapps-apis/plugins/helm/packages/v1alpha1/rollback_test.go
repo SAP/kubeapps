@@ -142,7 +142,7 @@ func TestRollbackInstalledPackage(t *testing.T) {
 				deployedFilter := func(r *release.Release) bool {
 					return r.Info.Status == release.StatusDeployed
 				}
-				releases, err := actionConfig.Releases.Driver.List(deployedFilter)
+				releases, err := actionConfig.Releases.List(deployedFilter)
 				if err != nil {
 					t.Fatalf("%+v", err)
 				}
