@@ -168,7 +168,7 @@ func TestCreateNamespace(t *testing.T) {
 			validator: func(action clientGoTesting.Action) (handled bool, ret runtime.Object, err error) {
 				createAction := action.(clientGoTesting.CreateActionImpl)
 				createNamespace := createAction.GetObject().(*corev1.Namespace)
-				assert.Nil(t, createNamespace.ObjectMeta.Labels)
+				assert.Nil(t, createNamespace.Labels)
 				return false, nil, err
 			},
 		},
@@ -188,8 +188,8 @@ func TestCreateNamespace(t *testing.T) {
 			validator: func(action clientGoTesting.Action) (handled bool, ret runtime.Object, err error) {
 				createAction := action.(clientGoTesting.CreateActionImpl)
 				createNamespace := createAction.GetObject().(*corev1.Namespace)
-				assert.Contains(t, createNamespace.ObjectMeta.Labels, "label1")
-				assert.Contains(t, createNamespace.ObjectMeta.Labels, "label2")
+				assert.Contains(t, createNamespace.Labels, "label1")
+				assert.Contains(t, createNamespace.Labels, "label2")
 				return false, nil, err
 			},
 		},

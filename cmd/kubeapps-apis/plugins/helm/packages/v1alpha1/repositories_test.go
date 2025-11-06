@@ -16,7 +16,6 @@ import (
 	"github.com/bufbuild/connect-go"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	appRepov1 "github.com/vmware-tanzu/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
 	appRepov1alpha1 "github.com/vmware-tanzu/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
 	corev1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
 	plugins "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/plugins/v1alpha1"
@@ -811,7 +810,7 @@ func TestAddPackageRepository(t *testing.T) {
 			s := newServerWithSecretsAndRepos(t, secrets, nil)
 			if tc.testRepoServer != nil {
 				defer tc.testRepoServer.Close()
-				s.repoClientGetter = func(_ *appRepov1.AppRepository, _ *apiv1.Secret) (*http.Client, error) {
+				s.repoClientGetter = func(_ *appRepov1alpha1.AppRepository, _ *apiv1.Secret) (*http.Client, error) {
 					return tc.testRepoServer.Client(), nil
 				}
 				tc.request.Url = tc.testRepoServer.URL

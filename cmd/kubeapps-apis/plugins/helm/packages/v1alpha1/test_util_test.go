@@ -129,7 +129,7 @@ func setSecretOwnerRef(repoName string, secret *apiv1.Secret) *apiv1.Secret {
 }
 
 func setSecretAnnotations(secret *apiv1.Secret) *apiv1.Secret {
-	secret.ObjectMeta.Annotations = map[string]string{Annotation_ManagedBy_Key: Annotation_ManagedBy_Value}
+	secret.Annotations = map[string]string{Annotation_ManagedBy_Key: Annotation_ManagedBy_Value}
 	return secret
 }
 
