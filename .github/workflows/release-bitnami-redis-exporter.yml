@@ -6,6 +6,8 @@ name: B&R dep Bitnami Redis Exporter
 on:
   workflow_dispatch:
   push:
+    tags-ignore:
+      - '*'
     paths:
       - 'external/bitnami-deprecated-redis-exporter/1/debian-12/**'
       - '.github/workflows/release-bitnami-redis-exporter.yml'

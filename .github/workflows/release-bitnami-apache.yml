@@ -6,6 +6,8 @@ name: B&R dep Bitnami Apache
 on:
   workflow_dispatch:
   push:
+    tags-ignore:
+      - '*'
     paths:
       - 'external/bitnami-deprecated-apache/apache/2.4/debian-12/**'
       - '.github/workflows/release-bitnami-apache.yml'
