@@ -33,7 +33,7 @@ Installing Kubeapps is as simple as:
 
 ```bash
 kubectl create namespace kubeapps
-helm install kubeapps --namespace kubeapps oci://registry-1.docker.io/bitnamicharts/kubeapps
+helm install kubeapps --namespace kubeapps oci://ghcr.io/sap/kubeapps/kubeapps
 ```
 
 See the [Getting Started Guide](./site/content/docs/latest/tutorials/getting-started.md) for detailed instructions on how to install and use Kubeapps.
