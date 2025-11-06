@@ -432,7 +432,7 @@ func Test_fetchAndImportIcon(t *testing.T) {
 		fImporter := fileImporter{pgManager, server.Client()}
 		chart.Icon = server.URL + "/download_fail.png"
 
-		assert.Equal(t, fmt.Errorf("GET request to [%s] failed due to status [500]", chart.Icon), fImporter.fetchAndImportIcon(chart, repo, "my-user-agent", false))
+		assert.Equal(t, fmt.Errorf("get request to [%s] failed due to status [500]", chart.Icon), fImporter.fetchAndImportIcon(chart, repo, "my-user-agent", false))
 	})
 
 	t.Run("bad icon", func(t *testing.T) {
@@ -495,7 +495,7 @@ func Test_fetchAndImportIcon(t *testing.T) {
 		chart.Icon = authServer.URL + "/valid_icon.png"
 
 		fImporter := fileImporter{pgManager, authServer.Client()}
-		assert.Error(t, fmt.Errorf("GET request to [%s] failed due to status [401]", charts[0].Icon), fImporter.fetchAndImportIcon(chart, repo, "my-user-agent", false))
+		assert.Error(t, fmt.Errorf("get request to [%s] failed due to status [401]", charts[0].Icon), fImporter.fetchAndImportIcon(chart, repo, "my-user-agent", false))
 	})
 
 	t.Run("valid icon (not passing through the auth header)", func(t *testing.T) {
@@ -504,7 +504,7 @@ func Test_fetchAndImportIcon(t *testing.T) {
 		chart.Icon = authServer.URL + "/valid_icon.png"
 
 		fImporter := fileImporter{pgManager, authServer.Client()}
-		assert.Error(t, fmt.Errorf("GET request to [%s] failed due to status [401]", charts[0].Icon), fImporter.fetchAndImportIcon(chart, repo, "my-user-agent", false))
+		assert.Error(t, fmt.Errorf("get request to [%s] failed due to status [401]", charts[0].Icon), fImporter.fetchAndImportIcon(chart, repo, "my-user-agent", false))
 	})
 
 	t.Run("valid icon (not passing through the auth header if not same domain)", func(t *testing.T) {
@@ -520,7 +520,7 @@ func Test_fetchAndImportIcon(t *testing.T) {
 		// Even though the repo has the auth token, we don't use it to download
 		// the icon if the icon is on a different domain.
 		repoWithAuthorization.URL = "https://github.com"
-		assert.Error(t, fmt.Errorf("GET request to [%s] failed due to status [401]", charts[0].Icon), fImporter.fetchAndImportIcon(chart, repoWithAuthorization, "my-user-agent", false))
+		assert.Error(t, fmt.Errorf("get request to [%s] failed due to status [401]", charts[0].Icon), fImporter.fetchAndImportIcon(chart, repoWithAuthorization, "my-user-agent", false))
 	})
 
 	t.Run("valid icon (passing through the auth header if same domain)", func(t *testing.T) {
@@ -663,7 +663,7 @@ func Test_fetchAndImportFiles(t *testing.T) {
 			AppRepositoryInternal: internalRepo,
 			netClient:             server.Client(),
 		}
-		assert.Error(t, fmt.Errorf("GET request to [https://kubernetes-charts.storage.googleapis.com/acs-engine-autoscaler-2.1.1.tgz] failed due to status [500]"), fImporter.fetchAndImportFiles(charts[0].Name, helmRepo, chartVersion, "my-user-agent", false))
+		assert.Error(t, fmt.Errorf("get request to [https://kubernetes-charts.storage.googleapis.com/acs-engine-autoscaler-2.1.1.tgz] failed due to status [500]"), fImporter.fetchAndImportFiles(charts[0].Name, helmRepo, chartVersion, "my-user-agent", false))
 	})
 
 	t.Run("file not found", func(t *testing.T) {

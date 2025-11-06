@@ -137,7 +137,7 @@ func (s *Server) installedPkgSummaryFromRelease(ctx context.Context, headers htt
 	if repoName != "" && helmChartRef != "" && chartName != "" {
 		parts := strings.Split(helmChartRef, "/")
 		if len(parts) != 2 {
-			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Incorrect package ref dentifier, currently just 'foo/bar' patterns are supported: %s", helmChartRef))
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("incorrect package ref dentifier, currently just 'foo/bar' patterns are supported: %s", helmChartRef))
 		} else {
 			chartKey := types.NamespacedName{Name: parts[1], Namespace: parts[0]}
 			// not important to use the chart cache here, since the tar URL will be from a local cluster
@@ -292,21 +292,21 @@ func (s *Server) getReleaseViaHelmApi(headers http.Header, key types.NamespacedN
 	// post installation notes can only be retrieved via helm APIs, flux doesn't do it
 	// see discussion in https://cloud-native.slack.com/archives/CLAJ40HV3/p1629244025187100
 	if s.actionConfigGetter == nil {
-		return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("Server is not configured with actionConfigGetter"))
+		return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("server is not configured with actionConfigGetter"))
 	}
 
 	helmRel := helmReleaseName(key, rel)
 	actionConfig, err := s.actionConfigGetter(headers, helmRel.Namespace)
 	if err != nil || actionConfig == nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Unable to create Helm action config in namespace [%s] due to: %v", key.Namespace, err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unable to create Helm action config in namespace [%s] due to: %v", key.Namespace, err))
 	}
 	cmd := action.NewGet(actionConfig)
 	release, err := cmd.Run(helmRel.Name)
 	if err != nil {
 		if err == driver.ErrReleaseNotFound {
-			return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("Unable to find Helm release [%s] in namespace [%s]", helmRel, key.Namespace))
+			return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("unable to find Helm release [%s] in namespace [%s]", helmRel, key.Namespace))
 		}
-		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("Unable to run Helm Get action for release [%s] in namespace [%s]: %w", helmRel, key.Namespace, err))
+		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("unable to run Helm Get action for release [%s] in namespace [%s]: %w", helmRel, key.Namespace, err))
 	}
 	return release, nil
 }
@@ -398,7 +398,7 @@ func (s *Server) updateRelease(ctx context.Context, headers http.Header, package
 	// non-pending releases  (i.e. success or failed status) are allowed
 	_, reason, _ := isHelmReleaseReady(*rel)
 	if reason == corev1.InstalledPackageStatus_STATUS_REASON_PENDING {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Updates to helm releases pending reconciliation are not supported"))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("updates to helm releases pending reconciliation are not supported"))
 	}
 
 	versionExpr := versionRef.GetVersion()
@@ -433,7 +433,7 @@ func (s *Server) updateRelease(ctx context.Context, headers http.Header, package
 		if reconcile.Interval != "" {
 			reconcileInterval, err := pkgutils.ToDuration(reconcile.Interval)
 			if err != nil {
-				return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("The reconciliation interval is invalid: %w", err))
+				return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("the reconciliation interval is invalid: %w", err))
 			}
 			rel.Spec.Interval = *reconcileInterval
 			setInterval = true
@@ -534,7 +534,7 @@ func (s *Server) newFluxHelmRelease(chart *models.Chart, targetName types.Namesp
 	if reconcile != nil {
 		if reconcile.Interval != "" {
 			if duration, err := pkgutils.ToDuration(reconcile.Interval); err != nil {
-				return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("The reconciliation interval is invalid: %w", err))
+				return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("the reconciliation interval is invalid: %w", err))
 			} else {
 				reconcileInterval = *duration
 			}
@@ -647,11 +647,11 @@ func installedPackageReconciliationOptions(rel *helmv2beta2.HelmRelease) *corev1
 func installedPackageAvailablePackageRef(rel *helmv2beta2.HelmRelease) (*corev1.AvailablePackageReference, error) {
 	repoName := rel.Spec.Chart.Spec.SourceRef.Name
 	if repoName == "" {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Missing required field spec.chart.spec.sourceRef.name"))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("missing required field spec.chart.spec.sourceRef.name"))
 	}
 	chartName := rel.Spec.Chart.Spec.Chart
 	if chartName == "" {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Missing required field spec.chart.spec.chart"))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("missing required field spec.chart.spec.chart"))
 	}
 	repoNamespace := rel.Spec.Chart.Spec.SourceRef.Namespace
 	// CrossNamespaceObjectReference namespace is optional, so

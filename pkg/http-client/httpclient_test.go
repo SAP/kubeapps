@@ -69,7 +69,7 @@ func TestSetClientProxy(t *testing.T) {
 			t.Fatal("expected proxy to have been nilled")
 		}
 
-		testerror := errors.New("Test Proxy Error")
+		testerror := errors.New("test Proxy Error")
 		proxyFunc := func(r *http.Request) (*url.URL, error) { return nil, testerror }
 		err := SetClientProxy(client, proxyFunc)
 		if err != nil {

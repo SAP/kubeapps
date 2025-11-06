@@ -56,7 +56,7 @@ func (s *Server) availableChartDetail(ctx context.Context, headers http.Header, 
 	if err != nil {
 		return nil, err
 	} else if !isRepoReady(*repo) {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Repository [%s] is not in Ready state", repoName))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("repository [%s] is not in Ready state", repoName))
 	}
 
 	chartID := fmt.Sprintf("%s/%s", repoName.Name, chartName)
@@ -77,7 +77,7 @@ func (s *Server) availableChartDetail(ctx context.Context, headers http.Header, 
 		if err != nil {
 			return nil, err
 		} else if chartModel == nil {
-			return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("Chart [%s] not found", chartName))
+			return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("chart [%s] not found", chartName))
 		}
 
 		if chartVersion == "" {
@@ -108,7 +108,7 @@ func (s *Server) availableChartDetail(ctx context.Context, headers http.Header, 
 		}
 
 		if byteArray == nil {
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Failed to load details for chart [%s], version [%s]", chartModel.ID, chartVersion))
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to load details for chart [%s], version [%s]", chartModel.ID, chartVersion))
 		}
 	}
 
@@ -125,7 +125,7 @@ func (s *Server) availableChartDetail(ctx context.Context, headers http.Header, 
 	// fix up a couple of fields that don't come from the chart tarball
 	repoUrl := repo.Spec.URL
 	if repoUrl == "" {
-		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("Missing required field spec.url on repository %q", repoName))
+		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("missing required field spec.url on repository %q", repoName))
 	}
 
 	pkgDetail.RepoUrl = repoUrl
@@ -137,11 +137,11 @@ func (s *Server) availableChartDetail(ctx context.Context, headers http.Header, 
 
 func (s *Server) getChartModel(ctx context.Context, headers http.Header, repoName types.NamespacedName, chartName string) (*models.Chart, error) {
 	if s.repoCache == nil {
-		return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("Server cache has not been properly initialized"))
+		return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("server cache has not been properly initialized"))
 	} else if ok, err := s.hasAccessToNamespace(ctx, headers, common.GetChartsGvr(), repoName.Namespace); err != nil {
 		return nil, err
 	} else if !ok {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("User has no [get] access for HelmCharts in namespace [%s]", repoName.Namespace))
+		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("user has no [get] access for HelmCharts in namespace [%s]", repoName.Namespace))
 	}
 
 	key := s.repoCache.KeyForNamespacedName(repoName)
@@ -240,7 +240,7 @@ func filterAndPaginateCharts(filters *corev1.FilterOptions, pageSize int32, item
 				if startAt < i {
 					pkg, err := pkgutils.AvailablePackageSummaryFromChart(&chart, GetPluginDetail())
 					if err != nil {
-						return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Unable to parse chart to an AvailablePackageSummary: %w", err))
+						return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unable to parse chart to an AvailablePackageSummary: %w", err))
 					}
 					summaries = append(summaries, pkg)
 					if pageSize > 0 && len(summaries) == int(pageSize) {
@@ -258,7 +258,7 @@ func availablePackageDetailFromChartDetail(chartID string, chartDetail map[strin
 	// TODO (gfichtenholt): if there is no chart yaml (is that even possible?),
 	// fall back to chart info from repo index.yaml
 	if !ok || chartYaml == "" {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("No chart manifest found for chart: [%s]", chartID))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("no chart manifest found for chart: [%s]", chartID))
 	}
 	var chartMetadata chart.Metadata
 	err := yaml.Unmarshal([]byte(chartYaml), &chartMetadata)

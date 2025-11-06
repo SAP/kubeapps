@@ -157,25 +157,25 @@ func (s repositoriesServer) UpdatePackageRepository(ctx context.Context, request
 	log.InfoS("+core UpdatePackageRepository", "cluster", request.Msg.GetPackageRepoRef().GetContext().GetCluster(), "namespace", request.Msg.GetPackageRepoRef().GetContext().GetNamespace(), "id", request.Msg.GetPackageRepoRef().GetIdentifier())
 
 	if request.Msg.GetPackageRepoRef().GetPlugin() == nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Unable to retrieve the plugin (missing PackageRepoRef.Plugin)"))
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("unable to retrieve the plugin (missing PackageRepoRef.Plugin)"))
 	}
 
 	// Retrieve the plugin with server matching the requested plugin name
 	pluginWithServer := s.getPluginWithServer(request.Msg.PackageRepoRef.Plugin)
 	if pluginWithServer == nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Unable to get the plugin %v", request.Msg.PackageRepoRef.Plugin))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unable to get the plugin %v", request.Msg.PackageRepoRef.Plugin))
 	}
 
 	// Get the response from the requested plugin
 	response, err := pluginWithServer.server.UpdatePackageRepository(ctx, request)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeOf(err), fmt.Errorf("Unable to update the package repository %q using the plugin %q: %w",
+		return nil, connect.NewError(connect.CodeOf(err), fmt.Errorf("unable to update the package repository %q using the plugin %q: %w",
 			request.Msg.PackageRepoRef.Identifier, request.Msg.PackageRepoRef.Plugin.Name, err))
 	}
 
 	// Validate the plugin response
 	if response.Msg.PackageRepoRef == nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Invalid UpdatePackageRepository response from the plugin %v: %w", pluginWithServer.plugin.Name, err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("invalid UpdatePackageRepository response from the plugin %v: %w", pluginWithServer.plugin.Name, err))
 	}
 
 	return response, nil
@@ -186,19 +186,19 @@ func (s repositoriesServer) DeletePackageRepository(ctx context.Context, request
 	log.InfoS("+core DeletePackageRepository", "cluster", request.Msg.GetPackageRepoRef().GetContext().GetCluster(), "namespace", request.Msg.GetPackageRepoRef().GetContext().GetNamespace(), "id", request.Msg.GetPackageRepoRef().GetIdentifier())
 
 	if request.Msg.GetPackageRepoRef().GetPlugin() == nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Unable to retrieve the plugin (missing PackageRepoRef.Plugin)"))
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("unable to retrieve the plugin (missing PackageRepoRef.Plugin)"))
 	}
 
 	// Retrieve the plugin with server matching the requested plugin name
 	pluginWithServer := s.getPluginWithServer(request.Msg.PackageRepoRef.Plugin)
 	if pluginWithServer == nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Unable to get the plugin %v", request.Msg.PackageRepoRef.Plugin))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unable to get the plugin %v", request.Msg.PackageRepoRef.Plugin))
 	}
 
 	// Get the response from the requested plugin
 	response, err := pluginWithServer.server.DeletePackageRepository(ctx, request)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeOf(err), fmt.Errorf("Unable to delete the package repository %q using the plugin %q: %w",
+		return nil, connect.NewError(connect.CodeOf(err), fmt.Errorf("unable to delete the package repository %q using the plugin %q: %w",
 			request.Msg.PackageRepoRef.Identifier, request.Msg.PackageRepoRef.Plugin.Name, err))
 	}
 

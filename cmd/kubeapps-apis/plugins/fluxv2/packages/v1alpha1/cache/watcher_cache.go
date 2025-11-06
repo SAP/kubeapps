@@ -218,7 +218,7 @@ func (c *NamespacedResourceWatcherCache) isGvrValid() error {
 			}
 		}
 	}
-	return fmt.Errorf("CRD [%s] is not valid", c.config.Gvr)
+	return fmt.Errorf("crd [%s] is not valid", c.config.Gvr)
 }
 
 func (c *NamespacedResourceWatcherCache) syncAndStartWatchLoop(stopCh <-chan struct{}) {
@@ -462,7 +462,7 @@ func (c *NamespacedResourceWatcherCache) resync(bootstrap bool) (string, error) 
 	rv := listObj.GetResourceVersion()
 	if rv == "" {
 		// fail fast, without a valid resource version the whole workflow breaks down
-		return "", connect.NewError(connect.CodeInternal, fmt.Errorf("List() call response does not contain resource version"))
+		return "", connect.NewError(connect.CodeInternal, fmt.Errorf("list() call response does not contain resource version"))
 	}
 
 	// re-populate the cache with current state from k8s
@@ -1049,7 +1049,7 @@ func (c *NamespacedResourceWatcherCache) ExpectResync() (chan int, error) {
 	}()
 
 	if c.resyncCh != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("ExpectSync() already called"))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("expectSync() already called"))
 	} else {
 		c.resyncCh = make(chan int, 1)
 		// this channel will be closed and nil'ed out at the end of resync()

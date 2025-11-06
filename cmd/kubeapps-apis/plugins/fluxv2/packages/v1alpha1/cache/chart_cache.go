@@ -608,7 +608,7 @@ func (c *ChartCache) ExpectResync() (chan int, error) {
 	}()
 
 	if c.resyncCh != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("ExpectSync() already called"))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("expectSync() already called"))
 	} else {
 		c.resyncCh = make(chan int, 1)
 		return c.resyncCh, nil
