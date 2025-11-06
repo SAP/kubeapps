@@ -6,7 +6,7 @@
 [![REUSE status](https://api.reuse.software/badge/github.com/SAP/kubeapps)](https://api.reuse.software/info/github.com/SAP/kubeapps)
 
 > [!CAUTION]
-> After many years of growth and milestones, the time has come for the next chapter of Kubeapps. The current maintainers are concentrating their efforts on new projects. As of August 25th, 2025, the project has been deprecated and the repository archived. If a widely adopted fork emerges, we will link to it here to guide users arriving at this repository.
+> The original Kubeapps project was deprecated and archived by its former maintainers on August 25, 2025. This fork is now maintained by SAP SE (see the *Fork* section below) with a focus on essential upkeep: security fixes, compatibility updates, and critical bug resolution. New feature development is not guaranteed. Community contributions are welcome—please submit pull requests for maintenance, documentation improvements, and clearly scoped enhancements.
 
 ## Overview
 
