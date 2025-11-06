@@ -6,6 +6,8 @@ name: B&R dep Bitnami Redis Sentinel
 on:
   workflow_dispatch:
   push:
+    tags-ignore:
+      - '*'
     paths:
       - 'external/bitnami-deprecated-redis-sentinal/8.2/debian-12/**'
       - '.github/workflows/release-bitnami-redis-sentinel.yml'

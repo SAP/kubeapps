@@ -6,6 +6,8 @@ name: B&R dep Bitnami postgres-exporter
 on:
   workflow_dispatch:
   push:
+    tags-ignore:
+      - '*'
     paths:
       - 'external/bitnami-deprecated-postgres-exporter/17/**'
       - '.github/workflows/release-bitnami-postgres-exporter.yml'

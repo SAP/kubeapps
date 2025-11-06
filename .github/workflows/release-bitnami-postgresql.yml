@@ -6,6 +6,8 @@ name: B&R dep Bitnami postgresql
 on:
   workflow_dispatch:
   push:
+    tags-ignore:
+      - '*'
     paths:
       - 'external/bitnami-deprecated-postgresql/17/debian-12/**'
       - '.github/workflows/release-bitnami-postgresql.yml'
