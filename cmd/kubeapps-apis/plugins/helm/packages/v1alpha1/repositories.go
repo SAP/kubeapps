@@ -57,10 +57,10 @@ const NO_PROXY = "NO_PROXY"
 
 func (s *Server) newRepo(ctx context.Context, headers http.Header, repo *HelmRepository) (*corev1.PackageRepositoryReference, error) {
 	if repo.url == "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Repository url may not be empty"))
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("repository url may not be empty"))
 	}
 	if repo.repoType == "" || !slices.Contains(ValidRepoTypes, repo.repoType) {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Repository type [%s] not supported", repo.repoType))
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("repository type [%s] not supported", repo.repoType))
 	}
 	// up to here, go through and update all these helpers?
 	typedClient, err := s.clientGetter.Typed(headers, repo.cluster)
@@ -651,7 +651,7 @@ func (s *Server) GetPackageRepositoryPermissions(ctx context.Context, request *c
 	cluster := request.Msg.GetContext().GetCluster()
 	namespace := request.Msg.GetContext().GetNamespace()
 	if cluster == "" && namespace != "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Cluster must be specified when namespace is present: %s", namespace))
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("cluster must be specified when namespace is present: %s", namespace))
 	}
 	typedClient, err := s.clientGetter.Typed(request.Header(), cluster)
 	if err != nil {

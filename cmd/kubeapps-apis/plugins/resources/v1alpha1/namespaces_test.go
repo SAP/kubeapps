@@ -93,7 +93,7 @@ func TestCheckNamespaceExists(t *testing.T) {
 			k8sError: k8serrors.NewForbidden(schema.GroupResource{
 				Group:    "v1",
 				Resource: "namespaces",
-			}, "default", errors.New("Bang")),
+			}, "default", errors.New("bang")),
 			expectedErrorCode: connect.CodePermissionDenied,
 		},
 		{
@@ -104,7 +104,7 @@ func TestCheckNamespaceExists(t *testing.T) {
 					Namespace: "default",
 				},
 			},
-			k8sError:          k8serrors.NewInternalError(errors.New("Bang")),
+			k8sError:          k8serrors.NewInternalError(errors.New("bang")),
 			expectedErrorCode: connect.CodeInternal,
 		},
 	}
@@ -168,7 +168,7 @@ func TestCreateNamespace(t *testing.T) {
 			validator: func(action clientGoTesting.Action) (handled bool, ret runtime.Object, err error) {
 				createAction := action.(clientGoTesting.CreateActionImpl)
 				createNamespace := createAction.GetObject().(*corev1.Namespace)
-				assert.Nil(t, createNamespace.ObjectMeta.Labels)
+				assert.Nil(t, createNamespace.Labels)
 				return false, nil, err
 			},
 		},
@@ -188,8 +188,8 @@ func TestCreateNamespace(t *testing.T) {
 			validator: func(action clientGoTesting.Action) (handled bool, ret runtime.Object, err error) {
 				createAction := action.(clientGoTesting.CreateActionImpl)
 				createNamespace := createAction.GetObject().(*corev1.Namespace)
-				assert.Contains(t, createNamespace.ObjectMeta.Labels, "label1")
-				assert.Contains(t, createNamespace.ObjectMeta.Labels, "label2")
+				assert.Contains(t, createNamespace.Labels, "label1")
+				assert.Contains(t, createNamespace.Labels, "label2")
 				return false, nil, err
 			},
 		},
@@ -204,7 +204,7 @@ func TestCreateNamespace(t *testing.T) {
 			k8sError: k8serrors.NewForbidden(schema.GroupResource{
 				Group:    "v1",
 				Resource: "namespaces",
-			}, "default", errors.New("Bang")),
+			}, "default", errors.New("bang")),
 			expectedErrorCode: connect.CodePermissionDenied,
 		},
 		{
@@ -229,7 +229,7 @@ func TestCreateNamespace(t *testing.T) {
 					Namespace: "default",
 				},
 			},
-			k8sError:          k8serrors.NewInternalError(errors.New("Bang")),
+			k8sError:          k8serrors.NewInternalError(errors.New("bang")),
 			expectedErrorCode: connect.CodeInternal,
 		},
 	}
@@ -330,13 +330,13 @@ func TestGetNamespaceNames(t *testing.T) {
 			k8sError: k8serrors.NewForbidden(schema.GroupResource{
 				Group:    "v1",
 				Resource: "namespaces",
-			}, "default", errors.New("Bang")),
+			}, "default", errors.New("bang")),
 			expectedErrorCode: connect.CodePermissionDenied,
 		},
 		{
 			name:              "returns an internal error if k8s returns an unexpected error",
 			request:           defaultRequest,
-			k8sError:          k8serrors.NewInternalError(errors.New("Bang")),
+			k8sError:          k8serrors.NewInternalError(errors.New("bang")),
 			expectedErrorCode: connect.CodeInternal,
 		},
 		{

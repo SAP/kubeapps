@@ -61,7 +61,7 @@ func handleAuthSecretForCreate(
 
 	// if we have both ref config and data config, it is an invalid mixed configuration
 	if (hasCaRef || hasAuthRef) && (hasCaData || hasAuthData) {
-		return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Package repository cannot mix referenced secrets and user provided secret data"))
+		return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("package repository cannot mix referenced secrets and user provided secret data"))
 	}
 
 	// create/get secret
@@ -112,13 +112,13 @@ func handleAuthSecretForUpdate(
 
 	// if we have both ref config and data config, it is an invalid mixed configuration
 	if (hasCaRef || hasAuthRef) && (hasCaData || hasAuthData) {
-		return nil, false, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Package repository cannot mix referenced secrets and user provided secret data"))
+		return nil, false, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("package repository cannot mix referenced secrets and user provided secret data"))
 	}
 
 	// check we cannot change mode (per design spec)
 	if secret != nil && (hasCaRef || hasCaData || hasAuthRef || hasAuthData) {
 		if isAuthSecretKubeappsManaged(repo, secret) != (hasAuthData || hasCaData) {
-			return nil, false, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Auth management mode cannot be changed"))
+			return nil, false, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("auth management mode cannot be changed"))
 		}
 	}
 
@@ -179,7 +179,7 @@ func handleImagesPullSecretForUpdate(
 	// check we are not changing mode
 	if secret != nil && (hasRef || hasData) {
 		if isImagesPullSecretKubeappsManaged(repo, secret) != hasData {
-			return nil, false, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Auth management mode cannot be changed"))
+			return nil, false, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("auth management mode cannot be changed"))
 		}
 	}
 
@@ -242,7 +242,7 @@ func newSecretFromTlsConfigAndAuth(repoName string,
 			if hadSecretCa {
 				secret.Data[SecretCaKey] = existingSecret.Data[SecretCaKey]
 			} else {
-				return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Invalid configuration, unexpected REDACTED content"))
+				return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid configuration, unexpected REDACTED content"))
 			}
 		} else {
 			secret.Data[SecretCaKey] = []byte(caCert)
@@ -259,10 +259,10 @@ func newSecretFromTlsConfigAndAuth(repoName string,
 		case corev1.PackageRepositoryAuth_PACKAGE_REPOSITORY_AUTH_TYPE_BASIC_AUTH:
 			unp := auth.GetUsernamePassword()
 			if unp == nil || unp.GetUsername() == "" || unp.GetPassword() == "" {
-				return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Username/Password configuration is missing"))
+				return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("username/Password configuration is missing"))
 			}
 			if (unp.GetUsername() == RedactedString || unp.GetPassword() == RedactedString) && !hadSecretHeader {
-				return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Invalid configuration, unexpected REDACTED content"))
+				return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid configuration, unexpected REDACTED content"))
 			}
 
 			if unp.GetUsername() == RedactedString && unp.GetPassword() == RedactedString {
@@ -270,7 +270,7 @@ func newSecretFromTlsConfigAndAuth(repoName string,
 			} else if unp.GetUsername() == RedactedString || unp.GetPassword() == RedactedString {
 				username, password, ok := decodeBasicAuth(string(existingSecret.Data[SecretAuthHeaderKey]))
 				if !ok {
-					return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Invalid configuration, the existing repository does not have username/password authentication"))
+					return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid configuration, the existing repository does not have username/password authentication"))
 				}
 				if unp.GetUsername() != RedactedString {
 					username = unp.GetUsername()
@@ -287,14 +287,14 @@ func newSecretFromTlsConfigAndAuth(repoName string,
 		case corev1.PackageRepositoryAuth_PACKAGE_REPOSITORY_AUTH_TYPE_BEARER:
 			token := auth.GetHeader()
 			if token == "" {
-				return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Bearer token is missing"))
+				return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("bearer token is missing"))
 			}
 
 			if token == RedactedString {
 				if hadSecretHeader {
 					secret.Data[SecretAuthHeaderKey] = existingSecret.Data[SecretAuthHeaderKey]
 				} else {
-					return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Invalid configuration, unexpected REDACTED content"))
+					return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid configuration, unexpected REDACTED content"))
 				}
 			} else {
 				isSameSecret = false
@@ -303,14 +303,14 @@ func newSecretFromTlsConfigAndAuth(repoName string,
 		case corev1.PackageRepositoryAuth_PACKAGE_REPOSITORY_AUTH_TYPE_AUTHORIZATION_HEADER:
 			header := auth.GetHeader()
 			if header == "" {
-				return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Authentication header value is missing"))
+				return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("authentication header value is missing"))
 			}
 
 			if header == RedactedString {
 				if hadSecretHeader {
 					secret.Data[SecretAuthHeaderKey] = existingSecret.Data[SecretAuthHeaderKey]
 				} else {
-					return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Invalid configuration, unexpected REDACTED content"))
+					return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid configuration, unexpected REDACTED content"))
 				}
 			} else {
 				isSameSecret = false
@@ -319,10 +319,10 @@ func newSecretFromTlsConfigAndAuth(repoName string,
 		case corev1.PackageRepositoryAuth_PACKAGE_REPOSITORY_AUTH_TYPE_DOCKER_CONFIG_JSON:
 			creds := auth.GetDockerCreds()
 			if creds == nil || creds.Server == "" || creds.Username == "" || creds.Password == "" {
-				return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Docker credentials are missing"))
+				return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("docker credentials are missing"))
 			}
 			if (creds.Server == RedactedString || creds.Username == RedactedString || creds.Password == RedactedString || creds.Email == RedactedString) && !hadSecretDocker {
-				return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Invalid configuration, unexpected REDACTED content"))
+				return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid configuration, unexpected REDACTED content"))
 			}
 
 			secret.Type = k8scorev1.SecretTypeDockerConfigJson
@@ -331,7 +331,7 @@ func newSecretFromTlsConfigAndAuth(repoName string,
 			} else if creds.Server == RedactedString || creds.Username == RedactedString || creds.Password == RedactedString || creds.Email == RedactedString {
 				newcreds, err := decodeDockerAuth(existingSecret.Data[DockerConfigJsonKey])
 				if err != nil {
-					return nil, false, connect.NewError(connect.CodeInternal, fmt.Errorf("Invalid configuration, the existing repository does not have valid docker authentication"))
+					return nil, false, connect.NewError(connect.CodeInternal, fmt.Errorf("invalid configuration, the existing repository does not have valid docker authentication"))
 				}
 
 				if creds.Server != RedactedString {
@@ -349,20 +349,20 @@ func newSecretFromTlsConfigAndAuth(repoName string,
 
 				isSameSecret = false
 				if configjson, err := encodeDockerAuth(newcreds); err != nil {
-					return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Invalid Docker credentials"))
+					return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid Docker credentials"))
 				} else {
 					secret.Data[DockerConfigJsonKey] = configjson
 				}
 			} else {
 				isSameSecret = false
 				if configjson, err := encodeDockerAuth(creds); err != nil {
-					return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Invalid Docker credentials"))
+					return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid Docker credentials"))
 				} else {
 					secret.Data[DockerConfigJsonKey] = configjson
 				}
 			}
 		default:
-			return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Package repository authentication type %q is not supported", auth.Type))
+			return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("package repository authentication type %q is not supported", auth.Type))
 		}
 	} else {
 		// no authentication, check if it was removed
@@ -381,7 +381,7 @@ func newAppRepositoryAuth(secret *k8scorev1.Secret,
 
 	if tlsConfig != nil {
 		if secret == nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Secret for AppRepository auth is missing"))
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("secret for AppRepository auth is missing"))
 		}
 		appRepoAuth.CustomCA = &apprepov1alpha1.AppRepositoryCustomCA{
 			SecretKeyRef: k8scorev1.SecretKeySelector{
@@ -399,7 +399,7 @@ func newAppRepositoryAuth(secret *k8scorev1.Secret,
 			corev1.PackageRepositoryAuth_PACKAGE_REPOSITORY_AUTH_TYPE_BEARER,
 			corev1.PackageRepositoryAuth_PACKAGE_REPOSITORY_AUTH_TYPE_AUTHORIZATION_HEADER:
 			if secret == nil {
-				return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Secret for AppRepository auth is missing"))
+				return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("secret for AppRepository auth is missing"))
 			}
 			if _, ok := secret.Data[SecretAuthHeaderKey]; ok {
 				appRepoAuth.Header = &apprepov1alpha1.AppRepositoryAuthHeader{
@@ -411,11 +411,11 @@ func newAppRepositoryAuth(secret *k8scorev1.Secret,
 					},
 				}
 			} else {
-				return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Authentication header is missing"))
+				return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("authentication header is missing"))
 			}
 		case corev1.PackageRepositoryAuth_PACKAGE_REPOSITORY_AUTH_TYPE_DOCKER_CONFIG_JSON:
 			if secret == nil {
-				return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Secret for AppRepository auth is missing"))
+				return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("secret for AppRepository auth is missing"))
 			}
 			if _, ok := secret.Data[DockerConfigJsonKey]; ok {
 				appRepoAuth.Header = &apprepov1alpha1.AppRepositoryAuthHeader{
@@ -428,11 +428,11 @@ func newAppRepositoryAuth(secret *k8scorev1.Secret,
 				}
 			}
 		case corev1.PackageRepositoryAuth_PACKAGE_REPOSITORY_AUTH_TYPE_TLS:
-			return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("Package repository authentication type %q is not supported", auth.Type))
+			return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("package repository authentication type %q is not supported", auth.Type))
 		case corev1.PackageRepositoryAuth_PACKAGE_REPOSITORY_AUTH_TYPE_UNSPECIFIED:
 			return nil, nil
 		default:
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Unexpected package repository authentication type: %q", auth.Type))
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unexpected package repository authentication type: %q", auth.Type))
 		}
 	}
 
@@ -464,9 +464,9 @@ func validateDockerImagePullSecret(ctx context.Context,
 	if secret, err := typedClient.CoreV1().Secrets(namespace).Get(ctx, secretName, metav1.GetOptions{}); err != nil {
 		return nil, connecterror.FromK8sError("get", "secret", secretName, err)
 	} else if secret.Type != k8scorev1.SecretTypeDockerConfigJson {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Images Docker pull secret %s does not have valid type", secretName))
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("images Docker pull secret %s does not have valid type", secretName))
 	} else if _, ok := secret.Data[k8scorev1.DockerConfigJsonKey]; !ok {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Images Docker pull secret %s does not have valid data", secretName))
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("images Docker pull secret %s does not have valid data", secretName))
 	} else {
 		return secret, nil
 	}
@@ -478,10 +478,10 @@ func imagesPullSecretName(repoName string) string {
 
 func newDockerImagePullSecret(repoName string, existingSecret *k8scorev1.Secret, creds *corev1.DockerCredentials) (secret *k8scorev1.Secret, isSameSecret bool, err error) {
 	if creds.Server == "" || creds.Username == "" || creds.Password == "" {
-		return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Docker credentials are missing"))
+		return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("docker credentials are missing"))
 	}
 	if (creds.Server == RedactedString || creds.Username == RedactedString || creds.Password == RedactedString || creds.Email == RedactedString) && existingSecret == nil {
-		return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Invalid configuration, unexpected REDACTED content"))
+		return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid configuration, unexpected REDACTED content"))
 	}
 
 	secret = &k8scorev1.Secret{
@@ -501,7 +501,7 @@ func newDockerImagePullSecret(repoName string, existingSecret *k8scorev1.Secret,
 		// merge
 		newcreds, err := decodeDockerAuth(existingSecret.Data[DockerConfigJsonKey])
 		if err != nil {
-			return nil, false, connect.NewError(connect.CodeInternal, fmt.Errorf("Invalid configuration, the existing repository does not have valid docker authentication"))
+			return nil, false, connect.NewError(connect.CodeInternal, fmt.Errorf("invalid configuration, the existing repository does not have valid docker authentication"))
 		}
 
 		if creds.Server != RedactedString {
@@ -518,7 +518,7 @@ func newDockerImagePullSecret(repoName string, existingSecret *k8scorev1.Secret,
 		}
 
 		if configjson, err := encodeDockerAuth(newcreds); err != nil {
-			return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Invalid Docker credentials"))
+			return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid Docker credentials"))
 		} else {
 			secret.Data[DockerConfigJsonKey] = configjson
 			return secret, false, nil
@@ -527,7 +527,7 @@ func newDockerImagePullSecret(repoName string, existingSecret *k8scorev1.Secret,
 	} else {
 		// new
 		if configjson, err := encodeDockerAuth(creds); err != nil {
-			return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Invalid Docker credentials"))
+			return nil, false, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid Docker credentials"))
 		} else {
 			secret.Data[DockerConfigJsonKey] = configjson
 			return secret, false, nil
@@ -589,7 +589,7 @@ func validateUserManagedRepoSecret(
 
 	var secretRef string
 	if secretRefTls != "" && secretRefAuth != "" && secretRefTls != secretRefAuth {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("TLS config secret and Auth secret must be the same"))
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("tls config secret and Auth secret must be the same"))
 	} else if secretRefTls != "" {
 		secretRef = secretRefTls
 	} else if secretRefAuth != "" {
@@ -608,34 +608,34 @@ func validateUserManagedRepoSecret(
 			// PackageRepositoryAuth_PACKAGE_REPOSITORY_AUTH_TYPE_BASIC_AUTH,
 			// check that the secret data has valid fields
 			if secretRefTls != "" && secret.Data[SecretCaKey] == nil {
-				return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Specified secret [%s] missing key '%s'", secretRef, SecretCaKey))
+				return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("specified secret [%s] missing key '%s'", secretRef, SecretCaKey))
 			}
 			if secretRefAuth != "" {
 				switch auth.Type {
 				case corev1.PackageRepositoryAuth_PACKAGE_REPOSITORY_AUTH_TYPE_BASIC_AUTH:
 					if data := secret.Data[SecretAuthHeaderKey]; data == nil {
-						return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Specified secret [%s] missing key '%s'", secretRef, SecretAuthHeaderKey))
+						return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("specified secret [%s] missing key '%s'", secretRef, SecretAuthHeaderKey))
 					} else if _, _, ok := decodeBasicAuth(string(data)); !ok {
-						return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Specified secret [%s] does not represent a valid Basic Auth secret'", secretRef))
+						return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("specified secret [%s] does not represent a valid Basic Auth secret'", secretRef))
 					}
 				case corev1.PackageRepositoryAuth_PACKAGE_REPOSITORY_AUTH_TYPE_BEARER:
 					if data := secret.Data[SecretAuthHeaderKey]; data == nil {
-						return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Specified secret [%s] missing key '%s'", secretRef, SecretAuthHeaderKey))
+						return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("specified secret [%s] missing key '%s'", secretRef, SecretAuthHeaderKey))
 					} else if _, ok := decodeBearerAuth(string(data)); !ok {
-						return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Specified secret [%s] does not represent a valid Bearer Auth secret'", secretRef))
+						return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("specified secret [%s] does not represent a valid Bearer Auth secret'", secretRef))
 					}
 				case corev1.PackageRepositoryAuth_PACKAGE_REPOSITORY_AUTH_TYPE_AUTHORIZATION_HEADER:
 					if data := secret.Data[SecretAuthHeaderKey]; data == nil {
-						return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Specified secret [%s] missing key '%s'", secretRef, SecretAuthHeaderKey))
+						return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("specified secret [%s] missing key '%s'", secretRef, SecretAuthHeaderKey))
 					}
 				case corev1.PackageRepositoryAuth_PACKAGE_REPOSITORY_AUTH_TYPE_DOCKER_CONFIG_JSON:
 					if secret.Type != k8scorev1.SecretTypeDockerConfigJson {
-						return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Specified secret [%s] does not have expected dockerconfig type", secretRef))
+						return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("specified secret [%s] does not have expected dockerconfig type", secretRef))
 					} else if _, ok := secret.Data[k8scorev1.DockerConfigJsonKey]; !ok {
-						return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Specified secret [%s] missing key '%s'", secretRef, DockerConfigJsonKey))
+						return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("specified secret [%s] missing key '%s'", secretRef, DockerConfigJsonKey))
 					}
 				default:
-					return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("Package repository authentication type %q is not supported", auth.Type))
+					return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("package repository authentication type %q is not supported", auth.Type))
 				}
 			}
 		}

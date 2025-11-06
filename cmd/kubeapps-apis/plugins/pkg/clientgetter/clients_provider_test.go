@@ -46,7 +46,7 @@ func TestGetClientProvider(t *testing.T) {
 	}}
 
 	badClientGetter := &ClientProvider{ClientsFunc: func(headers http.Header, cluster string) (*ClientGetter, error) {
-		return nil, fmt.Errorf("Bang!")
+		return nil, fmt.Errorf("bang!")
 	}}
 
 	testCases := []struct {

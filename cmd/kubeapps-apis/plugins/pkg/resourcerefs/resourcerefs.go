@@ -44,7 +44,7 @@ func ResourceRefsFromManifest(m, pkgNamespace string) ([]*corev1.ResourceRef, er
 			if goerrs.Is(err, io.EOF) {
 				break
 			}
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Unable to decode yaml manifest: %w", err))
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unable to decode yaml manifest: %w", err))
 		}
 		if doc.Kind == "" {
 			continue
@@ -98,7 +98,7 @@ func GetInstalledPackageResourceRefs(
 
 	actionConfig, err := actionConfigGetter(headers, namespace)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Unable to create Helm action config: %w", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unable to create Helm action config: %w", err))
 	}
 
 	// Grab the released manifest from the release.
@@ -113,9 +113,9 @@ func GetInstalledPackageResourceRefs(
 	if err != nil {
 		if err == driver.ErrReleaseNotFound {
 			log.ErrorS(err, "resourcerefs GetInstalledPackageResourceRefs")
-			return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("Unable to find Helm release %q in namespace %q: %w", helmReleaseName, namespace, err))
+			return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("unable to find Helm release %q in namespace %q: %w", helmReleaseName, namespace, err))
 		}
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Unable to run Helm get action: %w", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unable to run Helm get action: %w", err))
 	}
 
 	refs, err := ResourceRefsFromManifest(release.Manifest, namespace)

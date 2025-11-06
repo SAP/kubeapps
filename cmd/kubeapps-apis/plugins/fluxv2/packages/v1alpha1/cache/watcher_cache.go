@@ -218,7 +218,7 @@ func (c *NamespacedResourceWatcherCache) isGvrValid() error {
 			}
 		}
 	}
-	return fmt.Errorf("CRD [%s] is not valid", c.config.Gvr)
+	return fmt.Errorf("crd [%s] is not valid", c.config.Gvr)
 }
 
 func (c *NamespacedResourceWatcherCache) syncAndStartWatchLoop(stopCh <-chan struct{}) {
@@ -435,7 +435,7 @@ func (c *NamespacedResourceWatcherCache) resync(bootstrap bool) (string, error) 
 	ctx := context.Background()
 	ctrlClient, err := c.config.ClientGetter.ControllerRuntime(ctx)
 	if err != nil {
-		return "", connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("Unable to get client due to: %w", err))
+		return "", connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("unable to get client due to: %w", err))
 	}
 
 	// This code runs in the background, i.e. not in a context of any specific user request.
@@ -462,7 +462,7 @@ func (c *NamespacedResourceWatcherCache) resync(bootstrap bool) (string, error) 
 	rv := listObj.GetResourceVersion()
 	if rv == "" {
 		// fail fast, without a valid resource version the whole workflow breaks down
-		return "", connect.NewError(connect.CodeInternal, fmt.Errorf("List() call response does not contain resource version"))
+		return "", connect.NewError(connect.CodeInternal, fmt.Errorf("list() call response does not contain resource version"))
 	}
 
 	// re-populate the cache with current state from k8s
@@ -551,7 +551,7 @@ func (c *NamespacedResourceWatcherCache) syncHandler(key string) error {
 	ctx := context.Background()
 	ctrlClient, err := c.config.ClientGetter.ControllerRuntime(ctx)
 	if err != nil {
-		return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("Unable to get client due to: %w", err))
+		return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("unable to get client due to: %w", err))
 	}
 
 	// TODO: (gfichtenholt) confidence test: I'd like to make sure the caller has the read lock,
@@ -568,7 +568,7 @@ func (c *NamespacedResourceWatcherCache) syncHandler(key string) error {
 		if errors.IsNotFound(err) {
 			return c.onDelete(key)
 		} else {
-			return connect.NewError(connect.CodeInternal, fmt.Errorf("Error fetching object with key [%s]: %w", key, err))
+			return connect.NewError(connect.CodeInternal, fmt.Errorf("error fetching object with key [%s]: %w", key, err))
 		}
 	}
 	return c.onAddOrModify(obj)
@@ -818,7 +818,7 @@ func (c *NamespacedResourceWatcherCache) populateWith(items []ctrlclient.Object)
 	// confidence test: I'd like to make sure this is called within the context
 	// of resync, i.e. resync.Cond.L is locked by this goroutine.
 	if !common.RWMutexWriteLocked(c.resyncCond.L.(*sync.RWMutex)) {
-		return connect.NewError(connect.CodeInternal, fmt.Errorf("Invalid state of the cache in populateWith()"))
+		return connect.NewError(connect.CodeInternal, fmt.Errorf("invalid state of the cache in populateWith()"))
 	}
 
 	keys := sets.Set[string]{}
@@ -951,7 +951,7 @@ func (c *NamespacedResourceWatcherCache) KeyForNamespacedName(name types.Namespa
 func (c *NamespacedResourceWatcherCache) NamespacedNameFromKey(key string) (*types.NamespacedName, error) {
 	parts := strings.Split(key, KeySegmentsSeparator)
 	if len(parts) != 3 || parts[0] != c.config.Gvr.Resource || len(parts[1]) == 0 || len(parts[2]) == 0 {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("Invalid key [%s]", key))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("invalid key [%s]", key))
 	}
 	return &types.NamespacedName{Namespace: parts[1], Name: parts[2]}, nil
 }
@@ -1049,7 +1049,7 @@ func (c *NamespacedResourceWatcherCache) ExpectResync() (chan int, error) {
 	}()
 
 	if c.resyncCh != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("ExpectSync() already called"))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("expectSync() already called"))
 	} else {
 		c.resyncCh = make(chan int, 1)
 		// this channel will be closed and nil'ed out at the end of resync()

@@ -64,7 +64,7 @@ func TestCreateSecret(t *testing.T) {
 			k8sError: k8serrors.NewForbidden(schema.GroupResource{
 				Group:    "v1",
 				Resource: "secrets",
-			}, "default", errors.New("Bang")),
+			}, "default", errors.New("bang")),
 			expectedErrorCode: connect.CodePermissionDenied,
 		},
 		{
@@ -89,7 +89,7 @@ func TestCreateSecret(t *testing.T) {
 					Namespace: "default",
 				},
 			},
-			k8sError:          k8serrors.NewInternalError(errors.New("Bang")),
+			k8sError:          k8serrors.NewInternalError(errors.New("bang")),
 			expectedErrorCode: connect.CodeInternal,
 		},
 	}
@@ -212,7 +212,7 @@ func TestGetSecretNames(t *testing.T) {
 			k8sError: k8serrors.NewForbidden(schema.GroupResource{
 				Group:    "v1",
 				Resource: "secrets",
-			}, "default", errors.New("Bang")),
+			}, "default", errors.New("bang")),
 			expectedErrorCode: connect.CodePermissionDenied,
 		},
 		{
@@ -223,7 +223,7 @@ func TestGetSecretNames(t *testing.T) {
 					Namespace: "default",
 				},
 			},
-			k8sError:          k8serrors.NewInternalError(errors.New("Bang")),
+			k8sError:          k8serrors.NewInternalError(errors.New("bang")),
 			expectedErrorCode: connect.CodeInternal,
 		},
 	}

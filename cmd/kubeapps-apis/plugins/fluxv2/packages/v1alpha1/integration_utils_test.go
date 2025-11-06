@@ -119,13 +119,13 @@ func checkEnv(t *testing.T) (fluxplugin.FluxV2PackagesServiceClient, fluxplugin.
 		return nil, nil, nil, nil
 	} else {
 		if up, err := isLocalKindClusterUp(t); err != nil || !up {
-			return nil, nil, nil, fmt.Errorf("Failed to find local kind cluster due to: [%v]", err)
+			return nil, nil, nil, fmt.Errorf("failed to find local kind cluster due to: [%v]", err)
 		}
 		var fluxPluginPackagesClient fluxplugin.FluxV2PackagesServiceClient
 		var fluxPluginReposClient fluxplugin.FluxV2RepositoriesServiceClient
 		var err error
 		if fluxPluginPackagesClient, fluxPluginReposClient, err = getFluxPluginClients(t); err != nil {
-			return nil, nil, nil, fmt.Errorf("Failed to get fluxv2 plugin due to: [%v]", err)
+			return nil, nil, nil, fmt.Errorf("failed to get fluxv2 plugin due to: [%v]", err)
 		}
 
 		// check the fluxv2plugin-testdata-svc is deployed - without it,
@@ -139,7 +139,7 @@ func checkEnv(t *testing.T) (fluxplugin.FluxV2PackagesServiceClient, fluxplugin.
 		defer cancel()
 		_, err = typedClient.CoreV1().Services("default").Get(ctx, "fluxv2plugin-testdata-svc", metav1.GetOptions{})
 		if err != nil {
-			return nil, nil, nil, fmt.Errorf("Failed to get service [default/fluxv2plugin-testdata-svc] due to: [%v]", err)
+			return nil, nil, nil, fmt.Errorf("failed to get service [default/fluxv2plugin-testdata-svc] due to: [%v]", err)
 		}
 
 		// Check for helmrepositories left over from manual testing. This has caused me a lot grief
@@ -149,7 +149,7 @@ func checkEnv(t *testing.T) (fluxplugin.FluxV2PackagesServiceClient, fluxplugin.
 		for i := 0; i <= maxWait; i++ {
 			l, err = kubeListAllHelmRepositories(t)
 			if err != nil {
-				return nil, nil, nil, fmt.Errorf("Failed to get list of HelmRepositories due to: [%v]", err)
+				return nil, nil, nil, fmt.Errorf("failed to get list of HelmRepositories due to: [%v]", err)
 			} else if len(l.Items) != 0 {
 				names = []string{}
 				for _, p := range l.Items {
@@ -164,7 +164,7 @@ func checkEnv(t *testing.T) (fluxplugin.FluxV2PackagesServiceClient, fluxplugin.
 		if len(l.Items) != 0 {
 			t.Logf("The following existing HelmRepositories where found in the cluster: %s", names)
 			t.Logf("You may use command [kubectl delete helmrepositories --all] to delete them")
-			return nil, nil, nil, fmt.Errorf("Failed due to existing HelmRepositories in the cluster")
+			return nil, nil, nil, fmt.Errorf("failed due to existing HelmRepositories in the cluster")
 		}
 		rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
 		return fluxPluginPackagesClient, fluxPluginReposClient, rnd, nil
@@ -348,7 +348,7 @@ func kubeWaitUntilHelmRepositoryIsReady(t *testing.T, name types.NamespacedName)
 			for {
 				event, ok := <-ch
 				if !ok {
-					return errors.New("Channel was closed unexpectedly")
+					return errors.New("channel was closed unexpectedly")
 				}
 				if event.Type == "" {
 					// not quite sure why this happens (the docs don't say), but it seems to happen quite often
@@ -357,7 +357,7 @@ func kubeWaitUntilHelmRepositoryIsReady(t *testing.T, name types.NamespacedName)
 				switch event.Type {
 				case watch.Added, watch.Modified:
 					if repo, ok := event.Object.(*sourcev1beta2.HelmRepository); !ok {
-						return errors.New("Could not cast to *sourcev1beta2.HelmRepository")
+						return errors.New("could not cast to *sourcev1beta2.HelmRepository")
 					} else {
 						hour, minute, second := time.Now().Clock()
 						complete, success, reason := isHelmRepositoryReady(*repo)
@@ -612,7 +612,7 @@ func kubeCreateServiceAccountWithClusterRole(t *testing.T, name types.Namespaced
 	}
 
 	if token == "" {
-		return "", fmt.Errorf("Failed to get token from secret: [%s]", secretName)
+		return "", fmt.Errorf("failed to get token from secret: [%s]", secretName)
 	}
 	return token, nil
 }
@@ -684,7 +684,7 @@ func kubeCreateServiceAccountWithRoles(t *testing.T, name types.NamespacedName, 
 	}
 
 	if token == "" {
-		return "", fmt.Errorf("Failed to get token from secret: [%s]", secretName)
+		return "", fmt.Errorf("failed to get token from secret: [%s]", secretName)
 	}
 	return token, nil
 }
@@ -802,7 +802,7 @@ func kubeGetSecretToken(t *testing.T, name types.NamespacedName, dataKey string)
 	if secret, err := kubeGetSecret(t, name); err == nil && secret != nil {
 		token := secret.Data[dataKey]
 		if token == nil {
-			return "", errors.New("No data found")
+			return "", errors.New("no data found")
 		}
 		return string(token), nil
 	} else {
@@ -1011,11 +1011,11 @@ func kubeCopyFileToPod(t *testing.T, srcFile string, podName types.NamespacedNam
 	cmd := cp.NewCmdCp(tf, ioStreams)
 	err = copyOptions.Complete(tf, cmd, []string{srcFile, destSpec})
 	if err != nil {
-		return fmt.Errorf("Could not prepare copy operation: %v", err)
+		return fmt.Errorf("could not prepare copy operation: %v", err)
 	}
 	err = copyOptions.Run()
 	if err != nil {
-		return fmt.Errorf("Could not run copy operation: %v", err)
+		return fmt.Errorf("could not run copy operation: %v", err)
 	}
 	return nil
 }
@@ -1077,7 +1077,7 @@ func newGrpcContext(t *testing.T, token string) context.Context {
 func newGrpcAdminContext(t *testing.T, name types.NamespacedName) (context.Context, error) {
 	token, err := kubeCreateAdminServiceAccount(t, name)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create service account due to: %+v", err)
+		return nil, fmt.Errorf("failed to create service account due to: %+v", err)
 	}
 	t.Cleanup(func() {
 		if err := kubeDeleteServiceAccountWithClusterRoleBinding(t, name); err != nil {
@@ -1090,7 +1090,7 @@ func newGrpcAdminContext(t *testing.T, name types.NamespacedName) (context.Conte
 func newGrpcFluxPluginContext(t *testing.T, name types.NamespacedName) (context.Context, error) {
 	token, err := kubeCreateFluxPluginServiceAccount(t, name)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create service account [%s] due to: %+v", name, err)
+		return nil, fmt.Errorf("failed to create service account [%s] due to: %+v", name, err)
 	}
 	t.Cleanup(func() {
 		if err := kubeDeleteServiceAccountWithClusterRoleBinding(t, name); err != nil {
@@ -1178,7 +1178,7 @@ func redisCheckTinyMaxMemory(t *testing.T, redisCli *redis.Client, expectedMaxMe
 		currentMaxMemory := fmt.Sprintf("%v", maxmemory[1])
 		t.Logf("Current redis maxmemory = [%s]", currentMaxMemory)
 		if currentMaxMemory != expectedMaxMemory {
-			return fmt.Errorf("This test requires redis config maxmemory to be set to %s", expectedMaxMemory)
+			return fmt.Errorf("this test requires redis config maxmemory to be set to %s", expectedMaxMemory)
 		}
 	}
 	maxmemoryPolicy, err := redisCli.ConfigGet(redisCli.Context(), "maxmemory-policy").Result()
@@ -1188,7 +1188,7 @@ func redisCheckTinyMaxMemory(t *testing.T, redisCli *redis.Client, expectedMaxMe
 		currentMaxMemoryPolicy := fmt.Sprintf("%v", maxmemoryPolicy[1])
 		t.Logf("Current maxmemory policy = [%s]", currentMaxMemoryPolicy)
 		if currentMaxMemoryPolicy != "allkeys-lfu" {
-			return fmt.Errorf("This test requires redis config maxmemory-policy to be set to allkeys-lfu")
+			return fmt.Errorf("this test requires redis config maxmemory-policy to be set to allkeys-lfu")
 		}
 	}
 	return nil
@@ -1243,7 +1243,7 @@ func newRedisClientForIntegrationTest(t *testing.T) (*redis.Client, error) {
 		return nil, err
 	} else {
 		if len(keys) != 0 {
-			return nil, fmt.Errorf("Failing due to unexpected state of the cache. Current keys: %s", keys)
+			return nil, fmt.Errorf("failing due to unexpected state of the cache. Current keys: %s", keys)
 		}
 	}
 	return redisCli, nil

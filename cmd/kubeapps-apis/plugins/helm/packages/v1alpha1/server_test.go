@@ -117,7 +117,7 @@ func TestGetClient(t *testing.T) {
 			name:    "it returns whatever error the clients getter function returns",
 			manager: manager,
 			clientGetter: &clientgetter.ClientProvider{ClientsFunc: func(headers http.Header, cluster string) (*clientgetter.ClientGetter, error) {
-				return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("Bang!"))
+				return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("bang!"))
 			}},
 			errorCodeClient: connect.CodeFailedPrecondition,
 		},

@@ -37,7 +37,7 @@ func (s *Server) ValidateRepository(ctx context.Context, appRepo *apprepov1alpha
 	if len(appRepo.Spec.DockerRegistrySecrets) > 0 && appRepo.Namespace == s.GetGlobalPackagingNamespace() {
 		// TODO(mnelson): we may also want to validate that any docker registry secrets listed
 		// already exist in the namespace.
-		return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("The docker registry secrets cannot be set for app repositories available in all namespaces"))
+		return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("the docker registry secrets cannot be set for app repositories available in all namespaces"))
 	}
 
 	validator, err := s.getValidator(appRepo, secret)
@@ -49,7 +49,7 @@ func (s *Server) ValidateRepository(ctx context.Context, appRepo *apprepov1alpha
 		return err
 	} else if resp.Code >= 400 {
 		log.Errorf("Failed repository validation validation: %+v", resp)
-		return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("Failed repository validation: %v", resp))
+		return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("failed repository validation: %v", resp))
 	} else {
 		return nil
 	}
@@ -78,7 +78,7 @@ func (s *Server) getValidator(appRepo *apprepov1alpha1.AppRepository, secret *co
 
 func newRepositoryClient(appRepo *apprepov1alpha1.AppRepository, secret *corev1.Secret) (*http.Client, error) {
 	if cli, err := helm.InitNetClient(appRepo, secret, secret, nil); err != nil {
-		return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("Unable to create HTTP client for repository: %w", err))
+		return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("unable to create HTTP client for repository: %w", err))
 	} else {
 		return cli, nil
 	}
@@ -155,12 +155,12 @@ func getOCIAppRepositoryTag(cli *http.Client, repoURL string, repoName string) (
 
 	err = json.Unmarshal(body, &repoTagsData)
 	if err != nil {
-		err = fmt.Errorf("OCI Repo tag at %q could not be parsed: %w", parsedURL.String(), err)
+		err = fmt.Errorf("oci Repo tag at %q could not be parsed: %w", parsedURL.String(), err)
 		return "", err
 	}
 
 	if len(repoTagsData.Tags) == 0 {
-		err = fmt.Errorf("OCI Repo tag at %q could not be parsed: %w", parsedURL.String(), err)
+		err = fmt.Errorf("oci Repo tag at %q could not be parsed: %w", parsedURL.String(), err)
 		return "", err
 	}
 
@@ -206,7 +206,7 @@ func getOCIAppRepositoryMediaType(client *http.Client, repoURL string, repoName 
 
 	err = json.Unmarshal(body, &mediaData)
 	if err != nil {
-		err = fmt.Errorf("OCI Repo manifest at %q could not be parsed: %w", parsedURL.String(), err)
+		err = fmt.Errorf("oci Repo manifest at %q could not be parsed: %w", parsedURL.String(), err)
 		return "", err
 	}
 	mediaType := mediaData.Config.MediaType

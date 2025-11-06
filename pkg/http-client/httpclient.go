@@ -204,7 +204,7 @@ func GetStream(url string, cli *http.Client, reqHeaders map[string]string) (io.R
 	respContentType := res.Header.Get("Content-Type")
 
 	if res.StatusCode != http.StatusOK {
-		errorMsg := fmt.Sprintf("GET request to [%s] failed due to status [%d]", url, res.StatusCode)
+		errorMsg := fmt.Sprintf("get request to [%s] failed due to status [%d]", url, res.StatusCode)
 		errPayload, err := io.ReadAll(res.Body)
 		if err == nil && len(errPayload) > 0 {
 			errorMsg += ": " + string(errPayload)
