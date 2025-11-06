@@ -1,0 +1,70 @@
+name: Deploy Hugo site to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+# Allow one concurrent deployment
+concurrency:
+  group: hugo-pages
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    name: Build site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # enable Git info (for last modified etc.)
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: '0.124.1'
+          extended: true
+
+      - name: Compute base URL
+        id: vars
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER}"
+          repo="${GITHUB_REPOSITORY#*/}"
+          if [[ "$repo" == *.github.io ]]; then
+            base_url="https://${owner}.github.io/"
+          else
+            base_url="https://${owner}.github.io/${repo}/"
+          fi
+          echo "Using base URL: $base_url"
+          echo "base_url=$base_url" >> "$GITHUB_OUTPUT"
+
+      - name: Build with Hugo
+        working-directory: site
+        run: |
+          hugo --gc --minify --enableGitInfo -b "${{ steps.vars.outputs.base_url }}"
+          # Ensure GitHub Pages does not run Jekyll (allows files/folders beginning with _)
+          touch public/.nojekyll
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/public
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
+

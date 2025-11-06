@@ -9,7 +9,7 @@ Install Pinniped on your cluster with:
 ```bash
 kubectl apply -f https://github.com/vmware-tanzu/pinniped/releases/download/v0.18.0/install-pinniped-concierge-crds.yaml
 
-kubectl apply -f  https://github.com/vmware-tanzu/pinniped/releases/download/v0.18.0/install-pinniped-concierge.yaml
+kubectl apply -f https://github.com/vmware-tanzu/pinniped/releases/download/v0.18.0/install-pinniped-concierge.yaml
 ```
 
 ## Configure Pinniped Concierge to trust your OIDC identity provider

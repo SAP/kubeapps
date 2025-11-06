@@ -1,13 +1,12 @@
 # <img src="site/content/docs/latest/img/logo.svg" width="40" align="left"/> Kubeapps
 
 [![Main Pipeline](https://github.com/SAP/kubeapps/actions/workflows/kubeapps-main.yaml/badge.svg)](https://github.com/SAP/kubeapps/actions/workflows/kubeapps-main.yaml)
-[![Full Integration Pipeline](https://github.com/SAP/kubeapps/actions/workflows/kubeapps-full-integration.yaml/badge.svg)](https://github.com/SAP/kubeapps/actions/workflows/kubeapps-full-integration.yaml)
 [![CodeQL](https://github.com/SAP/kubeapps/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/SAP/kubeapps/actions/workflows/codeql-scheduled.yml)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/7e0e2833-1d75-43f6-b006-632d359bb83b/deploy-status)](https://app.netlify.com/sites/kubeapps-dev/deploys)
 [![REUSE status](https://api.reuse.software/badge/github.com/SAP/kubeapps)](https://api.reuse.software/info/github.com/SAP/kubeapps)
 
 > [!CAUTION]
-> After many years of growth and milestones, the time has come for the next chapter of Kubeapps. The current maintainers are concentrating their efforts on new projects. As of August 25th, 2025, the project has been deprecated and the repository archived. If a widely adopted fork emerges, we will link to it here to guide users arriving at this repository.
+> The original Kubeapps project was deprecated and archived by its former maintainers on August 25, 2025. This fork is now maintained by SAP SE (see the *Fork* section below) with a focus on essential upkeep: security fixes, compatibility updates, and critical bug resolution. New feature development is not guaranteed. Community contributions are welcome—please submit pull requests for maintenance, documentation improvements, and clearly scoped enhancements.
 
 ## Overview
 
@@ -34,7 +33,7 @@ Installing Kubeapps is as simple as:
 
 ```bash
 kubectl create namespace kubeapps
-helm install kubeapps --namespace kubeapps oci://registry-1.docker.io/bitnamicharts/kubeapps
+helm install kubeapps --namespace kubeapps oci://ghcr.io/sap/kubeapps/kubeapps
 ```
 
 See the [Getting Started Guide](./site/content/docs/latest/tutorials/getting-started.md) for detailed instructions on how to install and use Kubeapps.
