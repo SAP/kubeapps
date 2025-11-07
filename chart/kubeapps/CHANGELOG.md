@@ -1,5 +1,14 @@
 # Changelog
 
+
+## 18.0.0 (2025-)
+
+* [bitnami/kubeapps] Migration of project to SAP GitHub Organization
+* [bitnami/kubeapps] Upgrade golang version to 1.25
+* [bitnami/kubeapps] Bump dependencies
+* [bitnami/*] Remove support for Carvel due to upgrade issues (contribution welcomed)
+* [bitnami/*] Localized external dependencies from bitnami (see /external)
+
 ## 17.1.1 (2024-12-24)
 
 * [bitnami/kubeapps] Release 17.1.1 ([#31153](https://github.com/bitnami/charts/pull/31153))
