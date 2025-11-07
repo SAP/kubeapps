@@ -129,7 +129,7 @@
 
   <!-- Bundled style lazy loading -->
   {{ $options := (dict "targetPath" "css/style.css" "outputStyle" "compressed" "enableSourceMap" true "includePaths" (slice "node_modules/myscss")) }}
-  {{ $style := resources.Get "scss/site.scss" | resources.ToCSS $options }}
+  {{ $style := resources.Get "scss/site.scss" | css.Sass $options }}
   <link rel="preload" href="{{ $style.Permalink }}" as="style" onload="this.onload=null;this.rel='stylesheet';this.media='screen';this.integrity='{{ $style.Data.Integrity }}'">
   <noscript><link rel="stylesheet" href="{{ $style.Permalink }}" integrity="{{ $style.Data.Integrity }}" media="screen"></noscript>
 
