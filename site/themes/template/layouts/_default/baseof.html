@@ -129,20 +129,20 @@
 
   <!-- Bundled style lazy loading -->
   {{ $options := (dict "targetPath" "css/style.css" "outputStyle" "compressed" "enableSourceMap" true "includePaths" (slice "node_modules/myscss")) }}
-  {{ $style := resources.Get "scss/site.scss" | resources.ToCSS $options }}
+  {{ $style := resources.Get "scss/site.scss" | css.Sass $options }}
   <link rel="preload" href="{{ $style.Permalink }}" as="style" onload="this.onload=null;this.rel='stylesheet';this.media='screen';this.integrity='{{ $style.Data.Integrity }}'">
   <noscript><link rel="stylesheet" href="{{ $style.Permalink }}" integrity="{{ $style.Data.Integrity }}" media="screen"></noscript>
 
   <!-- Favicons -->
-  <meta property="og:image" content="/img/favicons/favicon-32x32.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicons/apple-touch-icon.png" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicons/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicons/favicon-16x16.png" />
-  <link rel="manifest" href="/img/favicons/site.webmanifest" />
-  <link rel="mask-icon" href="/img/favicons/safari-pinned-tab.svg" color="#0091da" />
-  <link rel="shortcut icon" href="/img/favicons/favicon.ico" />
+  <meta property="og:image" content="img/favicons/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="img/favicons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicons/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="img/favicons/favicon-16x16.png" />
+  <link rel="manifest" href="img/favicons/site.webmanifest" />
+  <link rel="mask-icon" href="img/favicons/safari-pinned-tab.svg" color="#0091da" />
+  <link rel="shortcut icon" href="img/favicons/favicon.ico" />
   <meta name="msapplication-TileColor" content="#0091da" />
-  <meta name="msapplication-config" content="/img/favicons/browserconfig.xml" />
+  <meta name="msapplication-config" content="img/favicons/browserconfig.xml" />
   <meta name="theme-color" content="#ffffff" />
   {{ with .OutputFormats.Get "RSS" -}}
     {{ printf `<link rel="%s" type="%s" href="%s" title="%s">` .Rel .MediaType.Type .RelPermalink $.Site.Title | safeHTML }}
