@@ -1,5 +1,5 @@
 ---
-baseURL: "https://kubeapps.dev/"
+baseURL: "https://sap.github.io/kubeapps/"
 languageCode: "en-us"
 title: "Kubeapps"
 theme: "template"
@@ -36,8 +36,8 @@ params:
   docs_search_site_id: 7e0e2833-1d75-43f6-b006-632d359bb83b
   docs_search_index_name: index_name
   docs_versioning: true
-  github_base_url: "https://github.com/vmware-tanzu/kubeapps"
-  github_url: "https://github.com/vmware-tanzu/kubeapps/"
+  github_base_url: "https://github.com/sap/kubeapps"
+  github_url: "https://github.com/sap/kubeapps/"
   gtmId: GTM-PGL7FMT
   oneTrustId: 018ee8c4-9885-7b0d-9105-e5b631424f1a
   sitename: Kubeapps
