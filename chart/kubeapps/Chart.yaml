@@ -38,18 +38,19 @@ dependencies:
   - bitnami-common
   version: 2.x.x
 description: Kubeapps is a web-based UI for launching and managing applications on Kubernetes. It allows users to deploy trusted applications and operators to control users access to the cluster.
-home: https://bitnami.com
-icon: https://bitnami.com/assets/stacks/kubeapps/img/kubeapps-stack-220x234.png
+home: https://sap.com
+icon: https://sap.github.io/kubeapps/img/chart-asset/kubeapps-stack-220x234.png
 keywords:
 - helm
 - dashboard
 - service catalog
 - deployment
-kubeVersion: '>=1.21.0-0'
+kubeVersion: '>=1.25.0-0'
 maintainers:
-- name: Broadcom, Inc. All Rights Reserved.
-  url: https://github.com/bitnami/charts
+- name: Siegfried Kiermayer
+- name: SAP SE All Rights Reserved.
+  url: https://sap.com
 name: kubeapps
 sources:
-- https://github.com/bitnami/charts/tree/main/bitnami/kubeapps
-version: 17.1.1
+- https://github.com/sap/kubeapps/
+version: 18.0.0
