@@ -23,7 +23,9 @@ cd site
 hugo server --disableFastRender
 ```
 
-Access the site at [http://localhost:1313](http://localhost:1313). Press `Ctrl-C` when done viewing.
+Access the site at [http://localhost:1313/kubeapps/](http://localhost:1313/kubeapps/). Press `Ctrl-C` when done viewing.
+
+
 
 The [site/content/docs/latest](./content/docs/latest) directory holds the project documentation whereas the [site/themes/template/static../img/docs](./themes/template/static../img/docs) directory contains the images used in the documentation. Note they have to be under that folder to be properly served.
 

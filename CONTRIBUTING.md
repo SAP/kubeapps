@@ -2,7 +2,7 @@
 
 Kubeapps maintainers welcome contributions from the community and first want to thank you for taking the time to contribute!
 
-Please familiarize yourself with the [Code of Conduct](https://github.com/vmware/.github/blob/main/CODE_OF_CONDUCT.md) before contributing.
+Please familiarize yourself with the [Code of Conduct](https://github.com/sap/.github/blob/main/CODE_OF_CONDUCT.md) before contributing.
 
 - _CLA: Before you start working with Kubeapps, please read and sign our Contributor License Agreement [CLA](https://cla.vmware.com/cla/1/preview). If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a Pull Request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq)._
 
@@ -55,23 +55,21 @@ For specifics on what to include in your report, please follow the guidelines in
 
 ### Issues
 
-Need an idea for a project to get started contributing? Take a look at the [open issues](https://github.com/vmware-tanzu/kubeapps/issues?q=is%3Aopen+is%3Aissue). Also check to see if any open issues are labeled with [`good first issue`](https://github.com/vmware-tanzu/kubeapps/labels/good%20first%20issue) or [`help wanted`](https://github.com/vmware-tanzu/kubeapps/labels/help%20wanted).
+Need an idea for a project to get started contributing? Take a look at the [open issues](https://github.com/SAP/kubeapps/issues?q=is%3Aopen+is%3Aissue). Also check to see if any open issues are labeled with [`good first issue`](https://github.com/sap/kubeapps/labels/good%20first%20issue) or [`help wanted`](https://github.com/sap/kubeapps/labels/help%20wanted).
 
 When contributing to Kubeapps, please first discuss the change you wish to make via an issue with this repository before making a change.
 
-> Kubeapps distribution is delegated to the official [Bitnami Kubeapps chart](https://github.com/bitnami/charts/tree/main/bitnami/kubeapps) from the separate Bitnami charts repository. PRs and issues related to the official chart should be created in the Bitnami charts repository.
-
 ### Bugs
 
-To file a bug report, please first open an [issue](https://github.com/vmware-tanzu/kubeapps/issues/new?assignees=&labels=kind%2Fbug&template=bug_report.md&title=). The project maintainers team will work with you on your bug report.
+To file a bug report, please first open an [issue](https://github.com/sap/kubeapps/issues/new?assignees=&labels=kind%2Fbug&template=bug_report.md&title=). The project maintainers team will work with you on your bug report.
 
-Once the bug has been validated, a [pull request](https://github.com/vmware-tanzu/kubeapps/compare) can be opened to fix the bug.
+Once the bug has been validated, a [pull request](https://github.com/sap/kubeapps/compare) can be opened to fix the bug.
 
 For specifics on what to include in your bug report, please follow the guidelines in the issue and pull request templates.
 
 ### Features
 
-To suggest a feature, please first open an [issue](https://github.com/vmware-tanzu/kubeapps/issues/new?assignees=&labels=kind%2Ffeature&template=feature_request.md&title=) that will be tagged with [`kind/proposal`](https://github.com/vmware-tanzu/kubeapps/labels/kind%2Fproposal), or create a new [Discussion](https://github.com/vmware-tanzu/kubeapps/discussions/new). The project maintainers will work with you on your feature request.
+To suggest a feature, please first open an [issue](https://github.com/sap/kubeapps/issues/new?assignees=&labels=kind%2Ffeature&template=feature_request.md&title=) that will be tagged with [`kind/proposal`](https://github.com/sap/kubeapps/labels/kind%2Fproposal), or create a new [Discussion](https://github.com/sap/kubeapps/discussions/new). The project maintainers will work with you on your feature request.
 
 Once the feature request has been validated, a pull request can be opened to implement the feature.
 
@@ -81,8 +79,8 @@ For specifics on what to include in your feature request, please follow the guid
 
 The best way to reach Kubeapps maintainers team with a question when contributing is to ask on:
 
-- [GitHub Issues](https://github.com/vmware-tanzu/kubeapps/issues)
-- [GitHub Discussions](https://github.com/vmware-tanzu/kubeapps/discussions)
+- [GitHub Issues](https://github.com/sap/kubeapps/issues)
+- [GitHub Discussions](https://github.com/sap/kubeapps/discussions)
 - [#kubeapps Slack channel](https://kubernetes.slack.com/messages/kubeapps)
 
 ## Additional Resources
@@ -95,4 +93,4 @@ New to Kubeapps?
 
 ## Roadmap
 
-The near-term and mid-term roadmap for the work planned for the project [maintainers](./MAINTAINERS.md) is documented in [ROADMAP.md](./ROADMAP.md).
+There is currently no active roadmap, as the project is now maintained for maintenance reasons only. However, if you have the capacity and interest, feel free to propose and contribute to a new roadmap.

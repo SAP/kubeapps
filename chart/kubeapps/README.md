@@ -1,34 +1,32 @@
 <!--- app-name: Kubeapps -->
 
-# Bitnami package for Kubeapps
+# Helm chart for Kubeapps
 
 Kubeapps is a web-based UI for launching and managing applications on Kubernetes. It allows users to deploy trusted applications and operators to control users access to the cluster.
 
-[Overview of Kubeapps](https://github.com/vmware-tanzu/kubeapps)
+[Overview of Kubeapps](https://github.com/sap/kubeapps)
 
 ## TL;DR
 
 ```console
-helm install my-release oci://registry-1.docker.io/bitnamicharts/kubeapps --namespace kubeapps --create-namespace
+helm install my-release oci://ghcr.io/sap/kubeapps/kubeapps --namespace kubeapps --create-namespace
 ```
 
 > Note: You need to substitute the placeholders `REGISTRY_NAME` and `REPOSITORY_NAME` with a reference to your Helm chart registry and repository. For example, in the case of Bitnami, you need to use `REGISTRY_NAME=registry-1.docker.io` and `REPOSITORY_NAME=bitnamicharts`.
-> Check out the [getting started](https://github.com/vmware-tanzu/kubeapps/blob/main/site/content/docs/latest/tutorials/getting-started.md) to start deploying apps with Kubeapps.
-
-Looking to use Kubeapps in production? Try [VMware Tanzu Application Catalog](https://bitnami.com/enterprise), the commercial edition of the Bitnami catalog.
+> Check out the [getting started](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/tutorials/getting-started.md) to start deploying apps with Kubeapps.
 
 ## Introduction
 
-This chart bootstraps a [Kubeapps](https://kubeapps.dev) deployment on a [Kubernetes](https://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
+This chart bootstraps a [Kubeapps](https://github.com/sap/kubeapps) deployment on a [Kubernetes](https://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
 
 With Kubeapps you can:
 
 - Customize deployments through an intuitive, form-based user interface
 - Inspect, upgrade and delete applications installed in the cluster
-- Browse and deploy [Helm](https://github.com/helm/helm) charts from public or private chart repositories (including [VMware Marketplace&trade;](https://marketplace.cloud.vmware.com) and [Bitnami Application Catalog](https://bitnami.com/application-catalog))
+- Browse and deploy [Helm](https://github.com/helm/helm) charts from public or private chart repositories
 - Browse and deploy [Kubernetes Operators](https://operatorhub.io/)
-- Secure authentication to Kubeapps using a [standalone OAuth2/OIDC provider](https://github.com/vmware-tanzu/kubeapps/blob/main/site/content/docs/latest/tutorials/using-an-OIDC-provider.md) or [using Pinniped](https://github.com/vmware-tanzu/kubeapps/blob/main/site/content/docs/latest/howto/OIDC/using-an-OIDC-provider-with-pinniped.md)
-- Secure authorization based on Kubernetes [Role-Based Access Control](https://github.com/vmware-tanzu/kubeapps/blob/main/site/content/docs/latest/howto/access-control.md)
+- Secure authentication to Kubeapps using a [standalone OAuth2/OIDC provider](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/tutorials/using-an-OIDC-provider.md) or [using Pinniped](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/howto/OIDC/using-an-OIDC-provider-with-pinniped.md)
+- Secure authorization based on Kubernetes [Role-Based Access Control](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/howto/access-control.md)
 
 **_Note:_** Kubeapps 2.0 and onwards supports Helm 3 only. While only the Helm 3 API is supported, in most cases, charts made for Helm 2 will still work.
 
@@ -49,13 +47,13 @@ To install the chart with the release name `my-release`:
 helm install my-release oci://REGISTRY_NAME/REPOSITORY_NAME/kubeapps --namespace kubeapps --create-namespace
 ```
 
-> Note: You need to substitute the placeholders `REGISTRY_NAME` and `REPOSITORY_NAME` with a reference to your Helm chart registry and repository. For example, in the case of Bitnami, you need to use `REGISTRY_NAME=registry-1.docker.io` and `REPOSITORY_NAME=bitnamicharts`.
+> Note: You need to substitute the placeholders `REGISTRY_NAME` and `REPOSITORY_NAME` with a reference to your Helm chart registry and repository. For example, in the case of Kubeapps, you need to use `REGISTRY_NAME=ghcr.io` and `REPOSITORY_NAME=sap`.
 
 The command deploys Kubeapps on the Kubernetes cluster in the `kubeapps` namespace. The [Parameters](#parameters) section lists the parameters that can be configured during installation.
 
 > **Caveat**: Only one Kubeapps installation is supported per namespace
 
-Once you have installed Kubeapps follow the [Getting Started Guide](https://github.com/vmware-tanzu/kubeapps/blob/main/site/content/docs/latest/tutorials/getting-started.md) for additional information on how to access and use Kubeapps.
+Once you have installed Kubeapps follow the [Getting Started Guide](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/tutorials/getting-started.md) for additional information on how to access and use Kubeapps.
 
 ## Configuration and installation details
 
@@ -63,11 +61,11 @@ Once you have installed Kubeapps follow the [Getting Started Guide](https://gith
 
 Bitnami charts allow setting resource requests and limits for all containers inside the chart deployment. These are inside the `resources` value (check parameter table). Setting requests is essential for production workloads and these should be adapted to your specific use case.
 
-To make this process easier, the chart contains the `resourcesPreset` values, which automatically sets the `resources` section according to different presets. Check these presets in [the bitnami/common chart](https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15). However, in production workloads using `resourcesPreset` is discouraged as it may not fully adapt to your specific needs. Find more information on container resource management in the [official Kubernetes documentation](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).
+To make this process easier, the chart contains the `resourcesPreset` values, which automatically sets the `resources` section according to different presets. Check these presets in [the bitnami/common chart (locally forked)](https://github.com/SAP/kubeapps/blob/main/chart/kubeapps/charts/common/templates/_resources.tpl#L15). However, in production workloads using `resourcesPreset` is discouraged as it may not fully adapt to your specific needs. Find more information on container resource management in the [official Kubernetes documentation](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).
 
 ### Backup and restore
 
-To back up and restore Helm chart deployments on Kubernetes, you need to back up the persistent volumes from the source deployment and attach them to a new deployment using [Velero](https://velero.io/), a Kubernetes backup/restore tool. Find the instructions for using Velero in [this guide](https://techdocs.broadcom.com/us/en/vmware-tanzu/application-catalog/tanzu-application-catalog/services/tac-doc/apps-tutorials-backup-restore-deployments-velero-index.html).
+Backup and restore of Helm chart deployments can be performed using various open source tools specialized in persistent volume (PV) backup and restore. Tools like Velero (by Broadcom) are commonly used, but you may choose any solution that supports PV backup and restore for Kubernetes workloads.
 
 ### Configuring Initial Repositories
 
@@ -75,11 +73,11 @@ By default, Kubeapps will track the [Bitnami Application Catalog](https://github
 
 ### Enabling Operators
 
-Since v1.9.0 (and by default since v2.0), Kubeapps supports deploying and managing Operators within its dashboard. More information about how to enable and use this feature can be found in [this guide](https://github.com/vmware-tanzu/kubeapps/blob/main/site/content/docs/latest/tutorials/operators.md).
+Since v1.9.0 (and by default since v2.0), Kubeapps supports deploying and managing Operators within its dashboard. More information about how to enable and use this feature can be found in [this guide](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/tutorials/operators.md).
 
 ### Exposing Externally
 
-> **Note**: The Kubeapps frontend sets up a proxy to the Kubernetes API service which means that when exposing the Kubeapps service to a network external to the Kubernetes cluster (perhaps on an internal or public network), the Kubernetes API will also be exposed for authenticated requests from that network. It is highly recommended that you [use an OAuth2/OIDC provider with Kubeapps](https://github.com/vmware-tanzu/kubeapps/blob/main/site/content/docs/latest/tutorials/using-an-OIDC-provider.md) to ensure that your authentication proxy is exposed rather than the Kubeapps frontend. This ensures that only the configured users trusted by your Identity Provider will be able to reach the Kubeapps frontend and therefore the Kubernetes API. Kubernetes service token authentication should only be used for users for demonstration purposes only, not production environments.
+> **Note**: The Kubeapps frontend sets up a proxy to the Kubernetes API service which means that when exposing the Kubeapps service to a network external to the Kubernetes cluster (perhaps on an internal or public network), the Kubernetes API will also be exposed for authenticated requests from that network. It is highly recommended that you [use an OAuth2/OIDC provider with Kubeapps](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/tutorials/using-an-OIDC-provider.md) to ensure that your authentication proxy is exposed rather than the Kubeapps frontend. This ensures that only the configured users trusted by your Identity Provider will be able to reach the Kubeapps frontend and therefore the Kubernetes API. Kubernetes service token authentication should only be used for users for demonstration purposes only, not production environments.
 
 #### LoadBalancer Service
 
@@ -146,7 +144,7 @@ In the first two cases, it is needed a certificate and a key. We would expect th
 ### Global parameters
 
 | Name                                                  | Description                                                                                                                                                                                                                                                                                                                                                         | Value   |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+|-------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
 | `global.imageRegistry`                                | Global Docker image registry                                                                                                                                                                                                                                                                                                                                        | `""`    |
 | `global.imagePullSecrets`                             | Global Docker registry secret names as an array                                                                                                                                                                                                                                                                                                                     | `[]`    |
 | `global.defaultStorageClass`                          | Global default StorageClass for Persistent Volume(s)                                                                                                                                                                                                                                                                                                                | `""`    |
@@ -157,7 +155,7 @@ In the first two cases, it is needed a certificate and a key. We would expect th
 ### Common parameters
 
 | Name                     | Description                                                                             | Value          |
-| ------------------------ | --------------------------------------------------------------------------------------- | -------------- |
+|--------------------------|-----------------------------------------------------------------------------------------|----------------|
 | `kubeVersion`            | Override Kubernetes version                                                             | `""`           |
 | `nameOverride`           | String to partially override common.names.fullname                                      | `""`           |
 | `fullnameOverride`       | String to fully override common.names.fullname                                          | `""`           |
@@ -172,7 +170,7 @@ In the first two cases, it is needed a certificate and a key. We would expect th
 ### Traffic Exposure Parameters
 
 | Name                       | Description                                                                                                                      | Value                    |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+|----------------------------|----------------------------------------------------------------------------------------------------------------------------------|--------------------------|
 | `ingress.enabled`          | Enable ingress record generation for Kubeapps                                                                                    | `false`                  |
 | `ingress.apiVersion`       | Force Ingress API version (automatically detected if not set)                                                                    | `""`                     |
 | `ingress.hostname`         | Default host for the ingress record                                                                                              | `kubeapps.local`         |
@@ -191,7 +189,7 @@ In the first two cases, it is needed a certificate and a key. We would expect th
 ### Kubeapps packaging options
 
 | Name                       | Description                                                | Value   |
-| -------------------------- | ---------------------------------------------------------- | ------- |
+|----------------------------|------------------------------------------------------------|---------|
 | `packaging.helm.enabled`   | Enable the standard Helm packaging.                        | `true`  |
 | `packaging.carvel.enabled` | Enable support for the Carvel (kapp-controller) packaging. | `false` |
 | `packaging.flux.enabled`   | Enable support for Flux (v2) packaging.                    | `false` |
@@ -199,7 +197,7 @@ In the first two cases, it is needed a certificate and a key. We would expect th
 ### Frontend parameters
 
 | Name                                                         | Description                                                                                                                                                                                                                         | Value                   |
-| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+|--------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------|
 | `frontend.image.registry`                                    | NGINX image registry                                                                                                                                                                                                                | `REGISTRY_NAME`         |
 | `frontend.image.repository`                                  | NGINX image repository                                                                                                                                                                                                              | `REPOSITORY_NAME/nginx` |
 | `frontend.image.digest`                                      | NGINX image digest in the way sha256:aa.... Please note this parameter, if set, will override the tag                                                                                                                               | `""`                    |
@@ -301,7 +299,7 @@ In the first two cases, it is needed a certificate and a key. We would expect th
 ### Dashboard parameters
 
 | Name                                                          | Description                                                                                                                                                                                                                           | Value                                |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+|---------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------|
 | `dashboard.enabled`                                           | Specifies whether Kubeapps Dashboard should be deployed or not                                                                                                                                                                        | `true`                               |
 | `dashboard.image.registry`                                    | Dashboard image registry                                                                                                                                                                                                              | `REGISTRY_NAME`                      |
 | `dashboard.image.repository`                                  | Dashboard image repository                                                                                                                                                                                                            | `REPOSITORY_NAME/kubeapps-dashboard` |
@@ -400,7 +398,7 @@ In the first two cases, it is needed a certificate and a key. We would expect th
 ### AppRepository Controller parameters
 
 | Name                                                              | Description                                                                                                                                                                                                                                   | Value                                               |
-| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+|-------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------|
 | `apprepository.image.registry`                                    | Kubeapps AppRepository Controller image registry                                                                                                                                                                                              | `REGISTRY_NAME`                                     |
 | `apprepository.image.repository`                                  | Kubeapps AppRepository Controller image repository                                                                                                                                                                                            | `REPOSITORY_NAME/kubeapps-apprepository-controller` |
 | `apprepository.image.digest`                                      | Kubeapps AppRepository Controller image digest in the way sha256:aa.... Please note this parameter, if set, will override the tag                                                                                                             | `""`                                                |
@@ -482,7 +480,7 @@ In the first two cases, it is needed a certificate and a key. We would expect th
 ### Auth Proxy parameters
 
 | Name                                                          | Description                                                                                                                                                                                                                           | Value                          |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+|---------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------|
 | `authProxy.enabled`                                           | Specifies whether Kubeapps should configure OAuth login/logout                                                                                                                                                                        | `false`                        |
 | `authProxy.image.registry`                                    | OAuth2 Proxy image registry                                                                                                                                                                                                           | `REGISTRY_NAME`                |
 | `authProxy.image.repository`                                  | OAuth2 Proxy image repository                                                                                                                                                                                                         | `REPOSITORY_NAME/oauth2-proxy` |
@@ -526,7 +524,7 @@ In the first two cases, it is needed a certificate and a key. We would expect th
 ### Pinniped Proxy parameters
 
 | Name                                                              | Description                                                                                                                                                                                                                                   | Value                                     |
-| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+|-------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------|
 | `pinnipedProxy.enabled`                                           | Specifies whether Kubeapps should configure Pinniped Proxy                                                                                                                                                                                    | `false`                                   |
 | `pinnipedProxy.image.registry`                                    | Pinniped Proxy image registry                                                                                                                                                                                                                 | `REGISTRY_NAME`                           |
 | `pinnipedProxy.image.repository`                                  | Pinniped Proxy image repository                                                                                                                                                                                                               | `REPOSITORY_NAME/kubeapps-pinniped-proxy` |
@@ -565,14 +563,14 @@ In the first two cases, it is needed a certificate and a key. We would expect th
 ### Other Parameters
 
 | Name          | Description                                               | Value  |
-| ------------- | --------------------------------------------------------- | ------ |
+|---------------|-----------------------------------------------------------|--------|
 | `clusters`    | List of clusters that Kubeapps can target for deployments | `[]`   |
 | `rbac.create` | Specifies whether RBAC resources should be created        | `true` |
 
 ### Feature flags
 
 | Name                                    | Description                                                                                                | Value   |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------- |
+|-----------------------------------------|------------------------------------------------------------------------------------------------------------|---------|
 | `featureFlags.apiOnly.enabled`          | Enable ingress for API operations only. Access to "/" will not be possible, so Dashboard will be unusable. | `false` |
 | `featureFlags.apiOnly.grpc.annotations` | Specific annotations for the GRPC ingress in API-only mode                                                 | `{}`    |
 | `featureFlags.operators`                | Enable support for Operators in Kubeapps                                                                   | `false` |
@@ -581,7 +579,7 @@ In the first two cases, it is needed a certificate and a key. We would expect th
 ### Database Parameters
 
 | Name                                     | Description                                                                                                                                                                                                                             | Value        |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+|------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
 | `postgresql.enabled`                     | Deploy a PostgreSQL server to satisfy the applications database requirements                                                                                                                                                            | `true`       |
 | `postgresql.auth.username`               | Username for PostgreSQL server                                                                                                                                                                                                          | `postgres`   |
 | `postgresql.auth.postgresPassword`       | Password for 'postgres' user                                                                                                                                                                                                            | `""`         |
@@ -596,7 +594,7 @@ In the first two cases, it is needed a certificate and a key. We would expect th
 ### kubeappsapis parameters
 
 | Name                                                                                            | Description                                                                                                                                                                                                                                 | Value                              |
-| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+|-------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------|
 | `kubeappsapis.enabledPlugins`                                                                   | Manually override which plugins are enabled for the Kubeapps-APIs service                                                                                                                                                                   | `[]`                               |
 | `kubeappsapis.pluginConfig.core.packages.v1alpha1.versionsInSummary.major`                      | Number of major versions to display in the summary                                                                                                                                                                                          | `3`                                |
 | `kubeappsapis.pluginConfig.core.packages.v1alpha1.versionsInSummary.minor`                      | Number of minor versions to display in the summary                                                                                                                                                                                          | `3`                                |
@@ -707,7 +705,7 @@ In the first two cases, it is needed a certificate and a key. We would expect th
 ### OCI Catalog chart configuration
 
 | Name                                                           | Description                                                                                                                                                                                                                             | Value                                  |
-| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+|----------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------|
 | `ociCatalog.enabled`                                           | Enable the OCI catalog gRPC service for cataloging                                                                                                                                                                                      | `false`                                |
 | `ociCatalog.image.registry`                                    | OCI Catalog image registry                                                                                                                                                                                                              | `REGISTRY_NAME`                        |
 | `ociCatalog.image.repository`                                  | OCI Catalog image repository                                                                                                                                                                                                            | `REPOSITORY_NAME/kubeapps-oci-catalog` |
@@ -762,7 +760,7 @@ In the first two cases, it is needed a certificate and a key. We would expect th
 ### Redis&reg; chart configuration
 
 | Name                                | Description                                                                                                                                                                                                              | Value                                                    |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
+|-------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------|
 | `redis.auth.enabled`                | Enable password authentication                                                                                                                                                                                           | `true`                                                   |
 | `redis.auth.password`               | Redis&reg; password                                                                                                                                                                                                      | `""`                                                     |
 | `redis.auth.existingSecret`         | The name of an existing secret with Redis&reg; credentials                                                                                                                                                               | `""`                                                     |
@@ -793,22 +791,22 @@ Alternatively, a YAML file that specifies the values for parameters can be provi
 helm install kubeapps --namespace kubeapps -f custom-values.yaml oci://REGISTRY_NAME/REPOSITORY_NAME/kubeapps
 ```
 
-> Note: You need to substitute the placeholders `REGISTRY_NAME` and `REPOSITORY_NAME` with a reference to your Helm chart registry and repository. For example, in the case of Bitnami, you need to use `REGISTRY_NAME=registry-1.docker.io` and `REPOSITORY_NAME=bitnamicharts`.
+> Note: You need to substitute the placeholders `REGISTRY_NAME` and `REPOSITORY_NAME` with a reference to your Helm chart registry and repository. For example, in the case of SAP, you need to use `REGISTRY_NAME=ghcr.io` and `REPOSITORY_NAME=sap`.
 
 ## Troubleshooting
 
 ### How to install Kubeapps for demo purposes?
 
-Install Kubeapps for exclusively **demo purposes** by simply following the [getting started](https://github.com/vmware-tanzu/kubeapps/blob/main/site/content/docs/latest/tutorials/getting-started.md) docs.
+Install Kubeapps for exclusively **demo purposes** by simply following the [getting started](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/tutorials/getting-started.md) docs.
 
 ### How to install Kubeapps in production scenarios?
 
-For any user-facing installation, you should [configure an OAuth2/OIDC provider](https://github.com/vmware-tanzu/kubeapps/blob/main/site/content/docs/latest/tutorials/using-an-OIDC-provider.md) to enable secure user authentication with Kubeapps and the cluster.
-Please also refer to the [Access Control](https://github.com/vmware-tanzu/kubeapps/blob/main/site/content/docs/latest/howto/access-control.md) documentation to configure fine-grained access control for users.
+For any user-facing installation, you should [configure an OAuth2/OIDC provider](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/tutorials/using-an-OIDC-provider.md) to enable secure user authentication with Kubeapps and the cluster.
+Please also refer to the [Access Control](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/howto/access-control.md) documentation to configure fine-grained access control for users.
 
 ### How to use Kubeapps?
 
-Have a look at the [dashboard documentation](https://github.com/vmware-tanzu/kubeapps/blob/main/site/content/docs/latest/howto/dashboard.md) for knowing how to use the Kubeapps dashboard: deploying applications, listing and removing the applications running in your cluster and adding new repositories.
+Have a look at the [dashboard documentation](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/howto/dashboard.md) for knowing how to use the Kubeapps dashboard: deploying applications, listing and removing the applications running in your cluster and adding new repositories.
 
 ### How to uninstall Kubeapps
 
@@ -843,7 +841,7 @@ helm install kubeapps oci://REGISTRY_NAME/REPOSITORY_NAME/kubeapps \
   --set ingress.annotations."kubernetes\.io/ingress\.class"=nginx # or your preferred ingress controller
 ```
 
-> Note: You need to substitute the placeholders `REGISTRY_NAME` and `REPOSITORY_NAME` with a reference to your Helm chart registry and repository. For example, in the case of Bitnami, you need to use `REGISTRY_NAME=registry-1.docker.io` and `REPOSITORY_NAME=bitnamicharts`.
+> Note: You need to substitute the placeholders `REGISTRY_NAME` and `REPOSITORY_NAME` with a reference to your Helm chart registry and repository. For example, in the case of Bitnami, you need to use `REGISTRY_NAME=ghcr.io` and `REPOSITORY_NAME=sap`.
 
 If you are using LDAP via Dex with OIDC or you are getting an error message like `upstream sent too big header while reading response header from upstream` it means the cookie size is too big and can't be processed by the Ingress Controller.
 You can work around this problem by setting the following Nginx ingress annotations (look for similar annotations in your preferred Ingress Controller):
@@ -868,7 +866,7 @@ helm install kubeapps oci://REGISTRY_NAME/REPOSITORY_NAME/kubeapps \
   --set ingress.annotations."kubernetes\.io/ingress\.class"=nginx # or your preferred ingress controller
 ```
 
-> Note: You need to substitute the placeholders `REGISTRY_NAME` and `REPOSITORY_NAME` with a reference to your Helm chart registry and repository. For example, in the case of Bitnami, you need to use `REGISTRY_NAME=registry-1.docker.io` and `REPOSITORY_NAME=bitnamicharts`.
+> Note: You need to substitute the placeholders `REGISTRY_NAME` and `REPOSITORY_NAME` with a reference to your Helm chart registry and repository. For example, in the case of SAP, you need to use `REGISTRY_NAME=ghcr.io` and `REPOSITORY_NAME=sap`.
 
 Besides, if you are using the OAuth2/OIDC login (more information at the [using an OIDC provider documentation](https://github.com/vmware-tanzu/kubeapps/blob/main/site/content/docs/latest/tutorials/using-an-OIDC-provider.md)), you will need, also, to configure the different URLs:
 
@@ -881,23 +879,23 @@ helm install kubeapps oci://REGISTRY_NAME/REPOSITORY_NAME/kubeapps \
   --set authProxy.extraFlags="{<other flags>,--proxy-prefix=/subpath/oauth2}"
 ```
 
-> Note: You need to substitute the placeholders `REGISTRY_NAME` and `REPOSITORY_NAME` with a reference to your Helm chart registry and repository. For example, in the case of Bitnami, you need to use `REGISTRY_NAME=registry-1.docker.io` and `REPOSITORY_NAME=bitnamicharts`.
+> Note: You need to substitute the placeholders `REGISTRY_NAME` and `REPOSITORY_NAME` with a reference to your Helm chart registry and repository. For example, in the case of SAP, you need to use `REGISTRY_NAME=ghcr.io` and `REPOSITORY_NAME=sap`.
 
 ### Can Kubeapps install apps into more than one cluster?
 
-Yes! Kubeapps 2.0+ supports multicluster environments. Have a look at the [Kubeapps dashboard documentation](https://github.com/vmware-tanzu/kubeapps/blob/main/site/content/docs/latest/howto/deploying-to-multiple-clusters.md) to know more.
+Yes! Kubeapps 2.0+ supports multicluster environments. Have a look at the [Kubeapps dashboard documentation](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/howto/deploying-to-multiple-clusters.md) to know more.
 
 ### Can Kubeapps be installed without Internet connection?
 
-Yes! Follow the [offline installation documentation](https://github.com/vmware-tanzu/kubeapps/blob/main/site/content/docs/latest/howto/offline-installation.md) to discover how to perform an installation in an air-gapped scenario.
+Yes! Follow the [offline installation documentation](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/howto/offline-installation.md) to discover how to perform an installation in an air-gapped scenario.
 
 ### Does Kubeapps support private repositories?
 
-Of course! Have a look at the [private package repositories documentation](https://github.com/vmware-tanzu/kubeapps/blob/main/site/content/docs/latest/howto/private-app-repository.md) to learn how to configure a private repository in Kubeapps.
+Of course! Have a look at the [private package repositories documentation](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/howto/private-app-repository.md) to learn how to configure a private repository in Kubeapps.
 
 ### Is there any API documentation?
 
-Yes! But it is not definitive and is still subject to change. Check out the [latest API online documentation](https://app.swaggerhub.com/apis/vmware-tanzu/Kubeapps) or download the Kubeapps [OpenAPI Specification yaml file](https://github.com/vmware-tanzu/kubeapps/blob/main/dashboard/public/openapi.yaml) from the repository.
+Yes! Download the Kubeapps [OpenAPI Specification yaml file](https://github.com/sap/kubeapps/blob/main/dashboard/public/openapi.yaml) from the repository.
 
 ### Why can't I configure global private repositories?
 
@@ -911,7 +909,7 @@ You could alternatively ensure that the `imagePullSecret` is available in all na
 
 ### Does Kubeapps support Operators?
 
-Yes! You can get started by following the [operators documentation](https://github.com/vmware-tanzu/kubeapps/blob/main/site/content/docs/latest/tutorials/operators.md).
+Yes! You can get started by following the [operators documentation](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/tutorials/operators.md).
 
 ### Slow response when listing namespaces
 
@@ -956,7 +954,7 @@ If the above command does not include entries for `rbac.authorization.k8s.io` yo
 helm install --name kubeapps --namespace kubeapps oci://REGISTRY_NAME/REPOSITORY_NAME/kubeapps --set rbac.create=false
 ```
 
-> Note: You need to substitute the placeholders `REGISTRY_NAME` and `REPOSITORY_NAME` with a reference to your Helm chart registry and repository. For example, in the case of Bitnami, you need to use `REGISTRY_NAME=registry-1.docker.io` and `REPOSITORY_NAME=bitnamicharts`.
+> Note: You need to substitute the placeholders `REGISTRY_NAME` and `REPOSITORY_NAME` with a reference to your Helm chart registry and repository. For example, in the case of SAP, you need to use `REGISTRY_NAME=ghcr.io` and `REPOSITORY_NAME=sap`.
 
 ### Error while upgrading the Chart
 
@@ -1001,7 +999,7 @@ It is possible that when upgrading Kubeapps an error appears. That can be caused
     helm install --name kubeapps --namespace kubeapps oci://REGISTRY_NAME/REPOSITORY_NAME/kubeapps
     ```
 
-    > Note: You need to substitute the placeholders `REGISTRY_NAME` and `REPOSITORY_NAME` with a reference to your Helm chart registry and repository. For example, in the case of Bitnami, you need to use `REGISTRY_NAME=registry-1.docker.io` and `REPOSITORY_NAME=bitnamicharts`.
+    > Note: You need to substitute the placeholders `REGISTRY_NAME` and `REPOSITORY_NAME` with a reference to your Helm chart registry and repository. For example, in the case of SAP, you need to use `REGISTRY_NAME=ghcr.io` and `REPOSITORY_NAME=sap`.
 
 6. (Optional) Restore any repositories you backed up in the first step:
 
@@ -1009,11 +1007,11 @@ It is possible that when upgrading Kubeapps an error appears. That can be caused
     kubectl apply -f <repo name>.yaml
     ```
 
-After that you should be able to access the new version of Kubeapps. If the above doesn't work for you or you run into any other issues please open an [issue](https://github.com/vmware-tanzu/kubeapps/issues/new).
+After that you should be able to access the new version of Kubeapps. If the above doesn't work for you or you run into any other issues please open an [issue](https://github.com/sap/kubeapps/issues/new).
 
 ### More questions?
 
-Feel free to [open an issue](https://github.com/vmware-tanzu/kubeapps/issues/new) if you have any questions!
+Feel free to [open an issue](https://github.com/sap/kubeapps/issues/new) if you have any questions!
 
 ## Upgrading
 
@@ -1036,7 +1034,7 @@ export RELEASE_NAME=kubeapps
 helm upgrade $RELEASE_NAME oci://REGISTRY_NAME/REPOSITORY_NAME/kubeapps
 ```
 
-> Note: You need to substitute the placeholders `REGISTRY_NAME` and `REPOSITORY_NAME` with a reference to your Helm chart registry and repository. For example, in the case of Bitnami, you need to use `REGISTRY_NAME=registry-1.docker.io` and `REPOSITORY_NAME=bitnamicharts`.
+> Note: You need to substitute the placeholders `REGISTRY_NAME` and `REPOSITORY_NAME` with a reference to your Helm chart registry and repository. For example, in the case of SAP, you need to use `REGISTRY_NAME=ghcr.io` and `REPOSITORY_NAME=sap`.
 
 If you find issues upgrading Kubeapps, check the [troubleshooting](#error-while-upgrading-the-chart) section.
 
@@ -1214,7 +1212,8 @@ After that, you should be able to upgrade Kubeapps as always and the database wi
 
 ## License
 
-Copyright &copy; 2024 Broadcom. The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
+Copyright &copy; 2025 Broadcom. The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
+Copyright &copy; 2025 SAP SE or an SAP affiliate company.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
