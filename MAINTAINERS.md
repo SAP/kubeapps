@@ -18,4 +18,4 @@
 - Rafa Castelblanque ([castelblanque](https://github.com/castelblanque))
 - Satya Dillikar ([satya-dillikar](https://github.com/satya-dillikar))
 
-Full list of [Kubeapps contributors](https://github.com/vmware-tanzu/kubeapps/graphs/contributors).
+Full list of [Kubeapps contributors](https://github.com/SAP/kubeapps/graphs/contributors).

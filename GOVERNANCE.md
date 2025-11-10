@@ -8,11 +8,11 @@ This document defines the project governance for Kubeapps.
 
 ## Code of Conduct
 
-The Kubeapps community abides by this [code of conduct](./CODE_OF_CONDUCT.md).
+The Kubeapps community abides by this [code of conduct](https://github.com/sap/.github/blob/main/CODE_OF_CONDUCT.md).
 
 ## Community Roles
 
-- **Users**: Members that engage with the Kubeapps community via any medium ([Slack](https://kubernetes.slack.com/messages/kubeapps), [GitHub](https://github.com/vmware-tanzu/kubeapps), etc.).
+- **Users**: Members that engage with the Kubeapps community via any medium ([Slack](https://kubernetes.slack.com/messages/kubeapps), [GitHub](https://github.com/sap/kubeapps), etc.).
 - **Contributors**: Members contributing to projects (documentation, code reviews, responding to issues, participation in proposal discussions, contributing code, etc.).
 - **Maintainers**: Responsible for the overall health and direction of the project; final reviewers of PRs and responsible for releases. Maintainers are expected to contribute code and documentation, ensure the quality of code, triage issues, proactively fix bugs and perform maintenance tasks for Kubeapps components.
 

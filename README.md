@@ -55,7 +55,7 @@ See how to deploy and configure [Kubeapps on VMware Tanzu™ Kubernetes Grid™]
 
 ## Troubleshooting
 
-If you encounter issues, please review the [troubleshooting docs](./chart/kubeapps/README.md#troubleshooting), review our [project board](https://github.com/orgs/vmware-tanzu/projects/38/views/2), file an [issue](https://github.com/vmware-tanzu/kubeapps/issues), or talk to Kubeapps maintainers on the [#Kubeapps channel](https://kubernetes.slack.com/messages/kubeapps) on the Kubernetes Slack server.
+If you encounter issues, please review the [troubleshooting docs](./chart/kubeapps/README.md#troubleshooting), review our [project board](https://github.com/orgs/SAP/projects/136), file an [issue](https://github.com/SAP/kubeapps/issues), or talk to Kubeapps maintainers on the [#Kubeapps channel](https://kubernetes.slack.com/messages/kubeapps) on the Kubernetes Slack server.
 
 - [Sign up](https://slack.k8s.io) to the Kubernetes Slack org.
 
@@ -71,4 +71,4 @@ If you are ready to jump in and test, add code, or help with documentation, foll
 
 ## Changelog
 
-Take a look at the list of [releases](https://github.com/vmware-tanzu/kubeapps/releases) to stay tuned for the latest features and changes.
+Take a look at the list of [releases](https://github.com/SAP/kubeapps/releases) to stay tuned for the latest features and changes.
