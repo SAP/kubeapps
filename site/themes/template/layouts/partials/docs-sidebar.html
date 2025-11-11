@@ -19,12 +19,12 @@
           <ul>
             {{ range .subfolderitems }}
             <li>
-              {{ $url := (index (print "/docs/" $version .url "/")) }}
+              {{ $url := (relURL (print "docs/" $version .url "/")) }}
               <a href="{{ $url }}" {{ if (eq $.Page.RelPermalink $url) }}class="active" {{ end }}>{{ .page }}</a>
               {{ if not (eq $.Page.RelPermalink (print "/docs/" $version "/")) }}
                 {{ range .subitems }}
                 {{ $itemUrlTrim := (strings.TrimSuffix "/" ( strings.TrimSuffix "/" $url) ) }}
-                {{ $subUrl := (index (print "/docs/" $version .suburl "/")) }}
+                {{ $subUrl := (relURL (print "docs/" $version .suburl "/")) }}
                 {{ $currentPageTrim := (strings.TrimSuffix "/" ( strings.TrimSuffix "/" $.Page.RelPermalink) ) }}
                 {{ $activeSubitem := or (eq $.Page.RelPermalink $url) (in (relURL $.Page.RelPermalink) (relURL $url)) }}
                 {{ if or ($activeSubitem) (strings.Contains $itemUrlTrim $currentPageTrim) }}
