@@ -1,8 +1,12 @@
+# Copyright 2025 the Kubeapps contributors.
+# SPDX-License-Identifier: Apache-2.0
+
 name: Deploy Hugo site to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   workflow_dispatch: {}
 
 # Allow one concurrent deployment
@@ -67,4 +71,3 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
-
