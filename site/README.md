@@ -1,84 +1,58 @@
-# Website for [Kubeapps](https://kubeapps.com/)
+# Website
+
+This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.
+
+## Installation
+
+### Local Development (Node.js required)
+
+```bash
+npm install
+```
+
+### Docker Development (no local dependencies required)
+
+Build and run with Docker:
+
+```bash
+# Build the Docker image
+docker build -t kubeapps-docs .
+
+# Run development server
+docker run -p 3000:3000 -v $(pwd):/app kubeapps-docs npm start
+
+# Or run in interactive mode for development
+docker run -it -p 3000:3000 -v $(pwd):/app kubeapps-docs bash
+```
+
+## Local Development
+
+```bash
+npm start
+```
+
+This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
+
+## Build
+
+```bash
+npm run build
+```
+
+This command generates static content into the `build` directory and can be served using any static contents hosting service.
 
 ## Deployment
 
-The website will be deployed to production each time a new commit gets merged into the main branch. It is deployed using Netlify. The [netlify.toml](./netlify.toml) file holds the configuration.
-
-## Requirements
-
-This site uses [Hugo](https://github.com/gohugoio/hugo) for rendering. It is recommended you run `hugo` locally to validate your changes render properly.
-
-### Local Hugo Rendering
-
-Hugo is available on many platforms. It can be installed using:
-
-- Linux: Most native package managers
-- macOS: `brew install hugo`
-- Windows: `choco install hugo-extended -confirm`
-
-Once installed, you may run the following from the `/site` directory to access a rendered view of the documentation:
+Using SSH:
 
 ```bash
-cd site
-hugo server --disableFastRender
+USE_SSH=true npm run deploy
 ```
 
-Access the site at [http://localhost:1313/kubeapps/](http://localhost:1313/kubeapps/). Press `Ctrl-C` when done viewing.
-
-
-
-The [site/content/docs/latest](./content/docs/latest) directory holds the project documentation whereas the [site/themes/template/static../img/docs](./themes/template/static../img/docs) directory contains the images used in the documentation. Note they have to be under that folder to be properly served.
-
-#### Run Hugo with Docker
-
-To ease the local development and prevent you from polluting your local environment with tools that rarely use,
-it is possible to run the `Hugo` server via `Docker` through a `Make` target.
+Not using SSH:
 
 ```bash
-make site-server
+GIT_USER=<Your GitHub username> npm run deploy
 ```
 
-After that, you can access the site at [http://localhost:1313](http://localhost:1313). Press `Ctrl-C` when done viewing.
-
-## Check writing
-
-In order to validate and ensure a proper style of writing, it is recommended to run the [vale validator](https://vale.sh/docs/vale-cli/installation/) with a set of [style rules](https://github.com/errata-ai/styles). The rules are present in the project codebase in the directory. Some of them have been slightly modified to fit our project needs.
-
-To run the validator, install the `vale` binary on your machine from the [vale releases website](https://github.com/errata-ai/vale/releases) and run:
-
-```bash
-cd site
-vale --config ./vale.ini ./content/
-```
-
-## Check links
-
-In addition to the style check, it is also recommended to run a link checker to detect broken links and other issues.
-First, render the website locally and then run [check-html-links](https://www.npmjs.com/package/check-html-links) in the `site/public` directory.
-
-```bash
-cd site
-hugo
-npx check-html-links ./public/
-```
-
-## Check format
-
-Also, another tool for checking the markdown syntax is [markdownlint-cli](https://github.com/igorshubovych/markdownlint-cli) and [prettier](https://github.com/prettier/prettier). To use them, run:
-
-```bash
-cd site
-npx markdownlint-cli .\content\docs\latest\ --disable MD013 MD033 # add --fix to also solve the issues
-npx prettier --write .\content\docs\latest\
-```
-
-## Check accessibility
-
-In order to validate the accessibility conformance, it is recommended to run the [pa11y validator](https://github.com/pa11y/pa11y).
-First, serve the website locally and then run `pa11y` in the `http://localhost:1313/` address.
-
-```bash
-cd site
-hugo server --disableFastRender
-npx pa11y http://localhost:1313/ -i "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail" # ignoring this as colors are set by the corporate template
-```
+If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.

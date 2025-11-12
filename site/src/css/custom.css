@@ -1,0 +1,71 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #0091da;
+  --ifm-color-primary-dark: #0082c4;
+  --ifm-color-primary-darker: #007bb9;
+  --ifm-color-primary-darkest: #006599;
+  --ifm-color-primary-light: #00a0f0;
+  --ifm-color-primary-lighter: #00a7fb;
+  --ifm-color-primary-lightest: #1ab4ff;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+  --ifm-color-primary: #1ab4ff;
+  --ifm-color-primary-dark: #00a7fb;
+  --ifm-color-primary-darker: #009ee8;
+  --ifm-color-primary-darkest: #0082c4;
+  --ifm-color-primary-light: #2dbdff;
+  --ifm-color-primary-lighter: #40c6ff;
+  --ifm-color-primary-lightest: #66d4ff;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* Slack icon in navbar */
+.header-slack-link::before {
+  content: '';
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+  background-image: url('/img/slack.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* GitHub icon in navbar */
+.header-github-link::before {
+  content: '';
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+  background-image: url('/img/github.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Hide text on smaller screens, show only icons */
+@media (max-width: 768px) {
+  .header-slack-link,
+  .header-github-link {
+    font-size: 0;
+  }
+  .header-slack-link::before,
+  .header-github-link::before {
+    margin-right: 0;
+  }
+}
+
