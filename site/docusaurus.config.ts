@@ -203,6 +203,10 @@ const config: Config = {
               label: 'Slack',
               href: 'https://kubernetes.slack.com/messages/kubeapps',
             },
+              {
+                  label: 'Proposal Request',
+                  to: 'docs/reference/proposal/proposals'
+              }
           ],
         },
         {
