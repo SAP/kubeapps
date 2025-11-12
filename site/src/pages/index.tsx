@@ -12,17 +12,6 @@ function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
   return (
     <>
-      <div style={{
-        backgroundColor: '#dc3545',
-        color: 'white',
-        padding: '8px 0',
-        height: '50px',
-        textAlign: 'center',
-        fontSize: '16px',
-        fontWeight: '500'
-      }}>
-        ⚠️ WORK IN PROGRESS - NOT FOR PUBLIC USE ⚠️ This documentation is incomplete, under development, and missing legal notices.
-      </div>
       <header className={clsx('hero hero--primary', styles.heroBanner)}>
         <div className="container">
           <Heading as="h1" className="hero__title">

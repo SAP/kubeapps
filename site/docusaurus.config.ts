@@ -214,8 +214,22 @@ const config: Config = {
             },
           ],
         },
+        {
+          title: 'Legal',
+            items: [
+              {
+                label: 'Imprint',
+                to: 'imprint',
+              },
+              {
+                label: 'Terms of Use',
+                href: 'https://www.sap.com/about/legal/terms-of-use.html',
+              },
+            ],
+        },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} 2025 SAP SE or an SAP affiliate company. Built with Docusaurus.`,
+      copyright: `<br/>© ${new Date().getFullYear()} SAP SE or an SAP affiliate company and Kubeapps contributors. Built with <a href="https://docusaurus.io/">Docusaurus</a><br/>
+This site is hosted by GitHub Pages. Please see the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub Privacy Statement</a> for any information how GitHub processes your personal data.<br/>`,
     },
     prism: {
       theme: prismThemes.github,
