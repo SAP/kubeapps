@@ -13,13 +13,13 @@ deploy-dex: devel/dex.crt devel/dex.key
 		--key ./devel/dex.key \
 		--cert ./devel/dex.crt
 	helm --kubeconfig=${CLUSTER_CONFIG} repo add dex https://charts.dexidp.io
-	helm --kubeconfig=${CLUSTER_CONFIG} install dex dex/dex --version 0.5.0 --namespace dex  --values ./site/content/docs/latest/reference/manifests/kubeapps-local-dev-dex-values.yaml
+	helm --kubeconfig=${CLUSTER_CONFIG} install dex dex/dex --version 0.5.0 --namespace dex  --values ./site/docs/reference/manifests/kubeapps-local-dev-dex-values.yaml
 
 deploy-openldap:
 	kubectl --kubeconfig=${CLUSTER_CONFIG} create namespace ldap
 	helm --kubeconfig=${CLUSTER_CONFIG} repo add stable https://charts.helm.sh/stable
 	helm --kubeconfig=${CLUSTER_CONFIG} install ldap stable/openldap --namespace ldap \
-		--values ./site/content/docs/latest/reference/manifests/kubeapps-local-dev-openldap-values.yaml
+		--values ./site/docs/reference/manifests/kubeapps-local-dev-openldap-values.yaml
 
 # Get mkcert from https://github.com/FiloSottile/mkcert/releases
 devel/localhost-cert.pem:
@@ -36,9 +36,9 @@ deploy-dependencies: deploy-dex deploy-openldap devel/localhost-cert.pem
 
 deploy-dev-kubeapps:
 	helm --kubeconfig=${CLUSTER_CONFIG} upgrade --install kubeapps ./chart/kubeapps --namespace kubeapps --create-namespace \
-		--values ./site/content/docs/latest/reference/manifests/kubeapps-local-dev-values.yaml \
-		--values ./site/content/docs/latest/reference/manifests/kubeapps-local-dev-auth-proxy-values.yaml \
-		--values ./site/content/docs/latest/reference/manifests/kubeapps-local-dev-additional-kind-cluster.yaml \
+		--values ./site/docs/reference/manifests/kubeapps-local-dev-values.yaml \
+		--values ./site/docs/reference/manifests/kubeapps-local-dev-auth-proxy-values.yaml \
+		--values ./site/docs/reference/manifests/kubeapps-local-dev-additional-kind-cluster.yaml \
 		--set clusters[1].serviceToken=$(shell kubectl --kubeconfig=${ADDITIONAL_CLUSTER_CONFIG} get secret kubeapps-namespace-discovery -o go-template="{{.data.token | base64decode}}")
 
 deploy-dev: deploy-dependencies deploy-dev-kubeapps
@@ -59,12 +59,12 @@ reset-dev-kubeapps:
 deploy-kapp-controller:
 	kubectl --kubeconfig=${CLUSTER_CONFIG} apply -f https://github.com/carvel-dev/kapp-controller/releases/download/v0.41.2/release.yml
 	kubectl --kubeconfig=${CLUSTER_CONFIG} apply -f https://raw.githubusercontent.com/carvel-dev/kapp-controller/develop/examples/packaging-with-repo/package-repository.yml
-	kubectl --kubeconfig=${CLUSTER_CONFIG} apply -f ./site/content/docs/latest/reference/manifests/tce-package-repository.yaml
+	kubectl --kubeconfig=${CLUSTER_CONFIG} apply -f ./site/docs/reference/manifests/tce-package-repository.yaml
 
 deploy-kapp-controller-additional:
 	kubectl --kubeconfig=${ADDITIONAL_CLUSTER_CONFIG} apply -f https://github.com/carvel-dev/kapp-controller/releases/download/v0.41.2/release.yml
 	kubectl --kubeconfig=${ADDITIONAL_CLUSTER_CONFIG} apply -f https://raw.githubusercontent.com/carvel-dev/kapp-controller/develop/examples/packaging-with-repo/package-repository.yml
-	kubectl --kubeconfig=${ADDITIONAL_CLUSTER_CONFIG} apply -f ./site/content/docs/latest/reference/manifests/tce-package-repository.yaml
+	kubectl --kubeconfig=${ADDITIONAL_CLUSTER_CONFIG} apply -f ./site/docs/reference/manifests/tce-package-repository.yaml
 
 # Add the flux controllers used for testing the kubeapps-apis integration.
 deploy-flux-controllers:
