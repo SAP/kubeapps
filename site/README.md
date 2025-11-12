@@ -19,10 +19,10 @@ Build and run with Docker:
 docker build -t kubeapps-docs .
 
 # Run development server
-docker run -p 3000:3000 -v $(pwd):/app kubeapps-docs npm start
+docker run -p 3000:3000 -v $(pwd):/app -w /app kubeapps-docs
 
 # Or run in interactive mode for development
-docker run -it -p 3000:3000 -v $(pwd):/app kubeapps-docs bash
+docker run -it -p 3000:3000 -v $(pwd):/app -w /app kubeapps-docs bash
 ```
 
 ## Local Development
@@ -40,19 +40,3 @@ npm run build
 ```
 
 This command generates static content into the `build` directory and can be served using any static contents hosting service.
-
-## Deployment
-
-Using SSH:
-
-```bash
-USE_SSH=true npm run deploy
-```
-
-Not using SSH:
-
-```bash
-GIT_USER=<Your GitHub username> npm run deploy
-```
-
-If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.

@@ -11,7 +11,7 @@ RUN apk add --no-cache git
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production=false
+RUN npm ci
 
 # Copy the rest of the application code
 COPY . .
@@ -20,7 +20,7 @@ COPY . .
 EXPOSE 3000
 
 # Default command for development
-CMD ["npm", "start", "--", "--host", "0.0.0.0"]
+CMD ["npm", "start", "--", "--host=0.0.0.0"]
 
 # For production build, you can override with:
 # docker run kubeapps-docs npm run build
