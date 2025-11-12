@@ -42,7 +42,7 @@ See the [Getting Started Guide](./site/content/docs/latest/tutorials/getting-sta
 
 ## Documentation
 
-Complete documentation available in Kubeapps [documentation section](./site/content/docs/latest/README.md). Including complete tutorials, how-to guides, and reference for configuration and development in Kubeapps.
+Complete documentation available in Kubeapps [documentation section](./site/docs/). Including complete tutorials, how-to guides, and reference for configuration and development in Kubeapps.
 
 For getting started into Kubeapps, please refer to:
 

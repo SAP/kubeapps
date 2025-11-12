@@ -41,7 +41,7 @@ kubectl create namespace kubeapps
 helm install kubeapps --namespace kubeapps oci://registry-1.docker.io/bitnamicharts/kubeapps
 ```
 
-For detailed information on installing, configuring and upgrading Kubeapps, checkout the [chart README](https://github.com/vmware-tanzu/kubeapps/blob/main/chart/kubeapps/README.md).
+For detailed information on installing, configuring and upgrading Kubeapps, checkout the [chart README](https://github.com/sap/kubeapps/blob/main/chart/kubeapps/README.md).
 
 The above commands deploys Kubeapps into the `kubeapps` namespace in your cluster. It may take a few minutes to run. Once it has been deployed and the Kubeapps pods are running, continue to step 2.
 
@@ -135,7 +135,7 @@ Paste the token generated in the previous step to authenticate and access the Ku
 
 ![Dashboard main page](/img/dashboard-home.png)
 
-**_Note:_** If you are setting up Kubeapps for other people to access, you should use a different service type or setup Ingress rather than using the above `kubectl port-forward`. For detailed information on installing, configuring and upgrading Kubeapps, checkout the [chart README](https://github.com/vmware-tanzu/kubeapps/blob/main/chart/kubeapps/README.md)
+**_Note:_** If you are setting up Kubeapps for other people to access, you should use a different service type or setup Ingress rather than using the above `kubectl port-forward`. For detailed information on installing, configuring and upgrading Kubeapps, checkout the [chart README](https://github.com/sap/kubeapps/blob/main/chart/kubeapps/README.md)
 
 ## Step 4: Deploy applications: WordPress
 

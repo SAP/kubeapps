@@ -42,7 +42,7 @@ This TLS certificate can be used by any type of ingress.
 
 As an alternative, you can have certificates automatically managed using [Cert-manager](https://cert-manager.io).
 
-Please refer to [the Kubeapps documentation covering external access with Ingress](https://github.com/vmware-tanzu/kubeapps/blob/main/chart/kubeapps/README.md#ingress) for additional information.
+Please refer to [the Kubeapps documentation covering external access with Ingress](https://github.com/sap/kubeapps/blob/main/chart/kubeapps/README.md#ingress) for additional information.
 
 ### Option B1: Using Contour ingress
 
