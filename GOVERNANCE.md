@@ -20,7 +20,7 @@ The Kubeapps community abides by this [code of conduct](https://github.com/sap/.
 
 New maintainers must be nominated by an existing maintainer and must be elected by a supermajority of existing maintainers. Likewise, maintainers can be removed by a supermajority of the existing maintainers or can resign by notifying one of the maintainers.
 
-## Decision Making
+## Decision-Making
 
 Ideally, all project decisions are resolved by consensus. If impossible, any maintainer may call a vote. Unless otherwise specified in this document, any vote will be decided by a supermajority of maintainers.
 
@@ -40,7 +40,7 @@ Lazy consensus does not apply to the process of:
 
 ## Proposal Process
 
-The proposal process is defined [here](./site/content/docs/latest/reference/proposals/proposals.md).
+The proposal process is defined in [proposals.md](site/docs/reference/proposal/proposals.md).
 
 ## Updating Governance
 

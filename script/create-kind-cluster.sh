@@ -9,7 +9,7 @@ IFS=$'\t\n'
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." >/dev/null && pwd)"
 K8S_KIND_VERSION=${K8S_KIND_VERSION:?"not provided"}
 DEFAULT_DEX_IP=${DEFAULT_DEX_IP:-"172.18.0.2"}
-CLUSTER_CONFIG_FILE=${CLUSTER_CONFIG_FILE:-"${ROOT_DIR}/site/content/docs/latest/reference/manifests/kubeapps-local-dev-apiserver-config.yaml"}
+CLUSTER_CONFIG_FILE=${CLUSTER_CONFIG_FILE:-"${ROOT_DIR}/site/docs/reference/manifests/kubeapps-local-dev-apiserver-config.yaml"}
 CLUSTER_NAME=${CLUSTER_NAME:-"kubeapps-ci"}
 KUBECONFIG=${KUBECONFIG:-"${HOME}/.kube/kind-config-kubeapps-ci"}
 CONTEXT=${CONTEXT:-"kind-kubeapps-ci"}
@@ -25,7 +25,7 @@ info "CONTEXT: ${CONTEXT}"
 
 function createKindCluster() {
   kind create cluster --image "kindest/node:${K8S_KIND_VERSION}" --name "${CLUSTER_NAME}" --config="${CLUSTER_CONFIG_FILE}" --kubeconfig="${KUBECONFIG}" --retain --wait 120s &&
-  kubectl --context "${CONTEXT}" --kubeconfig="${KUBECONFIG}" apply -f ${ROOT_DIR}/site/content/docs/latest/reference/manifests/kubeapps-local-dev-users-rbac.yaml &&
+  kubectl --context "${CONTEXT}" --kubeconfig="${KUBECONFIG}" apply -f ${ROOT_DIR}/site/docs/reference/manifests/kubeapps-local-dev-users-rbac.yaml &&
   kubectl --context "${CONTEXT}" --kubeconfig="${KUBECONFIG}" apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml &&
   sleep 5 &&
   kubectl wait --context "${CONTEXT}" --kubeconfig="${KUBECONFIG}" --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s &&

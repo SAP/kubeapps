@@ -20,7 +20,7 @@ Kubeapps project welcomes many different types of contributions and not all of t
 
 ## Getting started
 
-Find information about how to set up the development environment on the [developer guide](./site/content/docs/latest/reference/developer/README.md).
+Find information about how to set up the development environment on the [developer guide](./site/docs/reference/developer/index.md).
 
 ## Contribution Flow
 
@@ -87,9 +87,9 @@ The best way to reach Kubeapps maintainers team with a question when contributin
 
 New to Kubeapps?
 
-- Start here to learn how to install and use Kubeapps: [Getting started in Kubeapps](./site/content/docs/latest/tutorials/getting-started.md)
-- Start here to learn how to develop for Kubeapps components: [Kubeapps Developer guidelines](./site/content/docs/latest/reference/developer/README.md)
-- Other more detailed documentation can be found at: [Kubeapps Docs](./site/content/docs/latest/README.md)
+- Start here to learn how to install and use Kubeapps: [Getting started in Kubeapps](./site/docs/latest/tutorials/getting-started.md)
+- Start here to learn how to develop for Kubeapps components: [Kubeapps Developer guidelines](./site/docs/latest/reference/developer/README.md)
+- Other more detailed documentation can be found at: [Kubeapps Docs](./site/docs/README.md)
 
 ## Roadmap
 

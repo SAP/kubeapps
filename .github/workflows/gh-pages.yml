@@ -1,13 +1,17 @@
-name: Deploy Hugo site to GitHub Pages
+# Copyright 2025 the Kubeapps contributors.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Deploy Docusaurus site to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   workflow_dispatch: {}
 
 # Allow one concurrent deployment
 concurrency:
-  group: hugo-pages
+  group: docusaurus-pages
   cancel-in-progress: true
 
 permissions:
@@ -25,11 +29,16 @@ jobs:
         with:
           fetch-depth: 0 # enable Git info (for last modified etc.)
 
-      - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          hugo-version: '0.152.2'
-          extended: true
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: site/package-lock.json
+
+      - name: Install dependencies
+        working-directory: site
+        run: npm ci
 
       - name: Compute base URL
         id: vars
@@ -44,17 +53,17 @@ jobs:
           echo "Using base URL: $base_url"
           echo "base_url=$base_url" >> "$GITHUB_OUTPUT"
 
-      - name: Build with Hugo
+      - name: Build with Docusaurus
         working-directory: site
         run: |
-          hugo --gc --minify --enableGitInfo -b "${{ steps.vars.outputs.base_url }}"
+          npm run build
           # Ensure GitHub Pages does not run Jekyll (allows files/folders beginning with _)
-          touch public/.nojekyll
+          touch build/.nojekyll
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site/public
+          path: site/build
 
   deploy:
     name: Deploy to GitHub Pages
@@ -67,4 +76,3 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
-

@@ -9,7 +9,7 @@ IFS=$'\t\n'
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." >/dev/null && pwd)"
 K8S_KIND_VERSION=${K8S_KIND_VERSION:?"not provided"}
 DEFAULT_DEX_IP=${DEFAULT_DEX_IP:-"172.18.0.2"}
-CLUSTER_CONFIG_FILE=${CLUSTER_CONFIG_FILE:-"${ROOT_DIR}/site/content/docs/latest/reference/manifests/kubeapps-local-dev-additional-apiserver-config.yaml"}
+CLUSTER_CONFIG_FILE=${CLUSTER_CONFIG_FILE:-"${ROOT_DIR}/site/docs/reference/manifests/kubeapps-local-dev-additional-apiserver-config.yaml"}
 CLUSTER_NAME=${CLUSTER_NAME:-"kubeapps-ci-additional"}
 KUBECONFIG=${KUBECONFIG:-"${HOME}/.kube/kind-config-kubeapps-ci-additional"}
 CONTEXT=${CONTEXT:-"kind-kubeapps-ci-additional"}
@@ -25,8 +25,8 @@ info "CONTEXT: ${CONTEXT}"
 
 function createAdditionalKindCluster() {
   kind create cluster --image "kindest/node:${K8S_KIND_VERSION}" --name "${CLUSTER_NAME}" --config="${CLUSTER_CONFIG_FILE}" --kubeconfig "${KUBECONFIG}" --retain --wait 120s &&
-  kubectl apply --context "${CONTEXT}" --kubeconfig "${KUBECONFIG}" --kubeconfig "${KUBECONFIG}" -f "${ROOT_DIR}/site/content/docs/latest/reference/manifests/kubeapps-local-dev-users-rbac.yaml" &&
-  kubectl apply --context "${CONTEXT}" --kubeconfig "${KUBECONFIG}" --kubeconfig "${KUBECONFIG}" -f "${ROOT_DIR}/site/content/docs/latest/reference/manifests/kubeapps-local-dev-namespace-discovery-rbac.yaml" &&
+  kubectl apply --context "${CONTEXT}" --kubeconfig "${KUBECONFIG}" --kubeconfig "${KUBECONFIG}" -f "${ROOT_DIR}/site/docs/reference/manifests/kubeapps-local-dev-users-rbac.yaml" &&
+  kubectl apply --context "${CONTEXT}" --kubeconfig "${KUBECONFIG}" --kubeconfig "${KUBECONFIG}" -f "${ROOT_DIR}/site/docs/reference/manifests/kubeapps-local-dev-namespace-discovery-rbac.yaml" &&
   # Install MetalLB for LoadBalancer support
   kubectl --context "${CONTEXT}" --kubeconfig "${KUBECONFIG}" apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml &&
   kubectl wait --context "${CONTEXT}" --kubeconfig "${KUBECONFIG}" --namespace metallb-system --for=condition=ready pod --selector=app=metallb --timeout=120s &&

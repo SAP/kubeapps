@@ -9,12 +9,12 @@ IFS=$'\t\n'
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." >/dev/null && pwd)"
 DEFAULT_DEX_IP=${DEFAULT_DEX_IP:-"172.18.0.2"}
 
-sed -i -e "s/172.18.0.2/$DEFAULT_DEX_IP/g;s/localhost/kubeapps-ci.kubeapps/g" "${ROOT_DIR}/site/content/docs/latest/reference/manifests/kubeapps-local-dev-dex-values.yaml"
+sed -i -e "s/172.18.0.2/$DEFAULT_DEX_IP/g;s/localhost/kubeapps-ci.kubeapps/g" "${ROOT_DIR}/site/docs/reference/manifests/kubeapps-local-dev-dex-values.yaml"
 helm repo add dex https://charts.dexidp.io
 
 # Install dex
 kubectl create namespace dex
-helm install dex dex/dex --version 0.5.0 --namespace dex --values "${ROOT_DIR}/site/content/docs/latest/reference/manifests/kubeapps-local-dev-dex-values.yaml"
+helm install dex dex/dex --version 0.5.0 --namespace dex --values "${ROOT_DIR}/site/docs/reference/manifests/kubeapps-local-dev-dex-values.yaml"
 
 # Install openldap
 helm repo add stable https://charts.helm.sh/stable
