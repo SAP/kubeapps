@@ -6,7 +6,7 @@
   "homepage": "./",
   "scripts": {
     "build": "npm-run-all build-css compile-lang build-js",
-    "build-css": "sass src/ --no-source-map && yarn run",
+    "build-css": "sass src/ --no-source-map",
     "build-js": "export NODE_OPTIONS=--max-old-space-size=4096 && craco build",
     "compile-lang": "formatjs compile-folder lang src/locales/ --ast --format simple",
     "eject": "craco eject",
