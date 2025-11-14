@@ -3,12 +3,12 @@
 
 FROM node:24-alpine3.21 AS build
 
-RUN apk add python3 make build-base
+RUN apk add python3 make build-base gcc g++ libc-dev
 
 WORKDIR /app
 
 COPY package.json yarn.lock /app/
-RUN yarn install --frozen-lockfile
+RUN CXXFLAGS="-std=c++20" yarn install --frozen-lockfile
 
 RUN mkdir /app/src
 COPY . /app
