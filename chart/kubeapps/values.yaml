@@ -1031,7 +1031,7 @@ apprepository:
   ##
   image:
     registry: ghcr.io
-    repository: kubeapps/apprepository-controller
+    repository: sap/kubeapps/apprepository-controller
     tag: v3.0.0-rc3
     digest: ""
     ## Specify a imagePullPolicy
@@ -1057,7 +1057,7 @@ apprepository:
   ##
   syncImage:
     registry: ghcr.io
-    repository: kubeapps/asset-syncer
+    repository: sap/kubeapps/asset-syncer
     tag: v3.0.0-rc3
     digest: ""
     ## Specify a imagePullPolicy
@@ -1578,7 +1578,7 @@ pinnipedProxy:
   ##
   image:
     registry: ghcr.io
-    repository: kubeapps/pinniped-proxy
+    repository: sap/kubeapps/pinniped-proxy
     tag: v3.0.0-rc3
     digest: ""
     ## Specify a imagePullPolicy
@@ -1892,7 +1892,7 @@ kubeappsapis:
   ##
   image:
     registry: ghcr.io
-    repository: kubeapps/kubeapps-apis
+    repository: sap/kubeapps/kubeapps-apis
     tag: v3.0.0-rc3
     digest: ""
     ## Specify a imagePullPolicy
@@ -2271,7 +2271,7 @@ ociCatalog:
   ##
   image:
     registry: ghcr.io
-    repository: kubeapps/oci-catalog
+    repository: sap/kubeapps/oci-catalog
     tag: v3.0.0-rc3
     digest: ""
     ## Specify a imagePullPolicy
