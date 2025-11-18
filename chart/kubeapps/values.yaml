@@ -631,7 +631,7 @@ dashboard:
   image:
     registry: ghcr.io
     repository: kubeapps/dashboard
-    tag: latest
+    tag: v3.0.0-rc3
     digest: ""
     ## Specify a imagePullPolicy
     ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
@@ -1032,7 +1032,7 @@ apprepository:
   image:
     registry: ghcr.io
     repository: kubeapps/apprepository-controller
-    tag: latest
+    tag: v3.0.0-rc3
     digest: ""
     ## Specify a imagePullPolicy
     ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
@@ -1058,7 +1058,7 @@ apprepository:
   syncImage:
     registry: ghcr.io
     repository: kubeapps/asset-syncer
-    tag: latest
+    tag: v3.0.0-rc3
     digest: ""
     ## Specify a imagePullPolicy
     ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
@@ -1579,7 +1579,7 @@ pinnipedProxy:
   image:
     registry: ghcr.io
     repository: kubeapps/pinniped-proxy
-    tag: latest
+    tag: v3.0.0-rc3
     digest: ""
     ## Specify a imagePullPolicy
     ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
@@ -1893,7 +1893,7 @@ kubeappsapis:
   image:
     registry: ghcr.io
     repository: kubeapps/kubeapps-apis
-    tag: latest
+    tag: v3.0.0-rc3
     digest: ""
     ## Specify a imagePullPolicy
     ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
@@ -2272,7 +2272,7 @@ ociCatalog:
   image:
     registry: ghcr.io
     repository: kubeapps/oci-catalog
-    tag: latest
+    tag: v3.0.0-rc3
     digest: ""
     ## Specify a imagePullPolicy
     ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
