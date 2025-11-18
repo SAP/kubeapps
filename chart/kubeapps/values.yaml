@@ -630,7 +630,7 @@ dashboard:
   ##
   image:
     registry: ghcr.io
-    repository: kubeapps/dashboard
+    repository: sap/kubeapps/dashboard
     tag: v3.0.0-rc3
     digest: ""
     ## Specify a imagePullPolicy
