@@ -629,7 +629,7 @@ dashboard:
   ## @param dashboard.image.debug Enable image debug mode
   ##
   image:
-    registry: docker.io
+    registry: ghcr.io
     repository: kubeapps/dashboard
     tag: latest
     digest: ""
@@ -1030,7 +1030,7 @@ apprepository:
   ## @param apprepository.image.pullSecrets Kubeapps AppRepository Controller image pull secrets
   ##
   image:
-    registry: docker.io
+    registry: ghcr.io
     repository: kubeapps/apprepository-controller
     tag: latest
     digest: ""
@@ -1056,7 +1056,7 @@ apprepository:
   ## @param apprepository.syncImage.pullSecrets Kubeapps Asset Syncer image pull secrets
   ##
   syncImage:
-    registry: docker.io
+    registry: ghcr.io
     repository: kubeapps/asset-syncer
     tag: latest
     digest: ""
@@ -1577,7 +1577,7 @@ pinnipedProxy:
   ## @param pinnipedProxy.image.pullSecrets Pinniped Proxy image pull secrets
   ##
   image:
-    registry: docker.io
+    registry: ghcr.io
     repository: kubeapps/pinniped-proxy
     tag: latest
     digest: ""
@@ -1891,7 +1891,7 @@ kubeappsapis:
   ## @param kubeappsapis.image.pullSecrets Kubeapps-APIs image pull secrets
   ##
   image:
-    registry: docker.io
+    registry: ghcr.io
     repository: kubeapps/kubeapps-apis
     tag: latest
     digest: ""
@@ -2270,7 +2270,7 @@ ociCatalog:
   ## @param ociCatalog.image.debug Enable image debug mode
   ##
   image:
-    registry: docker.io
+    registry: ghcr.io
     repository: kubeapps/oci-catalog
     tag: latest
     digest: ""

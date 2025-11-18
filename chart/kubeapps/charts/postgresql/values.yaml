@@ -23,7 +23,7 @@ global:
   ##
   security:
     ## @param global.security.allowInsecureImages Allows skipping image verification
-    allowInsecureImages: false
+    allowInsecureImages: true
   postgresql:
     ## @param global.postgresql.fullnameOverride Full chart name (overrides `fullnameOverride`)
     ## @param global.postgresql.auth.postgresPassword Password for the "postgres" admin user (overrides `auth.postgresPassword`)
