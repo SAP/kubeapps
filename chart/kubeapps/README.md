@@ -12,9 +12,6 @@ Kubeapps is a web-based UI for launching and managing applications on Kubernetes
 helm install my-release oci://ghcr.io/sap/kubeapps/kubeapps --namespace kubeapps --create-namespace
 ```
 
-> Note: You need to substitute the placeholders `REGISTRY_NAME` and `REPOSITORY_NAME` with a reference to your Helm chart registry and repository. For example, in the case of Bitnami, you need to use `REGISTRY_NAME=registry-1.docker.io` and `REPOSITORY_NAME=bitnamicharts`.
-> Check out the [getting started](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/tutorials/getting-started.md) to start deploying apps with Kubeapps.
-
 ## Introduction
 
 This chart bootstraps a [Kubeapps](https://github.com/sap/kubeapps) deployment on a [Kubernetes](https://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
@@ -30,7 +27,7 @@ With Kubeapps you can:
 
 **_Note:_** Kubeapps 2.0 and onwards supports Helm 3 only. While only the Helm 3 API is supported, in most cases, charts made for Helm 2 will still work.
 
-It also packages the [Bitnami PostgreSQL chart](https://github.com/bitnami/charts/tree/main/bitnami/postgresql), which is required for bootstrapping a deployment for the database requirements of the Kubeapps application.
+It also packages the [Bitnami PostgreSQL chart](https://github.com/sap/kubeapps/tree/main/chart/kubeapps/charts/postgresql), which is required for bootstrapping a deployment for the database requirements of the Kubeapps application.
 
 ## Prerequisites
 
@@ -53,7 +50,7 @@ The command deploys Kubeapps on the Kubernetes cluster in the `kubeapps` namespa
 
 > **Caveat**: Only one Kubeapps installation is supported per namespace
 
-Once you have installed Kubeapps follow the [Getting Started Guide](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/tutorials/getting-started.md) for additional information on how to access and use Kubeapps.
+Once you have installed Kubeapps follow the [Getting Started Guide](https://github.com/sap/kubeapps/blob/main/site/docs/tutorials/getting-started.md) for additional information on how to access and use Kubeapps.
 
 ## Configuration and installation details
 
@@ -69,7 +66,7 @@ Backup and restore of Helm chart deployments can be performed using various open
 
 ### Configuring Initial Repositories
 
-By default, Kubeapps will track the [Bitnami Application Catalog](https://github.com/bitnami/charts). To change these defaults, override with your desired parameters the `apprepository.initialRepos` object present in the [values.yaml](https://github.com/bitnami/charts/tree/main/bitnami/kubeapps/values.yaml) file.
+By default, Kubeapps will track the [Bitnami Application Catalog](https://github.com/bitnami/charts). To change these defaults, override with your desired parameters the `apprepository.initialRepos` object present in the [values.yaml](https://github.com/sap/kubeapps/tree/main/chart/kubeapps/values.yaml) file.
 
 ### Enabling Operators
 
@@ -781,7 +778,7 @@ helm install kubeapps --namespace kubeapps \
     oci://REGISTRY_NAME/REPOSITORY_NAME/kubeapps
 ```
 
-> Note: You need to substitute the placeholders `REGISTRY_NAME` and `REPOSITORY_NAME` with a reference to your Helm chart registry and repository. For example, in the case of Bitnami, you need to use `REGISTRY_NAME=registry-1.docker.io` and `REPOSITORY_NAME=bitnamicharts`.
+> Note: You need to substitute the placeholders `REGISTRY_NAME` and `REPOSITORY_NAME` with a reference to your Helm chart registry and repository. For example, in the case of SAP, you need to use `REGISTRY_NAME=ghcr.io` and `REPOSITORY_NAME=sap`.
 
 The above command enables an Ingress Rule to expose Kubeapps.
 
@@ -797,16 +794,16 @@ helm install kubeapps --namespace kubeapps -f custom-values.yaml oci://REGISTRY_
 
 ### How to install Kubeapps for demo purposes?
 
-Install Kubeapps for exclusively **demo purposes** by simply following the [getting started](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/tutorials/getting-started.md) docs.
+Install Kubeapps for exclusively **demo purposes** by simply following the [getting started](https://github.com/sap/kubeapps/blob/main/site/docs/tutorials/getting-started.md) docs.
 
 ### How to install Kubeapps in production scenarios?
 
-For any user-facing installation, you should [configure an OAuth2/OIDC provider](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/tutorials/using-an-OIDC-provider.md) to enable secure user authentication with Kubeapps and the cluster.
-Please also refer to the [Access Control](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/howto/access-control.md) documentation to configure fine-grained access control for users.
+For any user-facing installation, you should [configure an OAuth2/OIDC provider](https://github.com/sap/kubeapps/blob/main/site/docs/tutorials/using-an-OIDC-provider.md) to enable secure user authentication with Kubeapps and the cluster.
+Please also refer to the [Access Control](https://github.com/sap/kubeapps/blob/main/site/docs/howto/access-control.md) documentation to configure fine-grained access control for users.
 
 ### How to use Kubeapps?
 
-Have a look at the [dashboard documentation](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/howto/dashboard.md) for knowing how to use the Kubeapps dashboard: deploying applications, listing and removing the applications running in your cluster and adding new repositories.
+Have a look at the [dashboard documentation](https://github.com/sap/kubeapps/blob/main/site/docs/howto/dashboard.md) for knowing how to use the Kubeapps dashboard: deploying applications, listing and removing the applications running in your cluster and adding new repositories.
 
 ### How to uninstall Kubeapps
 
@@ -868,7 +865,7 @@ helm install kubeapps oci://REGISTRY_NAME/REPOSITORY_NAME/kubeapps \
 
 > Note: You need to substitute the placeholders `REGISTRY_NAME` and `REPOSITORY_NAME` with a reference to your Helm chart registry and repository. For example, in the case of SAP, you need to use `REGISTRY_NAME=ghcr.io` and `REPOSITORY_NAME=sap`.
 
-Besides, if you are using the OAuth2/OIDC login (more information at the [using an OIDC provider documentation](https://github.com/vmware-tanzu/kubeapps/blob/main/site/content/docs/latest/tutorials/using-an-OIDC-provider.md)), you will need, also, to configure the different URLs:
+Besides, if you are using the OAuth2/OIDC login (more information at the [using an OIDC provider documentation](https://github.com/sap/kubeapps/blob/main/site/docs/tutorials/using-an-OIDC-provider.md)), you will need, also, to configure the different URLs:
 
 ```console
 helm install kubeapps oci://REGISTRY_NAME/REPOSITORY_NAME/kubeapps \
@@ -883,15 +880,15 @@ helm install kubeapps oci://REGISTRY_NAME/REPOSITORY_NAME/kubeapps \
 
 ### Can Kubeapps install apps into more than one cluster?
 
-Yes! Kubeapps 2.0+ supports multicluster environments. Have a look at the [Kubeapps dashboard documentation](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/howto/deploying-to-multiple-clusters.md) to know more.
+Yes! Kubeapps 2.0+ supports multicluster environments. Have a look at the [Kubeapps dashboard documentation](https://github.com/sap/kubeapps/blob/main/site/docs/howto/deploying-to-multiple-clusters.md) to know more.
 
 ### Can Kubeapps be installed without Internet connection?
 
-Yes! Follow the [offline installation documentation](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/howto/offline-installation.md) to discover how to perform an installation in an air-gapped scenario.
+Yes! Follow the [offline installation documentation](https://github.com/sap/kubeapps/blob/main/site/docs/howto/offline-installation.md) to discover how to perform an installation in an air-gapped scenario.
 
 ### Does Kubeapps support private repositories?
 
-Of course! Have a look at the [private package repositories documentation](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/howto/private-app-repository.md) to learn how to configure a private repository in Kubeapps.
+Of course! Have a look at the [private package repositories documentation](https://github.com/sap/kubeapps/blob/main/site/docs/howto/private-app-repository.md) to learn how to configure a private repository in Kubeapps.
 
 ### Is there any API documentation?
 
@@ -909,7 +906,7 @@ You could alternatively ensure that the `imagePullSecret` is available in all na
 
 ### Does Kubeapps support Operators?
 
-Yes! You can get started by following the [operators documentation](https://github.com/sap/kubeapps/blob/main/site/content/docs/latest/tutorials/operators.md).
+Yes! You can get started by following the [operators documentation](https://github.com/sap/kubeapps/blob/main/site/docs/tutorials/operators.md).
 
 ### Slow response when listing namespaces
 
