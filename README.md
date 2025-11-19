@@ -1,4 +1,4 @@
-# <img src="site/content/docs/latest/img/logo.svg" width="40" align="left"/> Kubeapps
+# <img src="site/static/img/logo.svg" width="40" align="left"/> Kubeapps
 
 [![Main Pipeline](https://github.com/SAP/kubeapps/actions/workflows/kubeapps-main.yaml/badge.svg)](https://github.com/SAP/kubeapps/actions/workflows/kubeapps-main.yaml)
 [![CodeQL](https://github.com/SAP/kubeapps/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/SAP/kubeapps/actions/workflows/codeql-scheduled.yml)
