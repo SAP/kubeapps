@@ -44,8 +44,10 @@ test("Upgrades an application", async ({ page }) => {
   // Use the built-in search function in monaco to find the text we are looking for
   // so that it get loaded in the DOM when using the toContainText assert
   await page.locator(".values-editor div.modified").click({ button: "right" });
-  await page.getByRole('menuitem', { name: 'Command Palette F1' }).click();
-  await page.getByLabel("input").click();
+  const commandPaletteItem = page.getByRole('menuitem', { name: 'Command Palette F1' });
+  await expect(commandPaletteItem).toBeVisible({ timeout: 5000 }); // retries until visible
+  await commandPaletteItem.click();
+  await page.getByLabel("input").click({ timeout: 5000 });
   await page.getByLabel("input").fill(">find");
   await page
     .locator("div")
