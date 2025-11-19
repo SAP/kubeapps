@@ -73,7 +73,8 @@ env:
   IMG_DEV_TAG: "build-${{ github.sha }}"
   # Apart from using a dev tag we use a different image ID to avoid polluting the tag history of the production tag
   IMG_MODIFIER: "-ci"
-  IMG_PREFIX: "kubeapps/"
+  IMG_REGISTRY: "ghcr.io"
+  IMG_PREFIX: "sap/kubeapps/"
   # We use IMG_PREFIX_FOR_FORKS for development purposes, it's used when the workflow is run from a fork of the kubeapps repo
   IMG_PREFIX_FOR_FORKS: "your-dockerhub-username/"
   # Currently, we only build the images for linux/amd64 because building cross-platform images is extremely slow...
@@ -103,6 +104,7 @@ jobs:
       golang_version: ${{ steps.set-outputs.outputs.golang_version }}
       img_modifier: ${{ steps.set-outputs.outputs.img_modifier }}
       img_prefix: ${{ steps.set-outputs.outputs.img_prefix }}
+      img_registry: ${{ steps.set-outputs.outputs.img_registry }}
       img_dev_tag: ${{ steps.set-outputs.outputs.img_dev_tag }}
       img_prod_tag: ${{ steps.set-outputs.outputs.img_prod_tag }}
       postgresql_version: ${{ steps.set-outputs.outputs.postgresql_version }}
@@ -161,6 +163,7 @@ jobs:
           echo "ssh_key_kubeapps_deploy_filename=${SSH_KEY_KUBEAPPS_DEPLOY_FILENAME}" >> $GITHUB_OUTPUT
           echo "ssh_key_forked_charts_deploy_filename=${SSH_KEY_FORKED_CHARTS_DEPLOY_FILENAME}" >> $GITHUB_OUTPUT
           echo "img_modifier=${IMG_MODIFIER}" >> $GITHUB_OUTPUT
+          echo "img_registry=${IMG_REGISTRY}" >> $GITHUB_OUTPUT
           echo "img_dev_tag=${IMG_DEV_TAG}" >> $GITHUB_OUTPUT
           echo "postgresql_version=${POSTGRESQL_VERSION}" >> $GITHUB_OUTPUT
           echo "rust_version=${RUST_VERSION}" >> $GITHUB_OUTPUT
@@ -170,6 +173,7 @@ jobs:
           echo "GOLANGCI_LINT_VERSION: ${{steps.set-outputs.outputs.golangci_lint_version}}"
           echo "IMG_MODIFIER: ${{steps.set-outputs.outputs.img_modifier}}"
           echo "IMG_PREFIX: ${{steps.set-outputs.outputs.img_prefix}}"
+          echo "IMG_REGISTRY: ${{steps.set-outputs.outputs.img_registry}}"
           echo "IMG_DEV_TAG: ${{steps.set-outputs.outputs.img_dev_tag}}"
           echo "IMG_PROD_TAG: ${{steps.set-outputs.outputs.img_prod_tag}}"
           echo "POSTGRESQL_VERSION: ${{steps.set-outputs.outputs.postgresql_version}}"
@@ -426,7 +430,7 @@ jobs:
       IMG_PREFIX: ${{ needs.setup.outputs.img_prefix }}
       IMG_MODIFIER: ${{ needs.setup.outputs.img_modifier }}
       IMG_DEV_TAG: ${{ needs.setup.outputs.img_dev_tag }}
-      GHCR_PREFIX: "ghcr.io/sap/"
+      IMG_REGISTRY: ${{ needs.setup.outputs.img_registry }}
     steps:
       - run: echo "IMAGES_TO_PUSH=\"${IMAGES_TO_PUSH} ${ADDITIONAL_IMAGES_TO_PUSH}\"" >> $GITHUB_ENV
       - name: Login to GitHub Container Registry (ghcr.io)
@@ -460,8 +464,8 @@ jobs:
             # Original image tag (as built)
             original_image=${IMG_PREFIX}${image}${IMG_MODIFIER}:${IMG_DEV_TAG}
 
-            # New image tag for ghcr.io/sap/ (preserving the full original structure)
-            ghcr_image=${GHCR_PREFIX}${IMG_PREFIX}${image}${IMG_MODIFIER}:${IMG_DEV_TAG}
+            # New image tag for ghcr.io (IMG_PREFIX already contains sap/kubeapps/)
+            ghcr_image=${IMG_REGISTRY}/${IMG_PREFIX}${image}${IMG_MODIFIER}:${IMG_DEV_TAG}
 
             echo "::notice ::Retagging image from ${original_image} to ${ghcr_image}"
             docker tag ${original_image} ${ghcr_image}
@@ -469,6 +473,7 @@ jobs:
             echo "::notice ::Pushing image ${ghcr_image}"
             docker push ${ghcr_image}
           done
+
 
   local_e2e_tests:
     needs:
@@ -620,7 +625,7 @@ jobs:
     env:
       IMG_PROD_TAG: ${{ needs.setup.outputs.img_prod_tag }}
       IMG_PREFIX: ${{ needs.setup.outputs.img_prefix }}
-      GHCR_PREFIX: "ghcr.io/sap/"
+      IMG_REGISTRY: ${{ needs.setup.outputs.img_registry }}
     steps:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -649,7 +654,7 @@ jobs:
             docker load --input "${artifact}/${artifact}.tar"
 
             dev_image=${IMG_PREFIX}${image}${IMG_MODIFIER}:${IMG_DEV_TAG}
-            prod_image=${GHCR_PREFIX}${IMG_PREFIX}${image}:${IMG_PROD_TAG}
+            prod_image=${IMG_REGISTRY}/${IMG_PREFIX}${image}:${IMG_PROD_TAG}
             docker tag ${dev_image} ${prod_image}
 
             echo "::notice ::Pushing image ${prod_image}"

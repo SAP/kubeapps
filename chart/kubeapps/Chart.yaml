@@ -6,17 +6,17 @@ annotations:
   licenses: Apache-2.0
   images: |
     - name: kubeapps-apis
-      image: ghcr.io/sap/kubeapps-apis:v3.0.0-rc2
+      image: ghcr.io/sap/kubeapps-apis:v3.0.0-rc3
     - name: kubeapps-apprepository-controller
-      image: ghcr.io/sap/kubeapps-apprepository-controller:v3.0.0-rc2
+      image: ghcr.io/sap/kubeapps-apprepository-controller:v3.0.0-rc3
     - name: kubeapps-asset-syncer
-      image: ghcr.io/sap/kubeapps-asset-syncer:v3.0.0-rc2
+      image: ghcr.io/sap/kubeapps-asset-syncer:v3.0.0-rc3
     - name: kubeapps-dashboard
-      image: ghcr.io/sap/kubeapps-dashboard:v3.0.0-rc2
+      image: ghcr.io/sap/kubeapps-dashboard:v3.0.0-rc3
     - name: kubeapps-oci-catalog
-      image: ghcr.io/sap/kubeapps-oci-catalog:v3.0.0-rc2
+      image: ghcr.io/sap/kubeapps-oci-catalog:v3.0.0-rc3
     - name: kubeapps-pinniped-proxy
-      image: ghcr.io/sap/kubeapps-pinniped-proxy:v3.0.0-rc2
+      image: ghcr.io/sap/kubeapps-pinniped-proxy:v3.0.0-rc3
     - name: nginx
       image: ghcr.io/sap/kubeapps/bitnami-deprecated-nginx:1.29.1
     - name: oauth2-proxy

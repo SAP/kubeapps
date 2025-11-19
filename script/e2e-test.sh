@@ -93,6 +93,7 @@ info "ROOT_DIR: ${ROOT_DIR}"
 info "USE_MULTICLUSTER_OIDC_ENV: ${USE_MULTICLUSTER_OIDC_ENV}"
 info "OLM_VERSION: ${OLM_VERSION}"
 info "CHARTMUSEUM_VERSION: ${CHARTMUSEUM_VERSION}"
+info "GHCR_OWNER: ${GHCR_OWNER}"
 info "IMG_DEV_TAG: ${IMG_DEV_TAG}"
 info "IMG_MODIFIER: ${IMG_MODIFIER}"
 info "IMG_PREFIX: ${IMG_PREFIX}"
@@ -410,7 +411,7 @@ fi
 
 # Use dev images or Bitnami if testing the latest release
 kubeapps_apis_image="kubeapps-apis"
-[[ -n "${TEST_LATEST_RELEASE}" && "${TEST_LATEST_RELEASE}" != "false" ]] && IMG_PREFIX="bitnami/kubeapps-" && kubeapps_apis_image="apis"
+[[ -n "${TEST_LATEST_RELEASE}" && "${TEST_LATEST_RELEASE}" != "false" ]] && IMG_PREFIX="sap/kubeapps-" && kubeapps_apis_image="apis"
 images=(
   "apprepository-controller"
   "asset-syncer"
