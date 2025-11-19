@@ -44,7 +44,7 @@ test("Upgrades an application", async ({ page }) => {
   // Use the built-in search function in monaco to find the text we are looking for
   // so that it get loaded in the DOM when using the toContainText assert
   await page.locator(".values-editor div.modified").click({ button: "right" });
-  await page.locator("text=Command Palette").click();
+  await page.getByRole('menuitem', { name: 'Command Palette F1' }).click();
   await page.getByLabel("input").click();
   await page.getByLabel("input").fill(">find");
   await page
