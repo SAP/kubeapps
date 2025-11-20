@@ -17,6 +17,7 @@
 * [bitnami/build] Upgrade docker registry version to 3.0.0
 * [bitnami/build] Remove support for integration test on GKE
 * [bitnami/build] Upgrade GitHub CLI to 2.83.1
+* [bitnami/build] Upgrade integration playwright to v1.56.1
 * [bitnami/dashboard] Upgrade node to 24
 * [bitnami/pinniped] Upgrade rust to 1.91.1
 * [bitnami/operator] Upgrade OLM to v0.38.0
