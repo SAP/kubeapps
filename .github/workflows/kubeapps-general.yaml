@@ -45,7 +45,7 @@ on:
       - enable_basic_github_actions
 
 env:
-  CHARTMUSEUM_VERSION: "3.10.3"
+  CHARTMUSEUM_VERSION: "3.10.4"
   CHARTS_REPO_ORIGINAL: "bitnami/charts"
   BRANCH_CHARTS_REPO_ORIGINAL: "main"
   CHARTS_REPO_FORKED: "kubeapps-bot/charts"
