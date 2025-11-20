@@ -85,7 +85,6 @@ const packageRepositoryDetail = {
 
 const kubeappsNamespace = "kubeapps-namespace";
 const helmGlobalNamespace = "kubeapps-repos-global";
-const carvelGlobalNamespace = "carvel-repos-global";
 
 beforeEach(() => {
   store = mockStore({
@@ -93,7 +92,6 @@ beforeEach(() => {
       ...initialState.config,
       kubeappsNamespace,
       helmGlobalNamespace,
-      carvelGlobalNamespace,
     },
     clusters: {
       ...initialState.clusters,

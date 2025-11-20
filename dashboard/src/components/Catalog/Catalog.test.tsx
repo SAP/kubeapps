@@ -74,8 +74,6 @@ const availablePkgSummary2 = new AvailablePackageSummary({
   }),
 });
 
-// availablePkgSummary3 removed - was undefined after kapp-controller removal
-
 const csv = {
   metadata: {
     name: "test-csv",

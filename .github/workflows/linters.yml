@@ -10,22 +10,22 @@ on:
       golang_version:
         type: string
         required: false
-        default: "1.25"
+        default: "1.25.4"
       golangci_lint_version:
         type: string
         required: false
-        default: "v2.5.0"
+        default: "v2.6.2"
   workflow_dispatch:
     inputs:
       golang_version:
         type: string
         required: false
-        default: "1.25"
+        default: "1.25.4"
         description: "Go version to use"
       golangci_lint_version:
         type: string
         required: false
-        default: "v2.5.0"
+        default: "v2.6.2"
         description: "golangci-lint version to use"
 
 jobs:

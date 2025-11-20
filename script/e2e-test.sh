@@ -15,25 +15,22 @@ MAIN_TESTS_SUBGROUP="main-group-"
 EXISTENT_MAIN_TESTS_SUBGROUPS=3
 MULTICLUSTER_TESTS="multicluster"
 MULTICLUSTER_NOKUBEAPPS_TESTS="multicluster-nokubeapps"
-CARVEL_TESTS="carvel"
 FLUX_TESTS="flux"
 OPERATOR_TESTS="operators"
-SUPPORTED_TESTS_GROUPS=("${ALL_TESTS}" "${MAIN_TESTS}" "${MULTICLUSTER_TESTS}" "${CARVEL_TESTS}" "${FLUX_TESTS}" "${OPERATOR_TESTS}" "${MULTICLUSTER_NOKUBEAPPS_TESTS}")
+SUPPORTED_TESTS_GROUPS=("${ALL_TESTS}" "${MAIN_TESTS}" "${MULTICLUSTER_TESTS}" "${FLUX_TESTS}" "${OPERATOR_TESTS}" "${MULTICLUSTER_NOKUBEAPPS_TESTS}")
 INTEGRATION_HOST=kubeapps-ci.kubeapps
 INTEGRATION_ENTRYPOINT="http://${INTEGRATION_HOST}"
 
 # Params
 USE_MULTICLUSTER_OIDC_ENV=${USE_MULTICLUSTER_OIDC_ENV:-"false"}
-OLM_VERSION=${OLM_VERSION:-"v0.18.2"}
+OLM_VERSION=${OLM_VERSION:-"v0.38.0"}
 IMG_DEV_TAG=${IMG_DEV_TAG:?missing dev tag}
 IMG_MODIFIER=${IMG_MODIFIER:-""}
 TEST_TIMEOUT_MINUTES=${TEST_TIMEOUT_MINUTES:-"4"}
 DEX_IP=${DEX_IP:-"172.18.0.2"}
 ADDITIONAL_CLUSTER_IP=${ADDITIONAL_CLUSTER_IP:-"172.18.0.3"}
-KAPP_CONTROLLER_VERSION=${KAPP_CONTROLLER_VERSION:-"v0.42.0"}
-CHARTMUSEUM_VERSION=${CHARTMUSEUM_VERSION:-"3.9.1"}
-FLUX_VERSION=${FLUX_VERSION:-"v2.2.3"}
-GKE_VERSION=${GKE_VERSION:-}
+CHARTMUSEUM_VERSION=${CHARTMUSEUM_VERSION:-"3.10.4"}
+FLUX_VERSION=${FLUX_VERSION:-"v2.7.3"}
 
 # IMG_PREFIX default previously pointed to Docker Hub:
 # IMG_PREFIX=${IMG_PREFIX:-"kubeapps/"}
@@ -73,11 +70,7 @@ fi
 . "${ROOT_DIR}/script/lib/libutil.sh"
 
 # Get the load balancer IP
-if [[ -z "${GKE_VERSION-}" ]]; then
-  LOAD_BALANCER_IP=$DEX_IP
-else
-  LOAD_BALANCER_IP=$(kubectl -n nginx-ingress get service nginx-ingress-ingress-nginx-controller -o jsonpath="{.status.loadBalancer.ingress[].ip}")
-fi
+LOAD_BALANCER_IP=$(kubectl -n nginx-ingress get service nginx-ingress-ingress-nginx-controller -o jsonpath="{.status.loadBalancer.ingress[].ip}")
 
 # Functions for local Docker registry mgmt
 . "${ROOT_DIR}/script/local-docker-registry.sh"
@@ -88,7 +81,6 @@ fi
 info "###############################################################################################"
 info "DEBUG_MODE: ${DEBUG_MODE}"
 info "TESTS_GROUP: ${TESTS_GROUP}"
-info "GKE_VERSION: ${GKE_VERSION}"
 info "ROOT_DIR: ${ROOT_DIR}"
 info "USE_MULTICLUSTER_OIDC_ENV: ${USE_MULTICLUSTER_OIDC_ENV}"
 info "OLM_VERSION: ${OLM_VERSION}"
@@ -101,7 +93,6 @@ info "DEX_IP: ${DEX_IP}"
 info "ADDITIONAL_CLUSTER_IP: ${ADDITIONAL_CLUSTER_IP}"
 info "LOAD_BALANCER_IP: ${LOAD_BALANCER_IP}"
 info "TEST_TIMEOUT_MINUTES: ${TEST_TIMEOUT_MINUTES}"
-info "KAPP_CONTROLLER_VERSION: ${KAPP_CONTROLLER_VERSION}"
 info "K8S SERVER VERSION: $(kubectl version -o json | jq -r '.serverVersion.gitVersion')"
 info "KUBECTL VERSION: $(kubectl version -o json | jq -r '.clientVersion.gitVersion')"
 info "###############################################################################################"
@@ -236,32 +227,6 @@ pushChart() {
   pushChartToChartMuseum "${chart}" "${version}" "${prefix}${chart}-${version}.tgz"
 }
 
-########################################################################################################################
-# Install kapp-controller
-# Globals: None
-# Arguments:
-#   $1: Version of kapp-controller
-# Returns: None
-########################################################################################################################
-installKappController() {
-  local release=$1
-  info "Installing kapp-controller ${release} ..."
-  url="https://github.com/carvel-dev/kapp-controller/releases/download/${release}/release.yml"
-  namespace=kapp-controller
-
-  kubectl apply -f "${url}"
-
-  # wait for deployment to be ready
-  kubectl rollout status -w deployment/kapp-controller --namespace="${namespace}"
-
-  # Add test repository.
-	kubectl apply -f https://raw.githubusercontent.com/vmware-tanzu/carvel-kapp-controller/develop/examples/packaging-with-repo/package-repository.yml
-
-  # Add a carvel-reconciler service account to the kubeapps-user-namespace with
-  # cluster-admin.
-  kubectl create serviceaccount carvel-reconciler -n kubeapps-user-namespace
-  kubectl create clusterrolebinding carvel-reconciler --clusterrole=cluster-admin --serviceaccount kubeapps-user-namespace:carvel-reconciler
-}
 
 ########################################################################################################################
 # Install flux
@@ -404,7 +369,7 @@ elapsedTimeSince() {
 
 [[ "${DEBUG_MODE}" == "true" ]] && set -x;
 
-if [[ "${DEBUG_MODE}" == "true" && -z ${GKE_VERSION} ]]; then
+if [[ "${DEBUG_MODE}" == "true" ]]; then
   info "Docker images loaded in the cluster:"
   docker exec kubeapps-ci-control-plane crictl images
 fi
@@ -510,11 +475,9 @@ installOrUpgradeKubeapps "${ROOT_DIR}/chart/kubeapps"
 info "Waiting for Kubeapps components to be ready (local chart)..."
 k8s_wait_for_deployment kubeapps kubeapps-ci
 
-# Setting up local Docker registry if not in GKE
-if [[ -z "${GKE_VERSION-}" ]]; then
-  setupLocalDockerRegistry
-  pushLocalChart
-fi
+# Setting up local Docker registry
+setupLocalDockerRegistry
+pushLocalChart
 
 # Ensure that we are testing the correct image
 info ""
@@ -728,35 +691,6 @@ if [[ -z "${GKE_VERSION-}" && ("${TESTS_GROUP}" == "${ALL_TESTS}" || "${TESTS_GR
 fi
 
 ####################################
-######## Carvel tests group ########
-####################################
-if [[ "${TESTS_GROUP}" == "${ALL_TESTS}" || "${TESTS_GROUP}" == "${CARVEL_TESTS}" ]]; then
-  sectionStartTime=$(date +%s)
-
-  ## Upgrade and run Carvel test
-  installKappController "${KAPP_CONTROLLER_VERSION}"
-  info "Updating Kubeapps with carvel support"
-  installOrUpgradeKubeapps "${ROOT_DIR}/chart/kubeapps" \
-    "--set" "packaging.helm.enabled=false" \
-    "--set" "packaging.carvel.enabled=true"
-
-  info "Waiting for updated Kubeapps components to be ready..."
-  k8s_wait_for_deployment kubeapps kubeapps-ci
-
-  info "Running carvel integration test..."
-  test_command=$(getTestCommand "${CARVEL_TESTS}" "20")
-  info "${test_command}"
-  if ! kubectl exec -it "$pod" -- /bin/sh -c "${test_command}"; then
-    ## Integration tests failed, get report screenshot
-    warn "PODS status on failure"
-    kubectl cp "${pod}:/app/reports" ./reports
-    exit 1
-  fi
-  info "Carvel integration tests succeeded!!"
-  info "Carvel tests execution time: $(elapsedTimeSince "$sectionStartTime")"
-fi
-
-####################################
 ######## Flux tests group ########
 ####################################
 if [[ "${TESTS_GROUP}" == "${ALL_TESTS}" || "${TESTS_GROUP}" == "${FLUX_TESTS}" ]]; then
@@ -767,8 +701,7 @@ if [[ "${TESTS_GROUP}" == "${ALL_TESTS}" || "${TESTS_GROUP}" == "${FLUX_TESTS}" 
   info "Updating Kubeapps with flux support"
   installOrUpgradeKubeapps "${ROOT_DIR}/chart/kubeapps" \
     "--set" "packaging.flux.enabled=true" \
-    "--set" "packaging.helm.enabled=false" \
-    "--set" "packaging.carvel.enabled=false"
+    "--set" "packaging.helm.enabled=false"
 
   info "Waiting for updated Kubeapps components to be ready..."
   k8s_wait_for_deployment kubeapps kubeapps-ci
@@ -794,7 +727,7 @@ if [[ "${TESTS_GROUP}" == "${ALL_TESTS}" || "${TESTS_GROUP}" == "${OPERATOR_TEST
   sectionStartTime=$(date +%s)
   ## Upgrade and run operators test
   # Operators are not supported in GKE 1.14 and flaky in 1.15, skipping test
-  if [[ -z "${GKE_VERSION-}" ]] && [[ -n "${TEST_OPERATORS-}" ]]; then
+  if [[ -n "${TEST_OPERATORS-}" ]]; then
     installOLM "${OLM_VERSION}"
 
     # Update Kubeapps settings to enable operators and hence proxying
@@ -803,7 +736,6 @@ if [[ "${TESTS_GROUP}" == "${ALL_TESTS}" || "${TESTS_GROUP}" == "${OPERATOR_TEST
     info "Installing latest Kubeapps chart available"
     installOrUpgradeKubeapps "${ROOT_DIR}/chart/kubeapps" \
       "--set" "packaging.helm.enabled=false" \
-      "--set" "packaging.carvel.enabled=true" \
       "--set" "featureFlags.operators=true"
 
     info "Waiting for Kubeapps components to be ready (bitnami chart)..."

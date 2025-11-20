@@ -23,7 +23,7 @@ import (
 
 const (
 	redactedString = "REDACTED"
-	// to be consistent with carvel and helm plug-in
+	// to be consistent with helm plug-in
 	annotationManagedByKey   = "kubeapps.dev/managed-by"
 	annotationManagedByValue = "plugin:flux"
 )

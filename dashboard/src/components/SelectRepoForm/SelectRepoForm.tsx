@@ -31,7 +31,7 @@ function SelectRepoForm({ cluster, namespace, app }: ISelectRepoFormProps) {
     packages: {
       selected: { error: packageError },
     },
-    config: { kubeappsNamespace, kubeappsCluster, helmGlobalNamespace, carvelGlobalNamespace },
+    config: { kubeappsNamespace, kubeappsCluster, helmGlobalNamespace },
   } = useSelector((state: IStoreState) => state);
 
   const [userRepoName, setUserRepoName] = useState(repo?.name ?? "");
@@ -41,11 +41,7 @@ function SelectRepoForm({ cluster, namespace, app }: ISelectRepoFormProps) {
   // We do not currently support package repositories on additional clusters.
   const supportedCluster = cluster === kubeappsCluster;
   useEffect(() => {
-    if (
-      !namespace ||
-      !supportedCluster ||
-      [helmGlobalNamespace, carvelGlobalNamespace].includes(namespace)
-    ) {
+    if (!namespace || !supportedCluster || [helmGlobalNamespace].includes(namespace)) {
       // All Namespaces. Global namespace or other cluster, show global repos only
       dispatch(actions.repos.fetchRepoSummaries(""));
       return () => {};
@@ -53,14 +49,7 @@ function SelectRepoForm({ cluster, namespace, app }: ISelectRepoFormProps) {
     // In other case, fetch global and namespace repos
     dispatch(actions.repos.fetchRepoSummaries(namespace, true));
     return () => {};
-  }, [
-    dispatch,
-    namespace,
-    kubeappsNamespace,
-    helmGlobalNamespace,
-    carvelGlobalNamespace,
-    supportedCluster,
-  ]);
+  }, [dispatch, namespace, kubeappsNamespace, helmGlobalNamespace, supportedCluster]);
 
   const handleRepoNameChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (e.target.value) {

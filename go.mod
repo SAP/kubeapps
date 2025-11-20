@@ -3,7 +3,7 @@
 
 module github.com/vmware-tanzu/kubeapps
 
-go 1.25.1
+go 1.25.4
 
 require (
 	carvel.dev/kapp v0.64.2

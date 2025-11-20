@@ -2,6 +2,7 @@
 
 ## Active Maintainers
 
+- Siegfried Kiermayer ([SiegfriedK](https://github.com/Siegfriedk))
 ## Emeritus Maintainers
 
 - Adnan Abdulhussein ([prydonius](https://github.com/prydonius))

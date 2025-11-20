@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /*
-Utility functions that apply to "packages", e.g. helm charts or carvel packages
+Utility functions that apply to "packages", e.g. helm charts
 */
 package pkgutils
 

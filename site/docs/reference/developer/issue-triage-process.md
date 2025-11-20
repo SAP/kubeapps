@@ -6,12 +6,12 @@ This document captures how the Kubeapps team triages and prioritizes issues.
 
 To guide and simplify the process, Kubeapps provides a set of issue templates to create new issues:
 
-| Template                                                                                                                                    | Description                                       |
-| ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| [Bug report](https://github.com/vmware-tanzu/kubeapps/issues/new?assignees=&labels=kind%2Fbug&template=bug-report.md&title=)                | File a bug for something not working as expected. |
-| [Feature request](https://github.com/vmware-tanzu/kubeapps/issues/new?assignees=&labels=kind%2Fproposal&template=feature-request.md&title=) | File a request for a new feature.                 |
-| [Support request](https://github.com/vmware-tanzu/kubeapps/issues/new?assignees=&labels=kind%2Fquestion&template=support-request.md&title=) | File a request for questions and support.         |
-| [Issue](https://github.com/vmware-tanzu/kubeapps/issues/new?assignees=&labels=&template=issue.md&title=)                                    | File an issue to describe work to be performed.   |
+| Template                                                                                                                           | Description                                       |
+|------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------|
+| [Bug report](https://github.com/sap/kubeapps/issues/new?assignees=&labels=kind%2Fbug&template=bug-report.md&title=)                | File a bug for something not working as expected. |
+| [Feature request](https://github.com/sap/kubeapps/issues/new?assignees=&labels=kind%2Fproposal&template=feature-request.md&title=) | File a request for a new feature.                 |
+| [Support request](https://github.com/sap/kubeapps/issues/new?assignees=&labels=kind%2Fquestion&template=support-request.md&title=) | File a request for questions and support.         |
+| [Issue](https://github.com/sap/kubeapps/issues/new?assignees=&labels=&template=issue.md&title=)                                    | File an issue to describe work to be performed.   |
 
 Kubeapps keeps a backlog of issues on GitHub submitted both by maintainers and contributors.
 
@@ -27,7 +27,7 @@ Kubeapps maintainers team operates with 4 groups of labels:
 The type of issue. kind powers our filtering to understand what qualifies as a bug, proposal, feature, enhancement, question or documentation.
 
 | Label                | Description                                                       |
-| -------------------- | ----------------------------------------------------------------- |
+|----------------------|-------------------------------------------------------------------|
 | `kind/bug`           | An issue that reports a defect in an existing feature             |
 | `kind/documentation` | An issue that reports an update related to project documentation  |
 | `kind/enhancement`   | An issue that reports an enhancement for an implemented feature   |
@@ -40,7 +40,7 @@ The type of issue. kind powers our filtering to understand what qualifies as a b
 The relevant component(s) for the issue. Components are high level areas of the Kubeapps architecture. They are used to group issues together with other related issues.
 
 | Label                        | Description                                                                                       |
-| ---------------------------- | ------------------------------------------------------------------------------------------------- |
+|------------------------------|---------------------------------------------------------------------------------------------------|
 | `component/api-server`       | An issue related to kubeapps api-server                                                           |
 | `component/apprepository`    | An issue related to kubeapps apprepository                                                        |
 | `component/asset-syncer`     | An issue related to kubeapps asset-syncer (to be deprecated)                                      |
@@ -63,7 +63,7 @@ The relevant component(s) for the issue. Components are high level areas of the 
 Specific labels for contributors. Contribution labels help to identify a relevant attribute of the issue.
 
 | Label                    | Description                                                                      |
-| ------------------------ | -------------------------------------------------------------------------------- |
+|--------------------------|----------------------------------------------------------------------------------|
 | `awaiting-more-evidence` | Need more info requested to actually get it done.                                |
 | `cla-notrequired`        | Automatic label for CLA signature                                                |
 | `cla-rejected`           | Automatic label for CLA signature when rejected                                  |
@@ -84,7 +84,7 @@ Specific labels for contributors. Contribution labels help to identify a relevan
 There is some metadata for Kubeapps project in GitHub to be added to the issues:
 
 | size/ |                                                                                             |
-| ----- | ------------------------------------------------------------------------------------------- |
+|-------|---------------------------------------------------------------------------------------------|
 | 'XS'  | A task that can be done by a person in less than 1 full day                                 |
 | 'S'   | A story that can be done by a person in 1-3 days, with no uncertainty                       |
 | 'M'   | A story that can be done by a person in 4-7 days, possibly with some uncertainty            |
@@ -92,8 +92,8 @@ There is some metadata for Kubeapps project in GitHub to be added to the issues:
 | 'XL'  | A story too big or with too many unknowns. Needs investigation and split into several ones  |
 
 | priority/ | Description                                  |
-| --------- | -------------------------------------------- |
-| ⛔️ P0    | Unbreak-now. Drop everything and fix it      |
+|-----------|----------------------------------------------|
+| ⛔️ P0     | Unbreak-now. Drop everything and fix it      |
 | 🔴 P1     | Required to be done before other things      |
 | 🟠 P2     | Ordinary flow of work                        |
 | 🔵 P3     | Nice to have, but not required to be tackled |

@@ -18,6 +18,5 @@ jobs:
     uses: ./.github/workflows/kubeapps-general.yaml
     secrets: inherit
     with:
-      run_gke_tests: false
       run_linters: false
       trigger_release: true

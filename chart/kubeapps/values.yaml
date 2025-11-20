@@ -184,18 +184,14 @@ ingress:
 ## @section Kubeapps packaging options
 ## Note: the helm and flux plugins are mutually exclusive, you can only
 ## enable one or the other since they both operate on Helm release objects.
-## Enabling carvel or flux does *not* install the required related Carvel or
+## Enabling flux does *not* install the required
 ## Flux controllers on your cluster. Please read the documentation for running
-## Kubeapps with Carvel or Flux support.
+## Kubeapps with Flux support.
 packaging:
   ## Default helm packaging
   ## @param packaging.helm.enabled Enable the standard Helm packaging.
   helm:
     enabled: true
-  ## Carvel packaging
-  ## @param packaging.carvel.enabled Enable support for the Carvel (kapp-controller) packaging.
-  carvel:
-    enabled: false
   ## Flux (v2) packaging
   ## @param packaging.flux.enabled Enable support for Flux (v2) packaging.
   flux:
@@ -1839,24 +1835,6 @@ kubeappsapis:
         v1alpha1:
           ## @param kubeappsapis.pluginConfig.helm.packages.v1alpha1.globalPackagingNamespace Custom global packaging namespace. Using this value will override the current "kubeapps release namespace + suffix" pattern and will create a new namespace if not exists.
           globalPackagingNamespace: ""
-    kappController:
-      packages:
-        v1alpha1:
-          ## @param kubeappsapis.pluginConfig.kappController.packages.v1alpha1.defaultUpgradePolicy Default upgrade policy generating version constraints
-          ## enum: [ "major", "minor", "patch", "none" ]
-          defaultUpgradePolicy: none
-          ## @param kubeappsapis.pluginConfig.kappController.packages.v1alpha1.defaultPrereleasesVersionSelection [array,nullable] Default policy for allowing prereleases containing one of the identifiers
-          ## ref: https://carvel.dev/kapp-controller/docs/latest/package-consumer-concepts/#prereleases
-          ## e.g:
-          # defaultPrereleasesVersionSelection:
-          # - rc
-          defaultPrereleasesVersionSelection: null
-          ## @param kubeappsapis.pluginConfig.kappController.packages.v1alpha1.defaultAllowDowngrades Default policy for allowing applications to be downgraded to previous versions
-          ## ref: https://carvel.dev/kapp-controller/docs/latest/package-consumer-concepts/#downgrading
-          defaultAllowDowngrades: false
-          ## @param kubeappsapis.pluginConfig.kappController.packages.v1alpha1.globalPackagingNamespace Default global packaging namespace
-          ## ref: https://carvel.dev/kapp-controller/docs/latest/package-consumer-concepts/#namespacing
-          globalPackagingNamespace: kapp-controller-packaging-global
     flux:
       packages:
         v1alpha1:

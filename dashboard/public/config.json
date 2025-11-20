@@ -2,7 +2,6 @@
   "kubeappsCluster": "default",
   "kubeappsNamespace": "kubeapps",
   "helmGlobalNamespace": "kubeapps",
-  "carvelGlobalNamespace": "kapp-controller-packaging-global",
   "appVersion": "DEVEL",
   "authProxyEnabled": false,
   "authProxySkipLoginPage": false,

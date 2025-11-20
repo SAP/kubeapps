@@ -37,7 +37,6 @@ export const initialState = {
     kubeappsCluster: "default-cluster",
     kubeappsNamespace: "kubeapps",
     helmGlobalNamespace: "kubeapps-repos-global",
-    carvelGlobalNamespace: "kapp-controller-packaging-global",
     oauthLoginURI: "/oauth/login",
   } as IStoreState["config"],
   kube: cloneDeep(kubeInitialState),

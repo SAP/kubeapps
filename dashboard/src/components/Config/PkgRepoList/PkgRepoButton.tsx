@@ -16,7 +16,6 @@ import { PkgRepoForm } from "./PkgRepoForm";
 export interface IPkgRepoAddButtonProps {
   namespace: string;
   helmGlobalNamespace: string;
-  carvelGlobalNamespace: string;
   text?: string;
   primary?: boolean;
   packageRepoRef?: PackageRepositoryReference;
@@ -28,7 +27,6 @@ export function PkgRepoAddButton({
   text,
   namespace,
   helmGlobalNamespace,
-  carvelGlobalNamespace,
   packageRepoRef,
   primary = true,
   title,
@@ -70,7 +68,6 @@ export function PkgRepoAddButton({
               packageRepoRef={packageRepoRef}
               namespace={namespace}
               helmGlobalNamespace={helmGlobalNamespace}
-              carvelGlobalNamespace={carvelGlobalNamespace}
             />
           </CdsModalContent>
         </CdsModal>

@@ -161,14 +161,12 @@ authProxy:
 
 ## Configuring selected plugins
 
-Kubeapps offers three plugins for managing packages and repositories: [Helm](https://helm.sh/docs/topics/chart_repository/), [Carvel](https://carvel.dev/kapp-controller/docs/develop/packaging/#package-repository) and [Helm via Flux](https://fluxcd.io/docs/components/source/helmrepositories/).
+Kubeapps offers two plugins for managing packages and repositories: [Helm](https://helm.sh/docs/topics/chart_repository/) and [Helm via Flux](https://fluxcd.io/docs/components/source/helmrepositories/).
 You need to define in the configuration values which plugins you want have installed, for example:
 
 ```yaml
 packaging:
   helm:
-    enabled: true
-  carvel:
     enabled: true
   flux:
     enabled: false

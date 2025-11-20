@@ -338,9 +338,7 @@ kubeapps: ingress.tls
       {{- end -}}
       {{- range $plugin, $options := .Values.packaging }}
         {{- if $options.enabled }}
-          {{- if eq $plugin "carvel" }}
-            {{- $enabledPlugins = append $enabledPlugins "kapp-controller-packages" }}
-          {{- else if eq $plugin "flux" }}
+          {{- if eq $plugin "flux" }}
             {{- $enabledPlugins = append $enabledPlugins "fluxv2-packages" }}
           {{- else if eq $plugin "helm" }}
             {{- $enabledPlugins = append $enabledPlugins "helm-packages" }}
