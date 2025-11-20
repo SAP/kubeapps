@@ -39,40 +39,41 @@ In the [GitHub Actions Kubeapps General Workflow definition](https://github.com/
 we have an initial declaration of the variables used along with the file.
 The versions used there _must_ match the ones used for building the container images. Consequently, these variables _must_ be changed accordingly:
 
-- `CHARTMUSEUM_VERSION` should be updated with the [latest stable version from the chartmuseum/charts releases](https://github.com/chartmuseum/charts/releases).
-- `DOCKER_REGISTRY_VERSION` can be updated to the [latest tag provided by Docker](https://hub.docker.com/_/registry).
-- `FLUX_VERSION` should be updated with the [latest stable version from the Flux releases](https://github.com/fluxcd/flux2/releases).
-- `GITHUB_VERSION` should be updated with the [latest stable version from the GitHub CLI releases](https://github.com/cli/cli/releases).
-- `GOLANG_VERSION` _must_ match the versions used by our services written in Golang, for instance, [kubeapps-apis](https://github.com/sap/kubeapps/blob/main/cmd/kubeapps-apis/Dockerfile).
-- `GOLANGCI_LINT_VERSION` should be updated with the [latest stable version from the golangci-lint releases](https://github.com/golangci/golangci-lint). The GitHub Action golangci/golangci-lint-action needs to be verified too.
-- `HELM_VERSION_MIN` _must_ match the one listed in the [Bitnami Application Catalog prerequisites](https://github.com/bitnami/charts#prerequisites).
-- `HELM_VERSION_STABLE` should be updated with the [latest stable version from the Helm releases](https://github.com/helm/helm/releases).
-- `K8S_KIND_VERSION` _must_ match the Kubernetes minor version used in `KUBECTL_VERSION` and should be updated with one of the available image tags for a given [Kind release](https://github.com/kubernetes-sigs/kind/releases).
-- `KIND_VERSION` should be updated with the [latest stable version from the kind releases](https://github.com/kubernetes-sigs/kind/releases).
-- `KUBECTL_VERSION` _should_ match the Kubernetes minor version (or minor version +1) used by Kind and `K8S_KIND_VERSION` and listed in the [Kubernetes releases page](https://kubernetes.io/releases/).
-- `MKCERT_VERSION` should be updated with the [latest stable version from the mkcert releases](https://github.com/FiloSottile/mkcert/releases).
-- `NODE_VERSION` _must_ match the **major** version used by the [dashboard](https://github.com/sap/kubeapps/blob/main/dashboard/Dockerfile).
-- `OLM_VERSION` should be updated with the [latest stable version from the OLM releases](https://github.com/operator-framework/operator-lifecycle-manager/releases).
-- `POSTGRESQL_VERSION` _must_ match the version used by the [Bitnami PostgreSQL chart](https://github.com/SAP/kubeapps/tree/main/chart/kubeapps/charts/postgresql).
-- `RUST_VERSION` _must_ match the version used by the [pinniped-proxy](https://github.com/sap/kubeapps/blob/main/cmd/pinniped-proxy/Dockerfile).
-- `SEMVER_VERSION` should be updated with the [latest stable version from the semver releases](https://github.com/fsaintjacques/semver-tool/releases/).
+- `CHARTMUSEUM_VERSION` should be updated with the [latest stable version from the chartmuseum/charts releases](https://github.com/chartmuseum/charts/releases)
+- `DOCKER_REGISTRY_VERSION` can be updated to the [latest tag provided by Docker](https://hub.docker.com/_/registry)
+- `FLUX_VERSION` should be updated with the [latest stable version from the Flux releases](https://github.com/fluxcd/flux2/releases)
+- `GITHUB_VERSION` should be updated with the [latest stable version from the GitHub CLI releases](https://github.com/cli/cli/releases)
+- `GOLANG_VERSION` _must_ match the versions used by our services written in Golang, for instance, [kubeapps-apis](https://github.com/sap/kubeapps/blob/main/cmd/kubeapps-apis/Dockerfile)
+  - The Go version used in the [CodeQL GitHub Action](https://github.com/sap/kubeapps/blob/main/.github/workflows/codeql-analysis.yml) might be updated as well
+- `GOLANGCI_LINT_VERSION` should be updated with the [latest stable version from the golangci-lint releases](https://github.com/golangci/golangci-lint)
+  - The GitHub Action golangci/golangci-lint-action used in [linters.yaml](https://github.com/sap/kubeapps/blob/main/.github/workflows/linters.yml) needs to be verified too
+- `HELM_VERSION_MIN` _must_ match the one listed in the [Bitnami Application Catalog prerequisites](https://github.com/bitnami/charts#prerequisites)
+- `HELM_VERSION_STABLE` should be updated with the [latest stable version from the Helm releases](https://github.com/helm/helm/releases)
+- `K8S_KIND_VERSION` _must_ match the Kubernetes minor version used in `KUBECTL_VERSION` and should be updated with one of the available image tags for a given [Kind release](https://github.com/kubernetes-sigs/kind/releases)
+- `KIND_VERSION` should be updated with the [latest stable version from the kind releases](https://github.com/kubernetes-sigs/kind/releases)
+- `KUBECTL_VERSION` _should_ match the Kubernetes minor version (or minor version +1) used by Kind and `K8S_KIND_VERSION` and listed in the [Kubernetes releases page](https://kubernetes.io/releases/)
+- `MKCERT_VERSION` should be updated with the [latest stable version from the mkcert releases](https://github.com/FiloSottile/mkcert/releases)
+- `NODE_VERSION` _must_ match the **major** version used by the [dashboard](https://github.com/sap/kubeapps/blob/main/dashboard/Dockerfile)
+- `OLM_VERSION` should be updated with the [latest stable version from the OLM releases](https://github.com/operator-framework/operator-lifecycle-manager/releases)
+- `POSTGRESQL_VERSION` _must_ match the version used by the [Bitnami PostgreSQL chart](https://github.com/SAP/kubeapps/tree/main/chart/kubeapps/charts/postgresql)
+- `RUST_VERSION` _must_ match the version used by the [pinniped-proxy](https://github.com/sap/kubeapps/blob/main/cmd/pinniped-proxy/Dockerfile)
+- `SEMVER_VERSION` should be updated with the [latest stable version from the semver releases](https://github.com/fsaintjacques/semver-tool/releases/)
 
-When updating the `GOLANG_VERSION`, the Go version used in the [CodeQL Github Action](https://github.com/sap/kubeapps/blob/main/.github/workflows/codeql-analysis.yml) might be updated as well.
 
-> As part of this release process, these variables _must_ be updated accordingly. Other variable changes _should_ be tracked in a separate PR.
+> As part of this release process, these variables _must_ be updated accordingly. Other variable changes _can_ be tracked in a separate PR.
 
 #### 0.2.2 - CI integration image and dependencies
 
 We use a separate integration image for running the e2e tests consisting of a simple Node image with a set of dependencies. Therefore, upgrading it includes:
 
-- The [integration dependencies](https://github.com/vmware-tanzu/kubeapps/blob/main/integration/package.json) can be updated by running:
+- The [integration dependencies](https://github.com/sap/kubeapps/blob/main/integration/package.json) can be updated by running:
 
 ```bash
 cd integration
 yarn upgrade
 ```
 
-- The [integration/Dockerfile](https://github.com/vmware-tanzu/kubeapps/blob/main/integration/Dockerfile) uses a [mcr.microsoft.com/playwright](https://mcr.microsoft.com/v2/playwright/tags/list) image for running the e2e tests.
+- The [integration/Dockerfile](https://github.com/sap/kubeapps/blob/main/integration/Dockerfile) uses a [mcr.microsoft.com/playwright](https://mcr.microsoft.com/v2/playwright/tags/list) image for running the e2e tests.
 
 > As part of this release process, this Node image tag _may_ be updated to the latest minor/patch version. In case of a major version, the change _should_ be tracked in a separate PR. Analogously, its dependencies _may_ also be updated, but in case of a major change, it _should_ be tracked in a separate PR.
 
