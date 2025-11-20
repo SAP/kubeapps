@@ -31,7 +31,6 @@ DEX_IP=${DEX_IP:-"172.18.0.2"}
 ADDITIONAL_CLUSTER_IP=${ADDITIONAL_CLUSTER_IP:-"172.18.0.3"}
 CHARTMUSEUM_VERSION=${CHARTMUSEUM_VERSION:-"3.10.4"}
 FLUX_VERSION=${FLUX_VERSION:-"v2.2.3"}
-GKE_VERSION=${GKE_VERSION:-}
 
 # IMG_PREFIX default previously pointed to Docker Hub:
 # IMG_PREFIX=${IMG_PREFIX:-"kubeapps/"}
@@ -71,11 +70,7 @@ fi
 . "${ROOT_DIR}/script/lib/libutil.sh"
 
 # Get the load balancer IP
-if [[ -z "${GKE_VERSION-}" ]]; then
-  LOAD_BALANCER_IP=$DEX_IP
-else
-  LOAD_BALANCER_IP=$(kubectl -n nginx-ingress get service nginx-ingress-ingress-nginx-controller -o jsonpath="{.status.loadBalancer.ingress[].ip}")
-fi
+LOAD_BALANCER_IP=$(kubectl -n nginx-ingress get service nginx-ingress-ingress-nginx-controller -o jsonpath="{.status.loadBalancer.ingress[].ip}")
 
 # Functions for local Docker registry mgmt
 . "${ROOT_DIR}/script/local-docker-registry.sh"
@@ -86,7 +81,6 @@ fi
 info "###############################################################################################"
 info "DEBUG_MODE: ${DEBUG_MODE}"
 info "TESTS_GROUP: ${TESTS_GROUP}"
-info "GKE_VERSION: ${GKE_VERSION}"
 info "ROOT_DIR: ${ROOT_DIR}"
 info "USE_MULTICLUSTER_OIDC_ENV: ${USE_MULTICLUSTER_OIDC_ENV}"
 info "OLM_VERSION: ${OLM_VERSION}"
@@ -375,7 +369,7 @@ elapsedTimeSince() {
 
 [[ "${DEBUG_MODE}" == "true" ]] && set -x;
 
-if [[ "${DEBUG_MODE}" == "true" && -z ${GKE_VERSION} ]]; then
+if [[ "${DEBUG_MODE}" == "true" ]]; then
   info "Docker images loaded in the cluster:"
   docker exec kubeapps-ci-control-plane crictl images
 fi
@@ -481,11 +475,9 @@ installOrUpgradeKubeapps "${ROOT_DIR}/chart/kubeapps"
 info "Waiting for Kubeapps components to be ready (local chart)..."
 k8s_wait_for_deployment kubeapps kubeapps-ci
 
-# Setting up local Docker registry if not in GKE
-if [[ -z "${GKE_VERSION-}" ]]; then
-  setupLocalDockerRegistry
-  pushLocalChart
-fi
+# Setting up local Docker registry
+setupLocalDockerRegistry
+pushLocalChart
 
 # Ensure that we are testing the correct image
 info ""
@@ -735,7 +727,7 @@ if [[ "${TESTS_GROUP}" == "${ALL_TESTS}" || "${TESTS_GROUP}" == "${OPERATOR_TEST
   sectionStartTime=$(date +%s)
   ## Upgrade and run operators test
   # Operators are not supported in GKE 1.14 and flaky in 1.15, skipping test
-  if [[ -z "${GKE_VERSION-}" ]] && [[ -n "${TEST_OPERATORS-}" ]]; then
+  if [[ -n "${TEST_OPERATORS-}" ]]; then
     installOLM "${OLM_VERSION}"
 
     # Update Kubeapps settings to enable operators and hence proxying

@@ -11,10 +11,6 @@ permissions:
 on:
   workflow_call:
     inputs:
-      run_gke_tests:
-        type: boolean
-        required: false
-        default: false
       run_linters:
         type: boolean
         required: false
@@ -25,11 +21,6 @@ on:
         default: false
   workflow_dispatch:
     inputs:
-      run_gke_tests:
-        type: boolean
-        required: false
-        default: false
-        description: "Run GKE tests (requires cloud setup)"
       run_linters:
         type: boolean
         required: false
@@ -89,11 +80,6 @@ env:
   RUST_VERSION: "1.91.1"
   SEMVER_VERSION: "3.4.0"
   KUBECTL_VERSION: "v1.33.4"
-  GKE_REGULAR_VERSION: "1.33"
-  GKE_STABLE_VERSION: "1.33"
-  GKE_ZONE: "us-east1-c"
-  GKE_PROJECT: "vmware-kubeapps-ci"
-  GKE_CLUSTER: "kubeapps-test"
   CHART_OCI_REPO: "ghcr.io/sap/kubeapps"
 
 jobs:
@@ -709,8 +695,6 @@ jobs:
       - setup
       - push_chart
       - local_e2e_tests
-      - GKE_REGULAR_VERSION
-      - GKE_STABLE_VERSION
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -726,99 +710,3 @@ jobs:
         run: |
           set -eu
           ./script/create_release.sh "${GITHUB_REF_NAME}" "${KUBEAPPS_REPO}"
-
-  gke_setup:
-    if: inputs.run_gke_tests
-    needs:
-      - setup
-      - test_go
-      - test_dashboard
-      - test_pinniped_proxy
-      - test_oci_catalog
-      - test_chart_render
-      - build_docker_images
-      - build_dashboard_image
-      - build_e2e_runner_image
-    runs-on: ubuntu-latest
-    outputs:
-      CHARTMUSEUM_VERSION: ${{ steps.set-outputs.outputs.CHARTMUSEUM_VERSION }}
-      DEBUG_MODE: ${{ steps.set-outputs.outputs.DEBUG_MODE }}
-      GKE_STABLE_VERSION: ${{ steps.set-outputs.outputs.GKE_STABLE_VERSION }}
-      GKE_REGULAR_VERSION: ${{ steps.set-outputs.outputs.GKE_REGULAR_VERSION }}
-      GKE_CLUSTER: ${{ steps.set-outputs.outputs.GKE_CLUSTER }}
-      GKE_PROJECT: ${{ steps.set-outputs.outputs.GKE_PROJECT }}
-      GKE_ZONE: ${{ steps.set-outputs.outputs.GKE_ZONE }}
-      HELM_VERSION_MIN: ${{ steps.set-outputs.outputs.HELM_VERSION_MIN }}
-      HELM_VERSION_STABLE: ${{ steps.set-outputs.outputs.HELM_VERSION_STABLE }}
-      IMG_DEV_TAG: ${{ steps.set-outputs.outputs.IMG_DEV_TAG }}
-      IMG_MODIFIER: ${{ steps.set-outputs.outputs.IMG_MODIFIER }}
-      IMG_PREFIX: ${{ steps.set-outputs.outputs.IMG_PREFIX }}
-      FLUX_VERSION: ${{ steps.set-outputs.outputs.FLUX_VERSION }}
-      KUBECTL_VERSION: ${{ steps.set-outputs.outputs.KUBECTL_VERSION }}
-      OLM_VERSION: ${{ steps.set-outputs.outputs.OLM_VERSION }}
-    steps:
-      - id: set-outputs
-        run: |
-          echo "CHARTMUSEUM_VERSION=${CHARTMUSEUM_VERSION}" >> $GITHUB_OUTPUT
-          echo "DEBUG_MODE=${DEBUG_MODE}" >> $GITHUB_OUTPUT
-          echo "GKE_STABLE_VERSION=${GKE_STABLE_VERSION}" >> $GITHUB_OUTPUT
-          echo "GKE_REGULAR_VERSION=${GKE_REGULAR_VERSION}" >> $GITHUB_OUTPUT
-          echo "GKE_CLUSTER=${GKE_CLUSTER}" >> $GITHUB_OUTPUT
-          echo "GKE_PROJECT=${GKE_PROJECT}" >> $GITHUB_OUTPUT
-          echo "GKE_ZONE=${GKE_ZONE}" >> $GITHUB_OUTPUT
-          echo "HELM_VERSION_MIN=${HELM_VERSION_MIN}" >> $GITHUB_OUTPUT
-          echo "HELM_VERSION_STABLE=${HELM_VERSION_STABLE}" >> $GITHUB_OUTPUT
-          echo "IMG_DEV_TAG=${{ needs.setup.outputs.img_dev_tag }}" >> $GITHUB_OUTPUT
-          echo "IMG_MODIFIER=${{ needs.setup.outputs.img_modifier }}" >> $GITHUB_OUTPUT
-          echo "IMG_PREFIX=${{ needs.setup.outputs.img_prefix }}" >> $GITHUB_OUTPUT
-          echo "FLUX_VERSION=${FLUX_VERSION}" >> $GITHUB_OUTPUT
-          echo "KUBECTL_VERSION=${KUBECTL_VERSION}" >> $GITHUB_OUTPUT
-          echo "OLM_VERSION=${OLM_VERSION}" >> $GITHUB_OUTPUT
-
-  GKE_REGULAR_VERSION:
-    needs:
-      - gke_setup
-    uses: ./.github/workflows/gke_e2e_tests.yaml
-    with:
-      GKE_VERSION: ${{ needs.gke_setup.outputs.GKE_REGULAR_VERSION }}
-      DEBUG_MODE: ${{ needs.gke_setup.outputs.DEBUG_MODE == 'true' }}
-      CHARTMUSEUM_VERSION: ${{ needs.gke_setup.outputs.CHARTMUSEUM_VERSION }}
-      GKE_CLUSTER: ${{ needs.gke_setup.outputs.GKE_CLUSTER }}
-      GKE_PROJECT: ${{ needs.gke_setup.outputs.GKE_PROJECT }}
-      GKE_RELEASE_CHANNEL: "regular"
-      GKE_ZONE: ${{ needs.gke_setup.outputs.GKE_ZONE }}
-      HELM_VERSION_MIN: ${{ needs.gke_setup.outputs.HELM_VERSION_MIN }}
-      HELM_VERSION_STABLE: ${{ needs.gke_setup.outputs.HELM_VERSION_STABLE }}
-      IMG_DEV_TAG: ${{ needs.gke_setup.outputs.IMG_DEV_TAG }}
-      IMG_MODIFIER: ${{ needs.gke_setup.outputs.IMG_MODIFIER }}
-      IMG_PREFIX: ${{ needs.gke_setup.outputs.IMG_PREFIX }}
-      FLUX_VERSION: ${{ needs.gke_setup.outputs.FLUX_VERSION }}
-      KUBECTL_VERSION: ${{ needs.gke_setup.outputs.KUBECTL_VERSION }}
-      OLM_VERSION: ${{ needs.gke_setup.outputs.OLM_VERSION }}
-    secrets:
-      GKE_ADMIN: ${{ secrets.GKE_ADMIN }}
-      GCLOUD_KEY: ${{ secrets.GCLOUD_KEY }}
-
-  GKE_STABLE_VERSION:
-    needs:
-      - gke_setup
-    uses: ./.github/workflows/gke_e2e_tests.yaml
-    with:
-      GKE_VERSION: ${{ needs.gke_setup.outputs.GKE_STABLE_VERSION }}
-      DEBUG_MODE: ${{ needs.gke_setup.outputs.DEBUG_MODE == 'true' }}
-      CHARTMUSEUM_VERSION: ${{ needs.gke_setup.outputs.CHARTMUSEUM_VERSION }}
-      GKE_CLUSTER: ${{ needs.gke_setup.outputs.GKE_CLUSTER }}
-      GKE_PROJECT: ${{ needs.gke_setup.outputs.GKE_PROJECT }}
-      GKE_RELEASE_CHANNEL: "stable"
-      GKE_ZONE: ${{ needs.gke_setup.outputs.GKE_ZONE }}
-      HELM_VERSION_MIN: ${{ needs.gke_setup.outputs.HELM_VERSION_MIN }}
-      HELM_VERSION_STABLE: ${{ needs.gke_setup.outputs.HELM_VERSION_STABLE }}
-      IMG_DEV_TAG: ${{ needs.gke_setup.outputs.IMG_DEV_TAG }}
-      IMG_MODIFIER: ${{ needs.gke_setup.outputs.IMG_MODIFIER }}
-      IMG_PREFIX: ${{ needs.gke_setup.outputs.IMG_PREFIX }}
-      FLUX_VERSION: ${{ needs.gke_setup.outputs.FLUX_VERSION }}
-      KUBECTL_VERSION: ${{ needs.gke_setup.outputs.KUBECTL_VERSION }}
-      OLM_VERSION: ${{ needs.gke_setup.outputs.OLM_VERSION }}
-    secrets:
-      GKE_ADMIN: ${{ secrets.GKE_ADMIN }}
-      GCLOUD_KEY: ${{ secrets.GCLOUD_KEY }}

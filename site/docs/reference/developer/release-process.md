@@ -48,11 +48,11 @@ The versions used there _must_ match the ones used for building the container im
 - `OLM_VERSION` should be updated with the [latest stable version from the OLM releases](https://github.com/operator-framework/operator-lifecycle-manager/releases).
 - `CHARTMUSEUM_VERSION` should be updated with the [latest stable version from the chartmuseum/charts releases](https://github.com/chartmuseum/charts/releases).
 - `MKCERT_VERSION` should be updated with the [latest stable version from the mkcert releases](https://github.com/FiloSottile/mkcert/releases).
-- `KUBECTL_VERSION` _should_ match the Kubernetes minor version (or minor version +1) used in `TODO GKE_REGULAR_VERSION_XX` and listed in the [Kubernetes releases page](https://kubernetes.io/releases/).
+- `KUBECTL_VERSION` _should_ match the Kubernetes minor version (or minor version +1) used by Kind and `K8S_KIND_VERSION` and listed in the [Kubernetes releases page](https://kubernetes.io/releases/).
 - `GITHUB_VERSION` should be updated with the [latest stable version from the GitHub CLI releases](https://github.com/cli/cli/releases).
 - `SEMVER_VERSION` should be updated with the [latest stable version from the semver releases](https://github.com/fsaintjacques/semver-tool/releases/).
 - `KIND_VERSION` should be updated with the [latest stable version from the kind releases](https://github.com/kubernetes-sigs/kind/releases).
-- `K8S_KIND_VERSION` _must_ match the Kubernetes minor version used in `GKE_REGULAR_VERSION_XX TODO` and should be updated with one of the available image tags for a given [Kind release](https://github.com/kubernetes-sigs/kind/releases).
+- `K8S_KIND_VERSION` _must_ match the Kubernetes minor version used in `KUBECTL_VERSION` and should be updated with one of the available image tags for a given [Kind release](https://github.com/kubernetes-sigs/kind/releases).
 - `POSTGRESQL_VERSION` _must_ match the version used by the [Bitnami PostgreSQL chart](https://github.com/SAP/kubeapps/tree/main/chart/kubeapps/charts/postgresql).
 - `FLUX_VERSION` should be updated with the [latest stable version from the Flux releases](https://github.com/fluxcd/flux2/releases).
 
@@ -180,20 +180,7 @@ to the latest [Hugo release](https://github.com/gohugoio/hugo/releases/).
 Once the dependencies have been updated and the chart changes merged, the next step is to choose the proper commit so that we can base the release on it.
 It is, usually, the latest commit in the main branch. Then, some manual and automated tests should be performed to ensure the stability and reliability of the release.
 
-## 1.1 - Trigger the `Full Integration Pipeline` workflow (former `prerelease` flow in `CircleCI`)
-
-The `Full Integration Pipeline` workflow in GitHub Actions is a manual workflow that runs the full pipeline, including those end-to-end tests
-that are run on external k8s clusters, usually managed by a cloud provider (currently only GKE). To trigger this workflow you have to follow
-the following steps:
-
-1. Go to the [Actions section](https://github.com/vmware-tanzu/kubeapps/actions) in the Kubeapps GitHub repository.
-2. Click on `Full Integration Pipeline` in the list of workflows on the left side of the screen.
-3. Click on the `Run Workflow` dropdown selector at the right-top of the list of workflow runs.
-4. Select `main` (the default one) in the list of branches.
-5. Click the `Run workflow` button.
-6. You can then interact with and watch the workflow run that has just been created.
-
-## 1.2 - Perform a manual test
+## 1.1 - Perform a manual test
 
 Even though we have a thorough test suite in our repository, we still _must_ perform a manual review of the application as it is in the selected commit. To do so, follow these instructions:
 

@@ -35,8 +35,6 @@ Currently, you can find the following top-level workflows:
 Internally calls the `Kubeapps general` reusable workflow.
 * **[Release Pipeline](https://github.com/vmware-tanzu/kubeapps/blob/main/.github/workflows/kubeapps-release.yml):** it runs automatically when a new tag matching the version pattern `vX.Y.Z` is pushed to the repository.
 Internally calls the `Kubeapps general` reusable workflow.
-* **[Full Integration Pipeline](https://github.com/vmware-tanzu/kubeapps/blob/main/.github/workflows/kubeapps-full-integration.yaml):** it runs on-demand and can be manually triggered from
-the [Actions section](https://github.com/vmware-tanzu/kubeapps/actions) of the GitHub repository. Internally calls the `Kubeapps general` reusable workflow passing the input argument `run_gke_tests` with value `true`, so the e2e tests are run on external GKE clusters.
 * **[CodeQL Analysis](https://github.com/vmware-tanzu/kubeapps/blob/main/.github/workflows/codeql-analysis.yml):** it executes the CodeQL security analysis, runs automatically depending on several conditions/events,
 and is not part of the `Kubeapps General` workflow due to the big amount of time it takes to complete.
 * **[Kubeapps Custodian Rules](https://github.com/vmware-tanzu/kubeapps/blob/main/.github/workflows/ci-custodian-rules.yaml):** it executes some custodian rules for the project, runs automatically on-schedule.
@@ -45,7 +43,6 @@ and is not part of the `Kubeapps General` workflow due to the big amount of time
 Besides that, you have the following reusable workflows:
 
 * **[Kubeapps General](https://github.com/vmware-tanzu/kubeapps/blob/main/.github/workflows/kubeapps-general.yaml):** it contains the definition of the whole pipeline, containing multiple jobs that run depending on different conditions (like the event that triggered the workflow, or the repository or branch from which it was triggered), so it supports multiple flows/scenarios. It receives some input parameters that allow you to tune its behavior (for example, whether e2e tests should be run or not).
-* **[GKE e2e Tests](https://github.com/vmware-tanzu/kubeapps/blob/main/.github/workflows/gke_e2e_tests.yaml):** it contains the definition of the job that runs the e2e tests on a GKE cluster.
 * **[Linters](https://github.com/vmware-tanzu/kubeapps/blob/main/.github/workflows/linters.yml):** it contains the definition of the jobs that execute multiple linters for the project.
 
 ### Custom Actions
@@ -110,14 +107,6 @@ This step involves:
   * Sending a draft PR to the Bitnami Charts repository with these changes (from the robot account's personal fork)
 * `release`: every time a new version tag is pushed to the repository, it creates a GitHub release based on the current
 tag by running the script [create_release.sh](https://github.com/vmware-tanzu/kubeapps/blob/main/script/create_release.sh).
-* `gke_setup`: it serves as a gateway job for the e2e tests that are run in a external GKE clusters. The reason why this job
-is needed is that we have a reusable workflow in [gke_e2e_tests.yaml](https://github.com/vmware-tanzu/kubeapps/blob/main/.github/workflows/gke_e2e_tests.yaml)
-that contains the definition of the job that executes those e2e tests in GKE, and in [kubeapps-general.yaml](https://github.com/vmware-tanzu/kubeapps/blob/main/.github/workflows/kubeapps-general.yaml)
-we call that workflow with different parameters, and because of GHA limitations, we cannot use environment variables to pass
-those parameters, so this job turns the required env vars into output data. Besides that, by making those jobs depending on
-this one, we avoid rewriting the execution conditions (that is, the `if` statement) on each job.
-* `GKE_[STABLE|REGULAR]_VERSION`: there is a job for each [Kubernetes version (stable and regular) supported by Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine/docs/release-notes) (GKE).
-It will run the e2e tests in a GKE cluster (version X.XX). If a change affecting the UI is pushed to the main branch, the e2e test might fail here.
 
 Note that this process is independent of the release of the official Bitnami images and chart. These Bitnami images will
 be created according to their internal process (so the Golang, Node or Rust versions we define here are not used by them.
