@@ -11,6 +11,7 @@
 * [bitnami/*] Convert hugo based static docupage to [Docusaurus](https://docusaurus.io/)
 * [bitnami/*] Upgrade Helm stable version to v4.0.0
 * [bitnami/*] Upgrade Chartmuseum to 3.10.4
+* [bitnami/*] Upgrade kind to v0.30.0 with kubectl 1.33.4 => kubernetes version 1.33.4
 * [bitnami/build] Upgrade docker registry version to 3.0.0
 * [bitnami/pinniped] Upgrade rust to 1.91.1
 * [bitnami/operator] Upgrade OLM to v0.38.0
