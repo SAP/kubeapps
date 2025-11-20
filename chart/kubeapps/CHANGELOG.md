@@ -12,6 +12,7 @@
 * [bitnami/*] Upgrade Helm stable version to v4.0.0
 * [bitnami/build] Upgrade docker registry version to 3.0.0
 * [bitnami/pinniped] Upgrade rust to 1.91.1
+* [bitnami/operator] Upgrade OLM to v0.38.0
 
 ## 17.1.1 (2024-12-24)
 
