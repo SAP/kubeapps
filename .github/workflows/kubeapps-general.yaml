@@ -41,7 +41,7 @@ env:
   CHARTS_REPO_FORKED: "kubeapps-bot/charts"
   CHART_OCI_REPO: "ghcr.io/sap/kubeapps"
   # DEBUG_MODE allows to activate some SSH debugging steps, and modify the verbosity level of some scripts (eg. e2e-tests.sh)
-  DEBUG_MODE: "true"
+  DEBUG_MODE: "false"
   DOCKER_REGISTRY_VERSION: "3.0.0"
   FLUX_VERSION: "v2.7.3"
   GITHUB_VERSION: "2.83.1"

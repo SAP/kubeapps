@@ -70,7 +70,7 @@ fi
 . "${ROOT_DIR}/script/lib/libutil.sh"
 
 # Get the load balancer IP
-LOAD_BALANCER_IP=$(kubectl -n nginx-ingress get service nginx-ingress-ingress-nginx-controller -o jsonpath="{.status.loadBalancer.ingress[].ip}")
+LOAD_BALANCER_IP=$DEX_IP
 
 # Functions for local Docker registry mgmt
 . "${ROOT_DIR}/script/local-docker-registry.sh"
