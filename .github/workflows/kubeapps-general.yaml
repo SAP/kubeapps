@@ -38,9 +38,7 @@ on:
 env:
   CHARTMUSEUM_VERSION: "3.10.4"
   CHARTS_REPO_ORIGINAL: "bitnami/charts"
-  BRANCH_CHARTS_REPO_ORIGINAL: "main"
   CHARTS_REPO_FORKED: "kubeapps-bot/charts"
-  BRANCH_CHARTS_REPO_FORKED: "main"
   # DEBUG_MODE allows to activate some SSH debugging steps, and modify the verbosity level of some scripts (eg. e2e-tests.sh)
   DEBUG_MODE: "false"
   SSH_KEY_KUBEAPPS_DEPLOY_FILENAME: "id_rsa_kubeapps_deploy_key"
