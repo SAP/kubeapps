@@ -61,7 +61,7 @@ env:
   BRANCH_KUBEAPPS_REPO: "main"
   README_GENERATOR_REPO: "bitnami-labs/readme-generator-for-helm"
   DOCKER_REGISTRY_VERSION: "2.8.3"
-  GOLANG_VERSION: "1.25.1"
+  GOLANG_VERSION: "1.25.4"
   GOLANGCI_LINT_VERSION: "1.61.0"
   HELM_VERSION_MIN: "v3.18.6"
   HELM_VERSION_STABLE: "v3.19.0"
@@ -221,7 +221,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GOLANG_VERSION }}
       - name: Run go unit tests
@@ -282,7 +282,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GOLANG_VERSION }}
       - name: "Install helm (minimum and stable)"
