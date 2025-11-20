@@ -46,7 +46,7 @@ env:
   FLUX_VERSION: "v2.7.3"
   GITHUB_VERSION: "2.83.1"
   GOLANG_VERSION: "1.25.4"
-  GOLANGCI_LINT_VERSION: "1.61.0"
+  GOLANGCI_LINT_VERSION: "2.6.2"
   HELM_VERSION_MIN: "v3.18.6"
   HELM_VERSION_STABLE: "v4.0.0"
   IMAGES_TO_PUSH: "apprepository-controller dashboard asset-syncer pinniped-proxy kubeapps-apis oci-catalog"

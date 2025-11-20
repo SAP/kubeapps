@@ -44,6 +44,7 @@ The versions used there _must_ match the ones used for building the container im
 - `FLUX_VERSION` should be updated with the [latest stable version from the Flux releases](https://github.com/fluxcd/flux2/releases).
 - `GITHUB_VERSION` should be updated with the [latest stable version from the GitHub CLI releases](https://github.com/cli/cli/releases).
 - `GOLANG_VERSION` _must_ match the versions used by our services written in Golang, for instance, [kubeapps-apis](https://github.com/sap/kubeapps/blob/main/cmd/kubeapps-apis/Dockerfile).
+- `GOLANGCI_LINT_VERSION` should be updated with the [latest stable version from the golangci-lint releases](https://github.com/golangci/golangci-lint). The GitHub Action golangci/golangci-lint-action needs to be verified too.
 - `HELM_VERSION_MIN` _must_ match the one listed in the [Bitnami Application Catalog prerequisites](https://github.com/bitnami/charts#prerequisites).
 - `HELM_VERSION_STABLE` should be updated with the [latest stable version from the Helm releases](https://github.com/helm/helm/releases).
 - `K8S_KIND_VERSION` _must_ match the Kubernetes minor version used in `KUBECTL_VERSION` and should be updated with one of the available image tags for a given [Kind release](https://github.com/kubernetes-sigs/kind/releases).
