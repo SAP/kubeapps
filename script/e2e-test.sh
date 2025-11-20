@@ -15,10 +15,9 @@ MAIN_TESTS_SUBGROUP="main-group-"
 EXISTENT_MAIN_TESTS_SUBGROUPS=3
 MULTICLUSTER_TESTS="multicluster"
 MULTICLUSTER_NOKUBEAPPS_TESTS="multicluster-nokubeapps"
-CARVEL_TESTS="carvel"
 FLUX_TESTS="flux"
 OPERATOR_TESTS="operators"
-SUPPORTED_TESTS_GROUPS=("${ALL_TESTS}" "${MAIN_TESTS}" "${MULTICLUSTER_TESTS}" "${CARVEL_TESTS}" "${FLUX_TESTS}" "${OPERATOR_TESTS}" "${MULTICLUSTER_NOKUBEAPPS_TESTS}")
+SUPPORTED_TESTS_GROUPS=("${ALL_TESTS}" "${MAIN_TESTS}" "${MULTICLUSTER_TESTS}" "${FLUX_TESTS}" "${OPERATOR_TESTS}" "${MULTICLUSTER_NOKUBEAPPS_TESTS}")
 INTEGRATION_HOST=kubeapps-ci.kubeapps
 INTEGRATION_ENTRYPOINT="http://${INTEGRATION_HOST}"
 
@@ -30,7 +29,6 @@ IMG_MODIFIER=${IMG_MODIFIER:-""}
 TEST_TIMEOUT_MINUTES=${TEST_TIMEOUT_MINUTES:-"4"}
 DEX_IP=${DEX_IP:-"172.18.0.2"}
 ADDITIONAL_CLUSTER_IP=${ADDITIONAL_CLUSTER_IP:-"172.18.0.3"}
-KAPP_CONTROLLER_VERSION=${KAPP_CONTROLLER_VERSION:-"v0.42.0"}
 CHARTMUSEUM_VERSION=${CHARTMUSEUM_VERSION:-"3.9.1"}
 FLUX_VERSION=${FLUX_VERSION:-"v2.2.3"}
 GKE_VERSION=${GKE_VERSION:-}
@@ -101,7 +99,6 @@ info "DEX_IP: ${DEX_IP}"
 info "ADDITIONAL_CLUSTER_IP: ${ADDITIONAL_CLUSTER_IP}"
 info "LOAD_BALANCER_IP: ${LOAD_BALANCER_IP}"
 info "TEST_TIMEOUT_MINUTES: ${TEST_TIMEOUT_MINUTES}"
-info "KAPP_CONTROLLER_VERSION: ${KAPP_CONTROLLER_VERSION}"
 info "K8S SERVER VERSION: $(kubectl version -o json | jq -r '.serverVersion.gitVersion')"
 info "KUBECTL VERSION: $(kubectl version -o json | jq -r '.clientVersion.gitVersion')"
 info "###############################################################################################"
@@ -236,32 +233,6 @@ pushChart() {
   pushChartToChartMuseum "${chart}" "${version}" "${prefix}${chart}-${version}.tgz"
 }
 
-########################################################################################################################
-# Install kapp-controller
-# Globals: None
-# Arguments:
-#   $1: Version of kapp-controller
-# Returns: None
-########################################################################################################################
-installKappController() {
-  local release=$1
-  info "Installing kapp-controller ${release} ..."
-  url="https://github.com/carvel-dev/kapp-controller/releases/download/${release}/release.yml"
-  namespace=kapp-controller
-
-  kubectl apply -f "${url}"
-
-  # wait for deployment to be ready
-  kubectl rollout status -w deployment/kapp-controller --namespace="${namespace}"
-
-  # Add test repository.
-	kubectl apply -f https://raw.githubusercontent.com/vmware-tanzu/carvel-kapp-controller/develop/examples/packaging-with-repo/package-repository.yml
-
-  # Add a carvel-reconciler service account to the kubeapps-user-namespace with
-  # cluster-admin.
-  kubectl create serviceaccount carvel-reconciler -n kubeapps-user-namespace
-  kubectl create clusterrolebinding carvel-reconciler --clusterrole=cluster-admin --serviceaccount kubeapps-user-namespace:carvel-reconciler
-}
 
 ########################################################################################################################
 # Install flux
@@ -728,35 +699,6 @@ if [[ -z "${GKE_VERSION-}" && ("${TESTS_GROUP}" == "${ALL_TESTS}" || "${TESTS_GR
 fi
 
 ####################################
-######## Carvel tests group ########
-####################################
-if [[ "${TESTS_GROUP}" == "${ALL_TESTS}" || "${TESTS_GROUP}" == "${CARVEL_TESTS}" ]]; then
-  sectionStartTime=$(date +%s)
-
-  ## Upgrade and run Carvel test
-  installKappController "${KAPP_CONTROLLER_VERSION}"
-  info "Updating Kubeapps with carvel support"
-  installOrUpgradeKubeapps "${ROOT_DIR}/chart/kubeapps" \
-    "--set" "packaging.helm.enabled=false" \
-    "--set" "packaging.carvel.enabled=true"
-
-  info "Waiting for updated Kubeapps components to be ready..."
-  k8s_wait_for_deployment kubeapps kubeapps-ci
-
-  info "Running carvel integration test..."
-  test_command=$(getTestCommand "${CARVEL_TESTS}" "20")
-  info "${test_command}"
-  if ! kubectl exec -it "$pod" -- /bin/sh -c "${test_command}"; then
-    ## Integration tests failed, get report screenshot
-    warn "PODS status on failure"
-    kubectl cp "${pod}:/app/reports" ./reports
-    exit 1
-  fi
-  info "Carvel integration tests succeeded!!"
-  info "Carvel tests execution time: $(elapsedTimeSince "$sectionStartTime")"
-fi
-
-####################################
 ######## Flux tests group ########
 ####################################
 if [[ "${TESTS_GROUP}" == "${ALL_TESTS}" || "${TESTS_GROUP}" == "${FLUX_TESTS}" ]]; then
@@ -767,8 +709,7 @@ if [[ "${TESTS_GROUP}" == "${ALL_TESTS}" || "${TESTS_GROUP}" == "${FLUX_TESTS}" 
   info "Updating Kubeapps with flux support"
   installOrUpgradeKubeapps "${ROOT_DIR}/chart/kubeapps" \
     "--set" "packaging.flux.enabled=true" \
-    "--set" "packaging.helm.enabled=false" \
-    "--set" "packaging.carvel.enabled=false"
+    "--set" "packaging.helm.enabled=false"
 
   info "Waiting for updated Kubeapps components to be ready..."
   k8s_wait_for_deployment kubeapps kubeapps-ci
@@ -803,7 +744,6 @@ if [[ "${TESTS_GROUP}" == "${ALL_TESTS}" || "${TESTS_GROUP}" == "${OPERATOR_TEST
     info "Installing latest Kubeapps chart available"
     installOrUpgradeKubeapps "${ROOT_DIR}/chart/kubeapps" \
       "--set" "packaging.helm.enabled=false" \
-      "--set" "packaging.carvel.enabled=true" \
       "--set" "featureFlags.operators=true"
 
     info "Waiting for Kubeapps components to be ready (bitnami chart)..."

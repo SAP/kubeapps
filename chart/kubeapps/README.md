@@ -188,7 +188,6 @@ In the first two cases, it is needed a certificate and a key. We would expect th
 | Name                       | Description                                                | Value   |
 |----------------------------|------------------------------------------------------------|---------|
 | `packaging.helm.enabled`   | Enable the standard Helm packaging.                        | `true`  |
-| `packaging.carvel.enabled` | Enable support for the Carvel (kapp-controller) packaging. | `false` |
 | `packaging.flux.enabled`   | Enable support for Flux (v2) packaging.                    | `false` |
 
 ### Frontend parameters
@@ -598,10 +597,6 @@ In the first two cases, it is needed a certificate and a key. We would expect th
 | `kubeappsapis.pluginConfig.core.packages.v1alpha1.versionsInSummary.patch`                      | Number of patch versions to display in the summary                                                                                                                                                                                          | `3`                                |
 | `kubeappsapis.pluginConfig.core.packages.v1alpha1.timeoutSeconds`                               | Value to wait for Kubernetes commands to complete                                                                                                                                                                                           | `300`                              |
 | `kubeappsapis.pluginConfig.helm.packages.v1alpha1.globalPackagingNamespace`                     | Custom global packaging namespace. Using this value will override the current "kubeapps release namespace + suffix" pattern and will create a new namespace if not exists.                                                                  | `""`                               |
-| `kubeappsapis.pluginConfig.kappController.packages.v1alpha1.defaultUpgradePolicy`               | Default upgrade policy generating version constraints                                                                                                                                                                                       | `none`                             |
-| `kubeappsapis.pluginConfig.kappController.packages.v1alpha1.defaultPrereleasesVersionSelection` | Default policy for allowing prereleases containing one of the identifiers                                                                                                                                                                   | `nil`                              |
-| `kubeappsapis.pluginConfig.kappController.packages.v1alpha1.defaultAllowDowngrades`             | Default policy for allowing applications to be downgraded to previous versions                                                                                                                                                              | `false`                            |
-| `kubeappsapis.pluginConfig.kappController.packages.v1alpha1.globalPackagingNamespace`           | Default global packaging namespace                                                                                                                                                                                                          | `kapp-controller-packaging-global` |
 | `kubeappsapis.pluginConfig.flux.packages.v1alpha1.defaultUpgradePolicy`                         | Default upgrade policy generating version constraints                                                                                                                                                                                       | `none`                             |
 | `kubeappsapis.pluginConfig.flux.packages.v1alpha1.noCrossNamespaceRefs`                         | Enable this flag to disallow cross-namespace references, useful when running Flux on multi-tenant clusters                                                                                                                                  | `false`                            |
 | `kubeappsapis.pluginConfig.resources.packages.v1alpha1.trustedNamespaces.headerName`            | Optional header name for trusted namespaces                                                                                                                                                                                                 | `""`                               |
@@ -1115,7 +1110,7 @@ Most of these standardizations simply add new parameters that allow to add more 
 
 ### To 6.0.0
 
-Kubeapps 2.3.1 (Chart version 6.0.0) introduces some breaking changes. Helm-specific functionality has been removed in order to support other installation methods (like using YAML manifests, [`kapp`](https://carvel.dev/kapp) or [`kustomize`](https://kustomize.io/)). Because of that, there are some steps required before upgrading from a previous version:
+Kubeapps 2.3.1 (Chart version 6.0.0) introduces some breaking changes. Helm-specific functionality has been removed in order to support other installation methods (like using YAML manifests, [`kustomize`](https://kustomize.io/)). Because of that, there are some steps required before upgrading from a previous version:
 
 1. Kubeapps will no longer create a database secret for you automatically but rather will rely on the default behavior of the PostgreSQL chart. If you try to upgrade Kubeapps and you installed it without setting a password, you will get the following error:
 

@@ -104,7 +104,7 @@ To add Harbor as a private chart repository in Kubeapps:
 - `Name`: Repository name in Kubeapps.
 - `URL`: Harbor repository URL (in this example: `http://harbor.default.svc.cluster.local/chartrepo/my-helm-repo`).
 - `Description`: Info displayed in Kubeapps for details about the repository.
-- `Packaging format`: Select the format of packages in the repository (Helm, Helm via Flux, Carvel)
+- `Packaging format`: Select the format of packages in the repository (Helm, Helm via Flux)
 - `Scope`: may be either **global** (cluster﹣wide) or **namespace﹣scoped**, in which case only users with access to that namespace will have access to the repository.
 - `Package storage type`: Helm repository or OCI registry.
 

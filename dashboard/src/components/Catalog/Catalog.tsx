@@ -84,14 +84,7 @@ export default function Catalog() {
     },
     operators,
     repos: { reposSummaries: repos },
-    config: {
-      appVersion,
-      kubeappsCluster,
-      helmGlobalNamespace,
-      carvelGlobalNamespace,
-      featureFlags,
-      configuredPlugins,
-    },
+    config: { appVersion, kubeappsCluster, helmGlobalNamespace, featureFlags, configuredPlugins },
   } = useSelector((state: IStoreState) => state);
   const { cluster, namespace } = ReactRouter.useParams();
   const location = ReactRouter.useLocation();
@@ -249,11 +242,7 @@ export default function Catalog() {
   // We do not currently support package repositories on additional clusters.
   const supportedCluster = cluster === kubeappsCluster;
   useEffect(() => {
-    if (
-      !namespace ||
-      !supportedCluster ||
-      [helmGlobalNamespace, carvelGlobalNamespace].includes(namespace)
-    ) {
+    if (!namespace || !supportedCluster || [helmGlobalNamespace].includes(namespace)) {
       // All Namespaces. Global namespace or other cluster, show global repos only
       dispatch(actions.repos.fetchRepoSummaries(""));
       return () => {};
@@ -261,7 +250,7 @@ export default function Catalog() {
     // In other case, fetch global and namespace repos
     dispatch(actions.repos.fetchRepoSummaries(namespace, true));
     return () => {};
-  }, [dispatch, supportedCluster, namespace, helmGlobalNamespace, carvelGlobalNamespace]);
+  }, [dispatch, supportedCluster, namespace, helmGlobalNamespace]);
 
   useEffect(() => {
     // Ignore operators if specified

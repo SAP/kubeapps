@@ -29,7 +29,6 @@ afterEach(() => {
 
 const defaultProps = {
   helmGlobalNamespace: "kubeapps",
-  carvelGlobalNamespace: "carvel-global",
   repo: {
     name: "bitnami",
     packageRepoRef: { context: { namespace: "kubeapps" } },

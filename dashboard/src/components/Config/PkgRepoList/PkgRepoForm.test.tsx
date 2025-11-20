@@ -35,7 +35,6 @@ const defaultProps = {
   namespace: "default",
   kubeappsNamespace: "kubeapps",
   helmGlobalNamespace: "kubeapps",
-  carvelGlobalNamespace: "carvel-global",
   packageRepoRef: new PackageRepositoryReference({
     identifier: "test",
     context: { cluster: "default", namespace: "default" },

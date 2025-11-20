@@ -32,8 +32,6 @@ on:
         type: string
       IMG_PREFIX:
         type: string
-      KAPP_CONTROLLER_VERSION:
-        type: string
       FLUX_VERSION:
         type: string
       KUBECTL_VERSION:
@@ -80,7 +78,6 @@ jobs:
       IMG_DEV_TAG: ${{ inputs.IMG_DEV_TAG }}
       IMG_MODIFIER: ${{ inputs.IMG_MODIFIER }}
       IMG_PREFIX: ${{ inputs.IMG_PREFIX }}
-      KAPP_CONTROLLER_VERSION: ${{ inputs.KAPP_CONTROLLER_VERSION }}
       FLUX_VERSION: ${{ inputs.FLUX_VERSION }}
       KUBECTL_VERSION: ${{ inputs.KUBECTL_VERSION }}
       OLM_VERSION: ${{ inputs.OLM_VERSION }}

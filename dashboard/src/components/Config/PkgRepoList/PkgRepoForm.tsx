@@ -57,7 +57,6 @@ export interface IPkgRepoFormProps {
   onAfterInstall?: () => void;
   namespace: string;
   helmGlobalNamespace: string;
-  carvelGlobalNamespace: string;
   packageRepoRef?: PackageRepositoryReference;
 }
 
@@ -67,7 +66,6 @@ export function PkgRepoForm(props: IPkgRepoFormProps) {
     onAfterInstall,
     namespace,
     helmGlobalNamespace,
-    carvelGlobalNamespace,
     packageRepoRef: selectedPkgRepo,
   } = props;
   const isInstallingRef = useRef(false);
@@ -85,7 +83,6 @@ export function PkgRepoForm(props: IPkgRepoFormProps) {
 
   const currentNsConfig = {
     helmGlobalNamespace: helmGlobalNamespace,
-    carvelGlobalNamespace: carvelGlobalNamespace,
   } as IConfig;
 
   const configuredPluginsNames = configuredPlugins.map(plugin => plugin.name);

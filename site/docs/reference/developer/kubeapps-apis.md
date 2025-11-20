@@ -2,7 +2,7 @@
 
 The Kubeapps APIs service provides a pluggable, gRPC-based API service enabling the Kubeapps UI (or other clients) to interact with different Kubernetes packaging formats in a consistent, extensible way.
 
-The Kubeapps APIs service is bundled with three packaging plugins providing support for the Helm, Carvel and Flux packaging formats, enabling users to browse and install packages of different formats.
+The Kubeapps APIs service is bundled with three packaging plugins providing support for the Helm and Flux packaging formats, enabling users to browse and install packages of different formats.
 
 <!-- TODO(agamez): piece of docs requiring update. Reason: screenshots using old Kubeapps logo -->
 
@@ -99,7 +99,7 @@ Of course, all plugins register their own gRPC servers and so the RPC calls they
 
 ### An Aggregated API server - combining results from different packaging plugins
 
-Part of the goal of enabling pluggable support for different packaging systems is to ensure that a UI like the Kubeapps dashboard can use a single client to present a catalog of apps for install, regardless of whether they come from a standard Helm repository, or a flux-based Helm repository, or Carvel package resources on the cluster.
+Part of the goal of enabling pluggable support for different packaging systems is to ensure that a UI like the Kubeapps dashboard can use a single client to present a catalog of apps for install, regardless of whether they come from a standard Helm repository, or a flux-based Helm repository resources on the cluster.
 
 For this reason, the implementation of the core packages API delegates to the related packaging plugins and aggregates their results. For example, the core packages implementation of `GetAvailablePackageDetail` ([see `packages.go`](https://github.com/vmware-tanzu/kubeapps/blob/main/cmd/kubeapps-apis/core/packages/v1alpha1/packages.go)) can simply delegate to the relevant plugin:
 
@@ -128,11 +128,11 @@ func (s packagesServer) GetAvailablePackageDetail(ctx context.Context, request *
 
 Similar implementations of querying functions like `GetAvailablePackageSummaries` in the same file collect the relevant available package summaries from each packaging plugin
 and return the aggregated results. So our Kubeapps UI (or any UI using the client) can benefit from using the single _core_ packages client to query and interact with packages
-from _different_ packaging systems, such as Carvel and Flux.
+from _different_ packaging systems, such as Flux.
 
 It is worth noting that a plugin that satisfies the core packages interface isn't restricted to _only_ those methods. Similar to go interfaces, the plugin is free to implement
 other functionality in addition to the interface requirements. The Helm plugin uses this to include additional functionality for rolling back an installed package - something
-which is not necessary for Carvel or Flux. This extra functionality is available on the Helm-specific gRPC client.
+which is not necessary for Flux. This extra functionality is available on the Helm-specific gRPC client.
 
 ### Authentication/Authorization
 
@@ -142,7 +142,7 @@ Note that although we don't support its use in anything other than a demo enviro
 
 ### Caveats
 
-Although the current Kubeapps UI does indeed benefit from this core client and interacts with the packages from different packaging systems in a uniform way, we still have some exceptions to this. For example, Flux and Carvel require selecting a service account to be associated with the installed package. Rather than the plugin providing additional schema or field data for creating a package ([something we plan to add in the future](https://github.com/vmware-tanzu/kubeapps/issues/4365)), we've currently included the service account field based on the plugin name.
+Although the current Kubeapps UI does indeed benefit from this core client and interacts with the packages from different packaging systems in a uniform way, we still have some exceptions to this. For example, Flux require selecting a service account to be associated with the installed package. Rather than the plugin providing additional schema or field data for creating a package ([something we plan to add in the future](https://github.com/vmware-tanzu/kubeapps/issues/4365)), we've currently included the service account field based on the plugin name.
 
 It's also worth noting that we tried and were unable to include any streaming gRPC calls on the core packages interface. While two separate packages can define the same interface (with the same methods, return types etc.), `grpc-go` generates package-specific types for streamed responses, which makes it impossible for one packages' implementation of a streaming RPC to match another one, such as the core interface. It is not impossible to work around this, but so far we've used streaming responses on other non-packages plugins, such as the resources plugin for reporting on the Kubernetes resources related to an installed package.
 
@@ -369,7 +369,7 @@ grpcurl -plaintext -d '{"context": {"cluster": "default", "namespace": "kubeapps
       "iconUrl": "https://bitnami.com/assets/stacks/apache/img/apache-stack-220x234.png",
 ```
 
-Of course, you will need to have the appropriate Flux HelmRepository or Carvel PackageRepository available. See [managing flux packages](../../tutorials/managing-flux-packages.md) for information about setting up the environment.
+Of course, you will need to have the appropriate Flux HelmRepository available. See [managing flux packages](../../tutorials/managing-flux-packages.md) for information about setting up the environment.
 
 ## Hacking
 

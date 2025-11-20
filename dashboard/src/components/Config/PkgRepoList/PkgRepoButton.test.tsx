@@ -39,7 +39,6 @@ afterEach(() => {
 const defaultProps = {
   namespace: "default",
   helmGlobalNamespace: "kubeapps",
-  carvelGlobalNamespace: "carvel-global",
 } as IPkgRepoAddButtonProps;
 
 it("should open a modal with the repository form", () => {

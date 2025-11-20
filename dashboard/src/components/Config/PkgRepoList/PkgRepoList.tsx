@@ -35,7 +35,7 @@ function PkgRepoList() {
   const {
     repos: { errors, isFetching, reposSummaries: repos, reposPermissions },
     clusters: { clusters, currentCluster },
-    config: { kubeappsCluster, helmGlobalNamespace, carvelGlobalNamespace },
+    config: { kubeappsCluster, helmGlobalNamespace },
   } = useSelector((state: IStoreState) => state);
   const cluster = currentCluster;
   const { currentNamespace } = clusters[cluster];
@@ -52,11 +52,7 @@ function PkgRepoList() {
   // so calling several times to refetchRepos would run the code inside, even
   // if the dependencies do not change.
   const refetchRepos: () => void = useCallback(() => {
-    if (
-      !namespace ||
-      !supportedCluster ||
-      [helmGlobalNamespace, carvelGlobalNamespace].includes(namespace)
-    ) {
+    if (!namespace || !supportedCluster || [helmGlobalNamespace].includes(namespace)) {
       // All Namespaces. Global namespace or other cluster, show global repos only
       dispatch(actions.repos.fetchRepoSummaries(""));
       return () => {};
@@ -64,7 +60,7 @@ function PkgRepoList() {
     // In other case, fetch global and namespace repos
     dispatch(actions.repos.fetchRepoSummaries(namespace, true));
     return () => {};
-  }, [dispatch, supportedCluster, namespace, helmGlobalNamespace, carvelGlobalNamespace]);
+  }, [dispatch, supportedCluster, namespace, helmGlobalNamespace]);
 
   useEffect(() => {
     refetchRepos();
@@ -187,7 +183,6 @@ function PkgRepoList() {
             repo={repo}
             refetchRepos={refetchRepos}
             helmGlobalNamespace={helmGlobalNamespace}
-            carvelGlobalNamespace={carvelGlobalNamespace}
           />
         ),
       };
@@ -232,7 +227,6 @@ function PkgRepoList() {
             key="add-repo-button"
             namespace={currentNamespace}
             helmGlobalNamespace={helmGlobalNamespace}
-            carvelGlobalNamespace={carvelGlobalNamespace}
             disabled={!supportedCluster || !canAddRepos()}
           />,
         ]}
@@ -290,7 +284,7 @@ function PkgRepoList() {
                   loaded={!isFetching}
                 >
                   {getGlobalReposTable(globalRepos, !canEditGlobalRepos)}
-                  {![helmGlobalNamespace, carvelGlobalNamespace].includes(namespace) && (
+                  {![helmGlobalNamespace].includes(namespace) && (
                     <>
                       <h3>Namespaced Repositories: {namespace}</h3>
                       <p>

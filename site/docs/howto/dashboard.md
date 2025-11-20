@@ -125,4 +125,4 @@ Kubeapps also provides the ability for listing applications in all namespaces fo
 
 ![Deployment list all namespaces](/img/dashboard/list-available-applications.png)
 
-> **NOTE**: An additional benefit for Kubeapps is that it reflects the status of applications in the cluster (even if not managed directly by using Kubeapps). So any change performed by using the Helm, Flux or Carvel directly from the CLI, is visible from Kubeapps when listing the installed applications in the cluster.
+> **NOTE**: An additional benefit for Kubeapps is that it reflects the status of applications in the cluster (even if not managed directly by using Kubeapps). So any change performed by using the Helm, Flux directly from the CLI, is visible from Kubeapps when listing the installed applications in the cluster.

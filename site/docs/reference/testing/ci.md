@@ -85,7 +85,7 @@ the proper environment is created. Namely:
   * Run the integration tests.
 * `local_e2e_tests_result`: it serves as a global status check for the `local_e2e_tests` job. It is needed because the `local_e2e_tests`
 job uses a matrix to parameterize and parallelize the `local_e2e_tests` job, so each test group is run in parallel and isolation
-(carvel, flux, main, etc), and we would need to configure a status check in the branch protections rules for every item in the matrix.
+(flux, main, etc), and we would need to configure a status check in the branch protections rules for every item in the matrix.
 * `push_images`: each time a new commit is pushed to the main branch or a new version tag is created, the CI images
 (which have already been built) get re-tagged and pushed to the `kubeapps` account in Dockerhub.
 * `sync_chart_from_bitnami`: each time a new commit is pushed to the main branch, it brings the current changes in the upstream
