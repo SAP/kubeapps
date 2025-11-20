@@ -51,4 +51,3 @@ jobs:
       run_linters: ${{ inputs.run_linters }}
       trigger_release: ${{ inputs.trigger_release }}
     secrets: inherit
-
