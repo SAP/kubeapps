@@ -9,6 +9,7 @@
 * [bitnami/*] Remove support for Carvel due to upgrade issues (contribution welcomed)
 * [bitnami/*] Localized external dependencies from bitnami (see /external)
 * [bitnami/*] Convert hugo based static docupage to [Docusaurus](https://docusaurus.io/)
+* [bitnami/*] Upgrade Helm stable version to v4.0.0
 * [bitnami/build] Upgrade docker registry version to 3.0.0
 
 ## 17.1.1 (2024-12-24)
