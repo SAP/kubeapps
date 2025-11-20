@@ -14,6 +14,7 @@
 * [bitnami/*] Upgrade kind to v0.30.0 with kubectl 1.33.4 => kubernetes version 1.33.4
 * [bitnami/build] Upgrade docker registry version to 3.0.0
 * [bitnami/build] Remove support for integration test on GKE
+* [bitnami/build] Upgrade GitHub CLI to 2.83.1
 * [bitnami/dashboard] Upgrade node to 24
 * [bitnami/pinniped] Upgrade rust to 1.91.1
 * [bitnami/operator] Upgrade OLM to v0.38.0
