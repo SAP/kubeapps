@@ -42,8 +42,6 @@ env:
   CHART_OCI_REPO: "ghcr.io/sap/kubeapps"
   # DEBUG_MODE allows to activate some SSH debugging steps, and modify the verbosity level of some scripts (eg. e2e-tests.sh)
   DEBUG_MODE: "false"
-  SSH_KEY_KUBEAPPS_DEPLOY_FILENAME: "id_rsa_kubeapps_deploy_key"
-  SSH_KEY_FORKED_CHARTS_DEPLOY_FILENAME: "id_rsa_forked_charts_deploy_key"
   DOCKER_REGISTRY_VERSION: "3.0.0"
   FLUX_VERSION: "v2.2.3"
   GITHUB_VERSION: "2.83.1"
@@ -89,8 +87,6 @@ jobs:
       postgresql_version: ${{ steps.set-outputs.outputs.postgresql_version }}
       rust_version: ${{ steps.set-outputs.outputs.rust_version }}
       running_on_main: ${{ steps.set-outputs.outputs.running_on_main }}
-      ssh_key_kubeapps_deploy_filename: ${{ steps.set-outputs.outputs.ssh_key_kubeapps_deploy_filename }}
-      ssh_key_forked_charts_deploy_filename: ${{ steps.set-outputs.outputs.ssh_key_forked_charts_deploy_filename }}
       triggered_from_fork: ${{ steps.set-outputs.outputs.triggered_from_fork }}
     steps:
       - name: Show GitHub event
@@ -139,8 +135,6 @@ jobs:
 
           echo "golang_version=${GOLANG_VERSION}" >> $GITHUB_OUTPUT
           echo "golangci_lint_version=${GOLANGCI_LINT_VERSION}" >> $GITHUB_OUTPUT
-          echo "ssh_key_kubeapps_deploy_filename=${SSH_KEY_KUBEAPPS_DEPLOY_FILENAME}" >> $GITHUB_OUTPUT
-          echo "ssh_key_forked_charts_deploy_filename=${SSH_KEY_FORKED_CHARTS_DEPLOY_FILENAME}" >> $GITHUB_OUTPUT
           echo "img_modifier=${IMG_MODIFIER}" >> $GITHUB_OUTPUT
           echo "img_registry=${IMG_REGISTRY}" >> $GITHUB_OUTPUT
           echo "img_dev_tag=${IMG_DEV_TAG}" >> $GITHUB_OUTPUT
@@ -158,8 +152,6 @@ jobs:
           echo "POSTGRESQL_VERSION: ${{steps.set-outputs.outputs.postgresql_version}}"
           echo "RUST_VERSION: ${{steps.set-outputs.outputs.rust_version}}"
           echo "RUNNING_ON_MAIN: ${{steps.set-outputs.outputs.running_on_main}}"
-          echo "SSH_KEY_KUBEAPPS_DEPLOY_FILENAME: ${{steps.set-outputs.outputs.ssh_key_kubeapps_deploy_filename}}"
-          echo "SSH_KEY_FORKED_CHARTS_DEPLOY_FILENAME: ${{steps.set-outputs.outputs.ssh_key_forked_charts_deploy_filename}}"
           echo "TRIGGERED_FROM_FORK: ${{steps.set-outputs.outputs.triggered_from_fork}}"
           echo "VERSION: ${{steps.set-outputs.outputs.version}}"
 
