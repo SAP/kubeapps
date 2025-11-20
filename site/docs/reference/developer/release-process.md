@@ -39,23 +39,22 @@ In the [GitHub Actions Kubeapps General Workflow definition](https://github.com/
 we have an initial declaration of the variables used along with the file.
 The versions used there _must_ match the ones used for building the container images. Consequently, these variables _must_ be changed accordingly:
 
-- `GOLANG_VERSION` _must_ match the versions used by our services written in Golang, for instance, [kubeapps-apis](https://github.com/sap/kubeapps/blob/main/cmd/kubeapps-apis/Dockerfile).
-- `NODE_VERSION` _must_ match the **major** version used by the [dashboard](https://github.com/sap/kubeapps/blob/main/dashboard/Dockerfile).
-- `RUST_VERSION` _must_ match the version used by the [pinniped-proxy](https://github.com/sap/kubeapps/blob/main/cmd/pinniped-proxy/Dockerfile).
+- `CHARTMUSEUM_VERSION` should be updated with the [latest stable version from the chartmuseum/charts releases](https://github.com/chartmuseum/charts/releases).
 - `DOCKER_REGISTRY_VERSION` can be updated to the [latest tag provided by Docker](https://hub.docker.com/_/registry).
+- `FLUX_VERSION` should be updated with the [latest stable version from the Flux releases](https://github.com/fluxcd/flux2/releases).
+- `GITHUB_VERSION` should be updated with the [latest stable version from the GitHub CLI releases](https://github.com/cli/cli/releases).
+- `GOLANG_VERSION` _must_ match the versions used by our services written in Golang, for instance, [kubeapps-apis](https://github.com/sap/kubeapps/blob/main/cmd/kubeapps-apis/Dockerfile).
 - `HELM_VERSION_MIN` _must_ match the one listed in the [Bitnami Application Catalog prerequisites](https://github.com/bitnami/charts#prerequisites).
 - `HELM_VERSION_STABLE` should be updated with the [latest stable version from the Helm releases](https://github.com/helm/helm/releases).
-- `OLM_VERSION` should be updated with the [latest stable version from the OLM releases](https://github.com/operator-framework/operator-lifecycle-manager/releases).
-- `CHARTMUSEUM_VERSION` should be updated with the [latest stable version from the chartmuseum/charts releases](https://github.com/chartmuseum/charts/releases).
-- `MKCERT_VERSION` should be updated with the [latest stable version from the mkcert releases](https://github.com/FiloSottile/mkcert/releases).
-- `KUBECTL_VERSION` _should_ match the Kubernetes minor version (or minor version +1) used by Kind and `K8S_KIND_VERSION` and listed in the [Kubernetes releases page](https://kubernetes.io/releases/).
-- `GITHUB_VERSION` should be updated with the [latest stable version from the GitHub CLI releases](https://github.com/cli/cli/releases).
-- `SEMVER_VERSION` should be updated with the [latest stable version from the semver releases](https://github.com/fsaintjacques/semver-tool/releases/).
-- `KIND_VERSION` should be updated with the [latest stable version from the kind releases](https://github.com/kubernetes-sigs/kind/releases).
 - `K8S_KIND_VERSION` _must_ match the Kubernetes minor version used in `KUBECTL_VERSION` and should be updated with one of the available image tags for a given [Kind release](https://github.com/kubernetes-sigs/kind/releases).
+- `KIND_VERSION` should be updated with the [latest stable version from the kind releases](https://github.com/kubernetes-sigs/kind/releases).
+- `KUBECTL_VERSION` _should_ match the Kubernetes minor version (or minor version +1) used by Kind and `K8S_KIND_VERSION` and listed in the [Kubernetes releases page](https://kubernetes.io/releases/).
+- `MKCERT_VERSION` should be updated with the [latest stable version from the mkcert releases](https://github.com/FiloSottile/mkcert/releases).
+- `NODE_VERSION` _must_ match the **major** version used by the [dashboard](https://github.com/sap/kubeapps/blob/main/dashboard/Dockerfile).
+- `OLM_VERSION` should be updated with the [latest stable version from the OLM releases](https://github.com/operator-framework/operator-lifecycle-manager/releases).
 - `POSTGRESQL_VERSION` _must_ match the version used by the [Bitnami PostgreSQL chart](https://github.com/SAP/kubeapps/tree/main/chart/kubeapps/charts/postgresql).
-- `FLUX_VERSION` should be updated with the [latest stable version from the Flux releases](https://github.com/fluxcd/flux2/releases).
-
+- `RUST_VERSION` _must_ match the version used by the [pinniped-proxy](https://github.com/sap/kubeapps/blob/main/cmd/pinniped-proxy/Dockerfile).
+- `SEMVER_VERSION` should be updated with the [latest stable version from the semver releases](https://github.com/fsaintjacques/semver-tool/releases/).
 
 When updating the `GOLANG_VERSION`, the Go version used in the [CodeQL Github Action](https://github.com/sap/kubeapps/blob/main/.github/workflows/codeql-analysis.yml) might be updated as well.
 
