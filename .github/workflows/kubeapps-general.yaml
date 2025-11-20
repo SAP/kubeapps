@@ -46,7 +46,6 @@ env:
   SSH_KEY_KUBEAPPS_DEPLOY_FILENAME: "id_rsa_kubeapps_deploy_key"
   SSH_KEY_FORKED_CHARTS_DEPLOY_FILENAME: "id_rsa_forked_charts_deploy_key"
   KUBEAPPS_REPO: "SAP/kubeapps"
-  BRANCH_KUBEAPPS_REPO: "main"
   README_GENERATOR_REPO: "bitnami-labs/readme-generator-for-helm"
   DOCKER_REGISTRY_VERSION: "3.0.0"
   GOLANG_VERSION: "1.25.4"
@@ -134,7 +133,7 @@ jobs:
             echo "version=${GITHUB_SHA}" >> $GITHUB_OUTPUT
           fi;
 
-          if [[ ${GITHUB_REF_NAME} == ${BRANCH_KUBEAPPS_REPO} ]]; then
+          if [[ ${GITHUB_REF_NAME} == "main" ]]; then
             echo "running_on_main=true" >> $GITHUB_OUTPUT
           else
             echo "running_on_main=false" >> $GITHUB_OUTPUT
