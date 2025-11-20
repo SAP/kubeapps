@@ -8,6 +8,7 @@
 * [bitnami/kubeapps] Bump dependencies
 * [bitnami/*] Remove support for Carvel due to upgrade issues (contribution welcomed)
 * [bitnami/*] Localized external dependencies from bitnami (see /external)
+* [bitnami/*] Convert hugo based static docupage to [Docusaurus](https://docusaurus.io/)
 
 ## 17.1.1 (2024-12-24)
 
