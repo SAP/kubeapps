@@ -52,35 +52,6 @@ function installSemver() {
 }
 
 ########################################################################################################################
-# Install GPG key
-# Globals: None
-# Arguments:
-#   $1: GPG public key
-#   $2: GPG private key
-#   $1: CI BOT GPG
-#   $1: CI BOT EMAIL
-# Returns: None
-########################################################################################################################
-function installGPGKey() {
-  info "Installing the GPG KEY"
-  # Creating the files from the GPG_KEY_PUBLIC and GPG_KEY_PRIVATE env vars
-  echo -e "${GPG_KEY_PUBLIC}" > /tmp/public.key
-  echo -e "${GPG_KEY_PRIVATE}" > /tmp/private.key
-
-  # Importing the GPG keys
-  gpg --import /tmp/public.key
-  gpg --import --no-tty --batch --yes /tmp/private.key
-
-  info "Trusting the CI BOT GPG KEY ${CI_BOT_GPG}"
-  # Trusting the imported GPG private key
-  (echo 5; echo y; echo save) |  gpg --command-fd 0 --no-tty --no-greeting -q --edit-key "${CI_BOT_GPG}" trust
-
-  # Listing the key to verify the import process succeeded
-  gpg --list-secret-keys ${CI_BOT_EMAIL}
-  info "Done"
-}
-
-########################################################################################################################
 # Install Kind
 # Globals: None
 # Arguments:
