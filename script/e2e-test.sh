@@ -252,6 +252,10 @@ installFlux() {
   k8s_wait_for_deployment ${namespace} helm-controller
   k8s_wait_for_deployment ${namespace} source-controller
 
+  # Remove Flux NetworkPolicies (kind environment unreliable for NP-based isolation)
+  info "Removing Flux NetworkPolicies to avoid connectivity issues in kind"
+  kubectl get networkpolicy -n ${namespace} -o name | xargs -r kubectl delete -n ${namespace} || true
+
   # Add test repository.
   info "Install flux helm repository"
   #kubectl apply -f https://raw.githubusercontent.com/fluxcd/source-controller/main/config/samples/source_v1_helmrepository.yaml
