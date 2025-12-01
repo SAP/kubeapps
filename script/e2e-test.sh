@@ -739,7 +739,7 @@ if [[ "${TESTS_GROUP}" == "${ALL_TESTS}" || "${TESTS_GROUP}" == "${OPERATOR_TEST
     # re-installing postgres.
     info "Installing latest Kubeapps chart available"
     installOrUpgradeKubeapps "${ROOT_DIR}/chart/kubeapps" \
-      "--set" "packaging.helm.enabled=false" \
+      "--set" "packaging.helm.enabled=true" \
       "--set" "featureFlags.operators=true"
 
     info "Waiting for Kubeapps components to be ready (bitnami chart)..."
