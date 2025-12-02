@@ -21,6 +21,8 @@
 * [bitnami/pinniped] Upgrade rust to 1.91.1
 * [bitnami/operator] Upgrade OLM to v0.38.0
 
+**Info**: An upgrade to Flux v2.7 was tried but reverted. The effort is small but there are a few code changes which couldn't be done automatically. Contribution welcomed.
+
 ## 17.1.1 (2024-12-24)
 
 * [bitnami/kubeapps] Release 17.1.1 ([#31153](https://github.com/bitnami/charts/pull/31153))
