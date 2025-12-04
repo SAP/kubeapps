@@ -12,7 +12,6 @@
 * [bitnami/*] Upgrade Helm stable version to v4.0.0
 * [bitnami/*] Upgrade Chartmuseum to 3.10.4
 * [bitnami/*] Upgrade kind to v0.30.0 with kubectl 1.33.4 => kubernetes version 1.33.4
-* [bitnami/*] Upgrade flux to v2.7.3
 * [bitnami/*] Upgrade golangci-lint to v2.6.2
 * [bitnami/build] Upgrade docker registry version to 3.0.0
 * [bitnami/build] Remove support for integration test on GKE
@@ -21,6 +20,8 @@
 * [bitnami/dashboard] Upgrade node to 24
 * [bitnami/pinniped] Upgrade rust to 1.91.1
 * [bitnami/operator] Upgrade OLM to v0.38.0
+
+**Info**: An upgrade to Flux v2.7 was tried but reverted. The effort is small but there are a few code changes which couldn't be done automatically. Contribution welcomed.
 
 ## 17.1.1 (2024-12-24)
 

@@ -30,7 +30,7 @@ TEST_TIMEOUT_MINUTES=${TEST_TIMEOUT_MINUTES:-"4"}
 DEX_IP=${DEX_IP:-"172.18.0.2"}
 ADDITIONAL_CLUSTER_IP=${ADDITIONAL_CLUSTER_IP:-"172.18.0.3"}
 CHARTMUSEUM_VERSION=${CHARTMUSEUM_VERSION:-"3.10.4"}
-FLUX_VERSION=${FLUX_VERSION:-"v2.7.3"}
+FLUX_VERSION=${FLUX_VERSION:-"v2.2.3"}
 
 # IMG_PREFIX default previously pointed to Docker Hub:
 # IMG_PREFIX=${IMG_PREFIX:-"kubeapps/"}
@@ -70,7 +70,7 @@ fi
 . "${ROOT_DIR}/script/lib/libutil.sh"
 
 # Get the load balancer IP
-LOAD_BALANCER_IP=$(kubectl -n nginx-ingress get service nginx-ingress-ingress-nginx-controller -o jsonpath="{.status.loadBalancer.ingress[].ip}")
+LOAD_BALANCER_IP=$DEX_IP
 
 # Functions for local Docker registry mgmt
 . "${ROOT_DIR}/script/local-docker-registry.sh"
@@ -251,6 +251,10 @@ installFlux() {
   # wait for deployments to be ready
   k8s_wait_for_deployment ${namespace} helm-controller
   k8s_wait_for_deployment ${namespace} source-controller
+
+  # Remove Flux NetworkPolicies (kind environment unreliable for NP-based isolation)
+  info "Removing Flux NetworkPolicies to avoid connectivity issues in kind"
+  kubectl get networkpolicy -n ${namespace} -o name | xargs -r kubectl delete -n ${namespace} || true
 
   # Add test repository.
   info "Install flux helm repository"
@@ -735,7 +739,7 @@ if [[ "${TESTS_GROUP}" == "${ALL_TESTS}" || "${TESTS_GROUP}" == "${OPERATOR_TEST
     # re-installing postgres.
     info "Installing latest Kubeapps chart available"
     installOrUpgradeKubeapps "${ROOT_DIR}/chart/kubeapps" \
-      "--set" "packaging.helm.enabled=false" \
+      "--set" "packaging.helm.enabled=true" \
       "--set" "featureFlags.operators=true"
 
     info "Waiting for Kubeapps components to be ready (bitnami chart)..."
