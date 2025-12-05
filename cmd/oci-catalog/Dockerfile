@@ -3,7 +3,7 @@
 
 # syntax = docker/dockerfile:1
 
-FROM rust:1.81.0 AS builder
+FROM rust:1.91.1 AS builder
 
 WORKDIR /oci-catalog
 ARG VERSION="devel"
