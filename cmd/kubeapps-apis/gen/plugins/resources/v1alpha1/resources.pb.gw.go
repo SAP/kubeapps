@@ -10,6 +10,7 @@ package v1alpha1
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 
@@ -24,85 +25,73 @@ import (
 )
 
 // Suppress "imported and not used" errors
-var _ codes.Code
-var _ io.Reader
-var _ status.Status
-var _ = runtime.String
-var _ = utilities.NewDoubleArray
-var _ = metadata.Join
-
 var (
-	filter_ResourcesService_GetResources_0 = &utilities.DoubleArray{Encoding: map[string]int{"installed_package_ref": 0, "plugin": 1, "name": 2, "version": 3, "context": 4, "cluster": 5, "namespace": 6, "identifier": 7}, Base: []int{1, 7, 1, 1, 2, 2, 2, 3, 6, 0, 0, 0, 5, 0, 7, 0}, Check: []int{0, 1, 2, 3, 2, 5, 2, 7, 2, 4, 6, 8, 9, 13, 2, 15}}
+	_ codes.Code
+	_ io.Reader
+	_ status.Status
+	_ = errors.New
+	_ = runtime.String
+	_ = utilities.NewDoubleArray
+	_ = metadata.Join
 )
 
+var filter_ResourcesService_GetResources_0 = &utilities.DoubleArray{Encoding: map[string]int{"installed_package_ref": 0, "plugin": 1, "name": 2, "version": 3, "context": 4, "cluster": 5, "namespace": 6, "identifier": 7}, Base: []int{1, 7, 1, 1, 2, 2, 2, 3, 6, 0, 0, 0, 5, 0, 7, 0}, Check: []int{0, 1, 2, 3, 2, 5, 2, 7, 2, 4, 6, 8, 9, 13, 2, 15}}
+
 func request_ResourcesService_GetResources_0(ctx context.Context, marshaler runtime.Marshaler, client ResourcesServiceClient, req *http.Request, pathParams map[string]string) (ResourcesService_GetResourcesClient, runtime.ServerMetadata, error) {
-	var protoReq GetResourcesRequest
-	var metadata runtime.ServerMetadata
-
 	var (
-		val string
-		ok  bool
-		err error
-		_   = err
+		protoReq GetResourcesRequest
+		metadata runtime.ServerMetadata
+		err      error
 	)
-
-	val, ok = pathParams["installed_package_ref.plugin.name"]
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	val, ok := pathParams["installed_package_ref.plugin.name"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.plugin.name")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.plugin.name", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.plugin.name", err)
 	}
-
 	val, ok = pathParams["installed_package_ref.plugin.version"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.plugin.version")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.plugin.version", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.plugin.version", err)
 	}
-
 	val, ok = pathParams["installed_package_ref.context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.context.cluster")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.context.cluster", err)
 	}
-
 	val, ok = pathParams["installed_package_ref.context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.context.namespace")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.context.namespace", err)
 	}
-
 	val, ok = pathParams["installed_package_ref.identifier"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.identifier")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.identifier", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.identifier", err)
 	}
-
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ResourcesService_GetResources_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	stream, err := client.GetResources(ctx, &protoReq)
 	if err != nil {
 		return nil, metadata, err
@@ -113,583 +102,448 @@ func request_ResourcesService_GetResources_0(ctx context.Context, marshaler runt
 	}
 	metadata.HeaderMD = header
 	return stream, metadata, nil
-
 }
 
-var (
-	filter_ResourcesService_GetServiceAccountNames_0 = &utilities.DoubleArray{Encoding: map[string]int{"context": 0, "cluster": 1, "namespace": 2}, Base: []int{1, 1, 1, 2, 0, 0}, Check: []int{0, 1, 2, 2, 3, 4}}
-)
+var filter_ResourcesService_GetServiceAccountNames_0 = &utilities.DoubleArray{Encoding: map[string]int{"context": 0, "cluster": 1, "namespace": 2}, Base: []int{1, 1, 1, 2, 0, 0}, Check: []int{0, 1, 2, 2, 3, 4}}
 
 func request_ResourcesService_GetServiceAccountNames_0(ctx context.Context, marshaler runtime.Marshaler, client ResourcesServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetServiceAccountNamesRequest
-	var metadata runtime.ServerMetadata
-
 	var (
-		val string
-		ok  bool
-		err error
-		_   = err
+		protoReq GetServiceAccountNamesRequest
+		metadata runtime.ServerMetadata
+		err      error
 	)
-
-	val, ok = pathParams["context.cluster"]
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	val, ok := pathParams["context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "context.cluster")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "context.cluster", err)
 	}
-
 	val, ok = pathParams["context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "context.namespace")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "context.namespace", err)
 	}
-
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ResourcesService_GetServiceAccountNames_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	msg, err := client.GetServiceAccountNames(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_ResourcesService_GetServiceAccountNames_0(ctx context.Context, marshaler runtime.Marshaler, server ResourcesServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetServiceAccountNamesRequest
-	var metadata runtime.ServerMetadata
-
 	var (
-		val string
-		ok  bool
-		err error
-		_   = err
+		protoReq GetServiceAccountNamesRequest
+		metadata runtime.ServerMetadata
+		err      error
 	)
-
-	val, ok = pathParams["context.cluster"]
+	val, ok := pathParams["context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "context.cluster")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "context.cluster", err)
 	}
-
 	val, ok = pathParams["context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "context.namespace")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "context.namespace", err)
 	}
-
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ResourcesService_GetServiceAccountNames_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	msg, err := server.GetServiceAccountNames(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
 func request_ResourcesService_GetNamespaceNames_0(ctx context.Context, marshaler runtime.Marshaler, client ResourcesServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetNamespaceNamesRequest
-	var metadata runtime.ServerMetadata
-
 	var (
-		val string
-		ok  bool
-		err error
-		_   = err
+		protoReq GetNamespaceNamesRequest
+		metadata runtime.ServerMetadata
+		err      error
 	)
-
-	val, ok = pathParams["cluster"]
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	val, ok := pathParams["cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "cluster")
 	}
-
 	protoReq.Cluster, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "cluster", err)
 	}
-
 	msg, err := client.GetNamespaceNames(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_ResourcesService_GetNamespaceNames_0(ctx context.Context, marshaler runtime.Marshaler, server ResourcesServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetNamespaceNamesRequest
-	var metadata runtime.ServerMetadata
-
 	var (
-		val string
-		ok  bool
-		err error
-		_   = err
+		protoReq GetNamespaceNamesRequest
+		metadata runtime.ServerMetadata
+		err      error
 	)
-
-	val, ok = pathParams["cluster"]
+	val, ok := pathParams["cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "cluster")
 	}
-
 	protoReq.Cluster, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "cluster", err)
 	}
-
 	msg, err := server.GetNamespaceNames(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
-var (
-	filter_ResourcesService_CreateNamespace_0 = &utilities.DoubleArray{Encoding: map[string]int{"context": 0, "cluster": 1}, Base: []int{1, 1, 1, 0}, Check: []int{0, 1, 2, 3}}
-)
+var filter_ResourcesService_CreateNamespace_0 = &utilities.DoubleArray{Encoding: map[string]int{"context": 0, "cluster": 1}, Base: []int{1, 1, 1, 0}, Check: []int{0, 1, 2, 3}}
 
 func request_ResourcesService_CreateNamespace_0(ctx context.Context, marshaler runtime.Marshaler, client ResourcesServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq CreateNamespaceRequest
-	var metadata runtime.ServerMetadata
-
 	var (
-		val string
-		ok  bool
-		err error
-		_   = err
+		protoReq CreateNamespaceRequest
+		metadata runtime.ServerMetadata
+		err      error
 	)
-
-	val, ok = pathParams["context.cluster"]
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	val, ok := pathParams["context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "context.cluster")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "context.cluster", err)
 	}
-
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ResourcesService_CreateNamespace_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	msg, err := client.CreateNamespace(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_ResourcesService_CreateNamespace_0(ctx context.Context, marshaler runtime.Marshaler, server ResourcesServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq CreateNamespaceRequest
-	var metadata runtime.ServerMetadata
-
 	var (
-		val string
-		ok  bool
-		err error
-		_   = err
+		protoReq CreateNamespaceRequest
+		metadata runtime.ServerMetadata
+		err      error
 	)
-
-	val, ok = pathParams["context.cluster"]
+	val, ok := pathParams["context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "context.cluster")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "context.cluster", err)
 	}
-
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ResourcesService_CreateNamespace_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	msg, err := server.CreateNamespace(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
-var (
-	filter_ResourcesService_CheckNamespaceExists_0 = &utilities.DoubleArray{Encoding: map[string]int{"context": 0, "cluster": 1, "namespace": 2}, Base: []int{1, 1, 1, 2, 0, 0}, Check: []int{0, 1, 2, 2, 3, 4}}
-)
+var filter_ResourcesService_CheckNamespaceExists_0 = &utilities.DoubleArray{Encoding: map[string]int{"context": 0, "cluster": 1, "namespace": 2}, Base: []int{1, 1, 1, 2, 0, 0}, Check: []int{0, 1, 2, 2, 3, 4}}
 
 func request_ResourcesService_CheckNamespaceExists_0(ctx context.Context, marshaler runtime.Marshaler, client ResourcesServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq CheckNamespaceExistsRequest
-	var metadata runtime.ServerMetadata
-
 	var (
-		val string
-		ok  bool
-		err error
-		_   = err
+		protoReq CheckNamespaceExistsRequest
+		metadata runtime.ServerMetadata
+		err      error
 	)
-
-	val, ok = pathParams["context.cluster"]
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	val, ok := pathParams["context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "context.cluster")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "context.cluster", err)
 	}
-
 	val, ok = pathParams["context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "context.namespace")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "context.namespace", err)
 	}
-
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ResourcesService_CheckNamespaceExists_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	msg, err := client.CheckNamespaceExists(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_ResourcesService_CheckNamespaceExists_0(ctx context.Context, marshaler runtime.Marshaler, server ResourcesServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq CheckNamespaceExistsRequest
-	var metadata runtime.ServerMetadata
-
 	var (
-		val string
-		ok  bool
-		err error
-		_   = err
+		protoReq CheckNamespaceExistsRequest
+		metadata runtime.ServerMetadata
+		err      error
 	)
-
-	val, ok = pathParams["context.cluster"]
+	val, ok := pathParams["context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "context.cluster")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "context.cluster", err)
 	}
-
 	val, ok = pathParams["context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "context.namespace")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "context.namespace", err)
 	}
-
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ResourcesService_CheckNamespaceExists_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	msg, err := server.CheckNamespaceExists(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
-var (
-	filter_ResourcesService_GetSecretNames_0 = &utilities.DoubleArray{Encoding: map[string]int{"context": 0, "cluster": 1, "namespace": 2}, Base: []int{1, 1, 1, 2, 0, 0}, Check: []int{0, 1, 2, 2, 3, 4}}
-)
+var filter_ResourcesService_GetSecretNames_0 = &utilities.DoubleArray{Encoding: map[string]int{"context": 0, "cluster": 1, "namespace": 2}, Base: []int{1, 1, 1, 2, 0, 0}, Check: []int{0, 1, 2, 2, 3, 4}}
 
 func request_ResourcesService_GetSecretNames_0(ctx context.Context, marshaler runtime.Marshaler, client ResourcesServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetSecretNamesRequest
-	var metadata runtime.ServerMetadata
-
 	var (
-		val string
-		ok  bool
-		err error
-		_   = err
+		protoReq GetSecretNamesRequest
+		metadata runtime.ServerMetadata
+		err      error
 	)
-
-	val, ok = pathParams["context.cluster"]
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	val, ok := pathParams["context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "context.cluster")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "context.cluster", err)
 	}
-
 	val, ok = pathParams["context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "context.namespace")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "context.namespace", err)
 	}
-
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ResourcesService_GetSecretNames_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	msg, err := client.GetSecretNames(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_ResourcesService_GetSecretNames_0(ctx context.Context, marshaler runtime.Marshaler, server ResourcesServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetSecretNamesRequest
-	var metadata runtime.ServerMetadata
-
 	var (
-		val string
-		ok  bool
-		err error
-		_   = err
+		protoReq GetSecretNamesRequest
+		metadata runtime.ServerMetadata
+		err      error
 	)
-
-	val, ok = pathParams["context.cluster"]
+	val, ok := pathParams["context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "context.cluster")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "context.cluster", err)
 	}
-
 	val, ok = pathParams["context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "context.namespace")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "context.namespace", err)
 	}
-
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ResourcesService_GetSecretNames_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	msg, err := server.GetSecretNames(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
-var (
-	filter_ResourcesService_CreateSecret_0 = &utilities.DoubleArray{Encoding: map[string]int{"context": 0, "cluster": 1, "namespace": 2}, Base: []int{1, 1, 1, 2, 0, 0}, Check: []int{0, 1, 2, 2, 3, 4}}
-)
+var filter_ResourcesService_CreateSecret_0 = &utilities.DoubleArray{Encoding: map[string]int{"context": 0, "cluster": 1, "namespace": 2}, Base: []int{1, 1, 1, 2, 0, 0}, Check: []int{0, 1, 2, 2, 3, 4}}
 
 func request_ResourcesService_CreateSecret_0(ctx context.Context, marshaler runtime.Marshaler, client ResourcesServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq CreateSecretRequest
-	var metadata runtime.ServerMetadata
-
 	var (
-		val string
-		ok  bool
-		err error
-		_   = err
+		protoReq CreateSecretRequest
+		metadata runtime.ServerMetadata
+		err      error
 	)
-
-	val, ok = pathParams["context.cluster"]
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	val, ok := pathParams["context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "context.cluster")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "context.cluster", err)
 	}
-
 	val, ok = pathParams["context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "context.namespace")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "context.namespace", err)
 	}
-
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ResourcesService_CreateSecret_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	msg, err := client.CreateSecret(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_ResourcesService_CreateSecret_0(ctx context.Context, marshaler runtime.Marshaler, server ResourcesServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq CreateSecretRequest
-	var metadata runtime.ServerMetadata
-
 	var (
-		val string
-		ok  bool
-		err error
-		_   = err
+		protoReq CreateSecretRequest
+		metadata runtime.ServerMetadata
+		err      error
 	)
-
-	val, ok = pathParams["context.cluster"]
+	val, ok := pathParams["context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "context.cluster")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "context.cluster", err)
 	}
-
 	val, ok = pathParams["context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "context.namespace")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "context.namespace", err)
 	}
-
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ResourcesService_CreateSecret_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	msg, err := server.CreateSecret(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
-var (
-	filter_ResourcesService_CanI_0 = &utilities.DoubleArray{Encoding: map[string]int{"context": 0, "cluster": 1}, Base: []int{1, 1, 1, 0}, Check: []int{0, 1, 2, 3}}
-)
+var filter_ResourcesService_CanI_0 = &utilities.DoubleArray{Encoding: map[string]int{"context": 0, "cluster": 1}, Base: []int{1, 1, 1, 0}, Check: []int{0, 1, 2, 3}}
 
 func request_ResourcesService_CanI_0(ctx context.Context, marshaler runtime.Marshaler, client ResourcesServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq CanIRequest
-	var metadata runtime.ServerMetadata
-
 	var (
-		val string
-		ok  bool
-		err error
-		_   = err
+		protoReq CanIRequest
+		metadata runtime.ServerMetadata
+		err      error
 	)
-
-	val, ok = pathParams["context.cluster"]
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	val, ok := pathParams["context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "context.cluster")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "context.cluster", err)
 	}
-
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ResourcesService_CanI_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	msg, err := client.CanI(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_ResourcesService_CanI_0(ctx context.Context, marshaler runtime.Marshaler, server ResourcesServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq CanIRequest
-	var metadata runtime.ServerMetadata
-
 	var (
-		val string
-		ok  bool
-		err error
-		_   = err
+		protoReq CanIRequest
+		metadata runtime.ServerMetadata
+		err      error
 	)
-
-	val, ok = pathParams["context.cluster"]
+	val, ok := pathParams["context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "context.cluster")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "context.cluster", err)
 	}
-
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ResourcesService_CanI_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	msg, err := server.CanI(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
 // RegisterResourcesServiceHandlerServer registers the http handlers for service ResourcesService to "mux".
 // UnaryRPC     :call ResourcesServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterResourcesServiceHandlerFromEndpoint instead.
+// GRPC interceptors will not work for this type of registration. To use interceptors, you must use the "runtime.WithMiddlewares" option in the "runtime.NewServeMux" call.
 func RegisterResourcesServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server ResourcesServiceServer) error {
-
-	mux.Handle("GET", pattern_ResourcesService_GetResources_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_ResourcesService_GetResources_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		err := status.Error(codes.Unimplemented, "streaming calls are not yet supported in the in-process transport")
 		_, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 		return
 	})
-
-	mux.Handle("GET", pattern_ResourcesService_GetServiceAccountNames_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_ResourcesService_GetServiceAccountNames_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/GetServiceAccountNames", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/ns/{context.namespace}/serviceaccountnames"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/GetServiceAccountNames", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/ns/{context.namespace}/serviceaccountnames"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -701,20 +555,15 @@ func RegisterResourcesServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ResourcesService_GetServiceAccountNames_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("GET", pattern_ResourcesService_GetNamespaceNames_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_ResourcesService_GetNamespaceNames_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/GetNamespaceNames", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{cluster}/namespacenames"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/GetNamespaceNames", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{cluster}/namespacenames"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -726,20 +575,15 @@ func RegisterResourcesServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ResourcesService_GetNamespaceNames_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("POST", pattern_ResourcesService_CreateNamespace_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPost, pattern_ResourcesService_CreateNamespace_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/CreateNamespace", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/ns"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/CreateNamespace", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/ns"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -751,20 +595,15 @@ func RegisterResourcesServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ResourcesService_CreateNamespace_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("GET", pattern_ResourcesService_CheckNamespaceExists_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_ResourcesService_CheckNamespaceExists_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/CheckNamespaceExists", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/ns/{context.namespace}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/CheckNamespaceExists", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/ns/{context.namespace}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -776,20 +615,15 @@ func RegisterResourcesServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ResourcesService_CheckNamespaceExists_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("GET", pattern_ResourcesService_GetSecretNames_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_ResourcesService_GetSecretNames_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/GetSecretNames", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/ns/{context.namespace}/secretnames"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/GetSecretNames", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/ns/{context.namespace}/secretnames"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -801,20 +635,15 @@ func RegisterResourcesServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ResourcesService_GetSecretNames_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("POST", pattern_ResourcesService_CreateSecret_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPost, pattern_ResourcesService_CreateSecret_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/CreateSecret", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/ns/{context.namespace}/secrets"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/CreateSecret", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/ns/{context.namespace}/secrets"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -826,20 +655,15 @@ func RegisterResourcesServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ResourcesService_CreateSecret_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("POST", pattern_ResourcesService_CanI_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPost, pattern_ResourcesService_CanI_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/CanI", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/can-i"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/CanI", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/can-i"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -851,9 +675,7 @@ func RegisterResourcesServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ResourcesService_CanI_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
 
 	return nil
@@ -880,7 +702,6 @@ func RegisterResourcesServiceHandlerFromEndpoint(ctx context.Context, mux *runti
 			}
 		}()
 	}()
-
 	return RegisterResourcesServiceHandler(ctx, mux, conn)
 }
 
@@ -894,16 +715,13 @@ func RegisterResourcesServiceHandler(ctx context.Context, mux *runtime.ServeMux,
 // to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "ResourcesServiceClient".
 // Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "ResourcesServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "ResourcesServiceClient" to call the correct interceptors.
+// "ResourcesServiceClient" to call the correct interceptors. This client ignores the HTTP middlewares.
 func RegisterResourcesServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client ResourcesServiceClient) error {
-
-	mux.Handle("GET", pattern_ResourcesService_GetResources_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_ResourcesService_GetResources_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/GetResources", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/{installed_package_ref.plugin.name}/{installed_package_ref.plugin.version}/c/{installed_package_ref.context.cluster}/ns/{installed_package_ref.context.namespace}/{installed_package_ref.identifier}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/GetResources", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/{installed_package_ref.plugin.name}/{installed_package_ref.plugin.version}/c/{installed_package_ref.context.cluster}/ns/{installed_package_ref.context.namespace}/{installed_package_ref.identifier}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -914,18 +732,13 @@ func RegisterResourcesServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ResourcesService_GetResources_0(annotatedContext, mux, outboundMarshaler, w, req, func() (proto.Message, error) { return resp.Recv() }, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("GET", pattern_ResourcesService_GetServiceAccountNames_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_ResourcesService_GetServiceAccountNames_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/GetServiceAccountNames", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/ns/{context.namespace}/serviceaccountnames"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/GetServiceAccountNames", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/ns/{context.namespace}/serviceaccountnames"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -936,18 +749,13 @@ func RegisterResourcesServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ResourcesService_GetServiceAccountNames_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("GET", pattern_ResourcesService_GetNamespaceNames_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_ResourcesService_GetNamespaceNames_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/GetNamespaceNames", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{cluster}/namespacenames"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/GetNamespaceNames", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{cluster}/namespacenames"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -958,18 +766,13 @@ func RegisterResourcesServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ResourcesService_GetNamespaceNames_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("POST", pattern_ResourcesService_CreateNamespace_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPost, pattern_ResourcesService_CreateNamespace_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/CreateNamespace", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/ns"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/CreateNamespace", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/ns"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -980,18 +783,13 @@ func RegisterResourcesServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ResourcesService_CreateNamespace_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("GET", pattern_ResourcesService_CheckNamespaceExists_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_ResourcesService_CheckNamespaceExists_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/CheckNamespaceExists", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/ns/{context.namespace}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/CheckNamespaceExists", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/ns/{context.namespace}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1002,18 +800,13 @@ func RegisterResourcesServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ResourcesService_CheckNamespaceExists_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("GET", pattern_ResourcesService_GetSecretNames_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_ResourcesService_GetSecretNames_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/GetSecretNames", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/ns/{context.namespace}/secretnames"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/GetSecretNames", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/ns/{context.namespace}/secretnames"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1024,18 +817,13 @@ func RegisterResourcesServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ResourcesService_GetSecretNames_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("POST", pattern_ResourcesService_CreateSecret_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPost, pattern_ResourcesService_CreateSecret_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/CreateSecret", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/ns/{context.namespace}/secrets"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/CreateSecret", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/ns/{context.namespace}/secrets"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1046,18 +834,13 @@ func RegisterResourcesServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ResourcesService_CreateSecret_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("POST", pattern_ResourcesService_CanI_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPost, pattern_ResourcesService_CanI_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/CanI", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/can-i"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.plugins.resources.v1alpha1.ResourcesService/CanI", runtime.WithHTTPPathPattern("/plugins/resources/v1alpha1/c/{context.cluster}/can-i"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1068,46 +851,29 @@ func RegisterResourcesServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ResourcesService_CanI_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
 	return nil
 }
 
 var (
-	pattern_ResourcesService_GetResources_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4, 2, 5, 1, 0, 4, 1, 5, 6, 2, 7, 1, 0, 4, 1, 5, 8, 1, 0, 4, 1, 5, 9}, []string{"plugins", "resources", "v1alpha1", "installed_package_ref.plugin.name", "installed_package_ref.plugin.version", "c", "installed_package_ref.context.cluster", "ns", "installed_package_ref.context.namespace", "installed_package_ref.identifier"}, ""))
-
+	pattern_ResourcesService_GetResources_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4, 2, 5, 1, 0, 4, 1, 5, 6, 2, 7, 1, 0, 4, 1, 5, 8, 1, 0, 4, 1, 5, 9}, []string{"plugins", "resources", "v1alpha1", "installed_package_ref.plugin.name", "installed_package_ref.plugin.version", "c", "installed_package_ref.context.cluster", "ns", "installed_package_ref.context.namespace", "installed_package_ref.identifier"}, ""))
 	pattern_ResourcesService_GetServiceAccountNames_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"plugins", "resources", "v1alpha1", "c", "context.cluster", "ns", "context.namespace", "serviceaccountnames"}, ""))
-
-	pattern_ResourcesService_GetNamespaceNames_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"plugins", "resources", "v1alpha1", "c", "cluster", "namespacenames"}, ""))
-
-	pattern_ResourcesService_CreateNamespace_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"plugins", "resources", "v1alpha1", "c", "context.cluster", "ns"}, ""))
-
-	pattern_ResourcesService_CheckNamespaceExists_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5, 1, 0, 4, 1, 5, 6}, []string{"plugins", "resources", "v1alpha1", "c", "context.cluster", "ns", "context.namespace"}, ""))
-
-	pattern_ResourcesService_GetSecretNames_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"plugins", "resources", "v1alpha1", "c", "context.cluster", "ns", "context.namespace", "secretnames"}, ""))
-
-	pattern_ResourcesService_CreateSecret_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"plugins", "resources", "v1alpha1", "c", "context.cluster", "ns", "context.namespace", "secrets"}, ""))
-
-	pattern_ResourcesService_CanI_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"plugins", "resources", "v1alpha1", "c", "context.cluster", "can-i"}, ""))
+	pattern_ResourcesService_GetNamespaceNames_0      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"plugins", "resources", "v1alpha1", "c", "cluster", "namespacenames"}, ""))
+	pattern_ResourcesService_CreateNamespace_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"plugins", "resources", "v1alpha1", "c", "context.cluster", "ns"}, ""))
+	pattern_ResourcesService_CheckNamespaceExists_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5, 1, 0, 4, 1, 5, 6}, []string{"plugins", "resources", "v1alpha1", "c", "context.cluster", "ns", "context.namespace"}, ""))
+	pattern_ResourcesService_GetSecretNames_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"plugins", "resources", "v1alpha1", "c", "context.cluster", "ns", "context.namespace", "secretnames"}, ""))
+	pattern_ResourcesService_CreateSecret_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"plugins", "resources", "v1alpha1", "c", "context.cluster", "ns", "context.namespace", "secrets"}, ""))
+	pattern_ResourcesService_CanI_0                   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"plugins", "resources", "v1alpha1", "c", "context.cluster", "can-i"}, ""))
 )
 
 var (
-	forward_ResourcesService_GetResources_0 = runtime.ForwardResponseStream
-
+	forward_ResourcesService_GetResources_0           = runtime.ForwardResponseStream
 	forward_ResourcesService_GetServiceAccountNames_0 = runtime.ForwardResponseMessage
-
-	forward_ResourcesService_GetNamespaceNames_0 = runtime.ForwardResponseMessage
-
-	forward_ResourcesService_CreateNamespace_0 = runtime.ForwardResponseMessage
-
-	forward_ResourcesService_CheckNamespaceExists_0 = runtime.ForwardResponseMessage
-
-	forward_ResourcesService_GetSecretNames_0 = runtime.ForwardResponseMessage
-
-	forward_ResourcesService_CreateSecret_0 = runtime.ForwardResponseMessage
-
-	forward_ResourcesService_CanI_0 = runtime.ForwardResponseMessage
+	forward_ResourcesService_GetNamespaceNames_0      = runtime.ForwardResponseMessage
+	forward_ResourcesService_CreateNamespace_0        = runtime.ForwardResponseMessage
+	forward_ResourcesService_CheckNamespaceExists_0   = runtime.ForwardResponseMessage
+	forward_ResourcesService_GetSecretNames_0         = runtime.ForwardResponseMessage
+	forward_ResourcesService_CreateSecret_0           = runtime.ForwardResponseMessage
+	forward_ResourcesService_CanI_0                   = runtime.ForwardResponseMessage
 )
