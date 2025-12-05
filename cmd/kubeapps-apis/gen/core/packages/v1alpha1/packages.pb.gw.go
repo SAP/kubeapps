@@ -10,7 +10,6 @@ package v1alpha1
 
 import (
 	"context"
-	"errors"
 	"io"
 	"net/http"
 
@@ -25,937 +24,1166 @@ import (
 )
 
 // Suppress "imported and not used" errors
+var _ codes.Code
+var _ io.Reader
+var _ status.Status
+var _ = runtime.String
+var _ = utilities.NewDoubleArray
+var _ = metadata.Join
+
 var (
-	_ codes.Code
-	_ io.Reader
-	_ status.Status
-	_ = errors.New
-	_ = runtime.String
-	_ = utilities.NewDoubleArray
-	_ = metadata.Join
+	filter_PackagesService_GetAvailablePackageSummaries_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 )
 
-var filter_PackagesService_GetAvailablePackageSummaries_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
-
 func request_PackagesService_GetAvailablePackageSummaries_0(ctx context.Context, marshaler runtime.Marshaler, client PackagesServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var (
-		protoReq GetAvailablePackageSummariesRequest
-		metadata runtime.ServerMetadata
-	)
-	if req.Body != nil {
-		_, _ = io.Copy(io.Discard, req.Body)
-	}
+	var protoReq GetAvailablePackageSummariesRequest
+	var metadata runtime.ServerMetadata
+
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_PackagesService_GetAvailablePackageSummaries_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+
 	msg, err := client.GetAvailablePackageSummaries(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
+
 }
 
 func local_request_PackagesService_GetAvailablePackageSummaries_0(ctx context.Context, marshaler runtime.Marshaler, server PackagesServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var (
-		protoReq GetAvailablePackageSummariesRequest
-		metadata runtime.ServerMetadata
-	)
+	var protoReq GetAvailablePackageSummariesRequest
+	var metadata runtime.ServerMetadata
+
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_PackagesService_GetAvailablePackageSummaries_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+
 	msg, err := server.GetAvailablePackageSummaries(ctx, &protoReq)
 	return msg, metadata, err
+
 }
 
-var filter_PackagesService_GetAvailablePackageDetail_0 = &utilities.DoubleArray{Encoding: map[string]int{"available_package_ref": 0, "plugin": 1, "name": 2, "version": 3, "context": 4, "cluster": 5, "namespace": 6, "identifier": 7}, Base: []int{1, 7, 1, 1, 2, 2, 2, 3, 6, 0, 0, 0, 5, 0, 7, 0}, Check: []int{0, 1, 2, 3, 2, 5, 2, 7, 2, 4, 6, 8, 9, 13, 2, 15}}
+var (
+	filter_PackagesService_GetAvailablePackageDetail_0 = &utilities.DoubleArray{Encoding: map[string]int{"available_package_ref": 0, "plugin": 1, "name": 2, "version": 3, "context": 4, "cluster": 5, "namespace": 6, "identifier": 7}, Base: []int{1, 7, 1, 1, 2, 2, 2, 3, 6, 0, 0, 0, 5, 0, 7, 0}, Check: []int{0, 1, 2, 3, 2, 5, 2, 7, 2, 4, 6, 8, 9, 13, 2, 15}}
+)
 
 func request_PackagesService_GetAvailablePackageDetail_0(ctx context.Context, marshaler runtime.Marshaler, client PackagesServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetAvailablePackageDetailRequest
+	var metadata runtime.ServerMetadata
+
 	var (
-		protoReq GetAvailablePackageDetailRequest
-		metadata runtime.ServerMetadata
-		err      error
+		val string
+		ok  bool
+		err error
+		_   = err
 	)
-	if req.Body != nil {
-		_, _ = io.Copy(io.Discard, req.Body)
-	}
-	val, ok := pathParams["available_package_ref.plugin.name"]
+
+	val, ok = pathParams["available_package_ref.plugin.name"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.plugin.name")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.plugin.name", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.plugin.name", err)
 	}
+
 	val, ok = pathParams["available_package_ref.plugin.version"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.plugin.version")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.plugin.version", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.plugin.version", err)
 	}
+
 	val, ok = pathParams["available_package_ref.context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.context.cluster")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.context.cluster", err)
 	}
+
 	val, ok = pathParams["available_package_ref.context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.context.namespace")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.context.namespace", err)
 	}
+
 	val, ok = pathParams["available_package_ref.identifier"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.identifier")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.identifier", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.identifier", err)
 	}
+
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_PackagesService_GetAvailablePackageDetail_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+
 	msg, err := client.GetAvailablePackageDetail(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
+
 }
 
 func local_request_PackagesService_GetAvailablePackageDetail_0(ctx context.Context, marshaler runtime.Marshaler, server PackagesServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetAvailablePackageDetailRequest
+	var metadata runtime.ServerMetadata
+
 	var (
-		protoReq GetAvailablePackageDetailRequest
-		metadata runtime.ServerMetadata
-		err      error
+		val string
+		ok  bool
+		err error
+		_   = err
 	)
-	val, ok := pathParams["available_package_ref.plugin.name"]
+
+	val, ok = pathParams["available_package_ref.plugin.name"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.plugin.name")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.plugin.name", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.plugin.name", err)
 	}
+
 	val, ok = pathParams["available_package_ref.plugin.version"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.plugin.version")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.plugin.version", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.plugin.version", err)
 	}
+
 	val, ok = pathParams["available_package_ref.context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.context.cluster")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.context.cluster", err)
 	}
+
 	val, ok = pathParams["available_package_ref.context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.context.namespace")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.context.namespace", err)
 	}
+
 	val, ok = pathParams["available_package_ref.identifier"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.identifier")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.identifier", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.identifier", err)
 	}
+
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_PackagesService_GetAvailablePackageDetail_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+
 	msg, err := server.GetAvailablePackageDetail(ctx, &protoReq)
 	return msg, metadata, err
+
 }
 
-var filter_PackagesService_GetAvailablePackageVersions_0 = &utilities.DoubleArray{Encoding: map[string]int{"available_package_ref": 0, "plugin": 1, "name": 2, "version": 3, "context": 4, "cluster": 5, "namespace": 6, "identifier": 7}, Base: []int{1, 7, 1, 1, 2, 2, 2, 3, 6, 0, 0, 0, 5, 0, 7, 0}, Check: []int{0, 1, 2, 3, 2, 5, 2, 7, 2, 4, 6, 8, 9, 13, 2, 15}}
+var (
+	filter_PackagesService_GetAvailablePackageVersions_0 = &utilities.DoubleArray{Encoding: map[string]int{"available_package_ref": 0, "plugin": 1, "name": 2, "version": 3, "context": 4, "cluster": 5, "namespace": 6, "identifier": 7}, Base: []int{1, 7, 1, 1, 2, 2, 2, 3, 6, 0, 0, 0, 5, 0, 7, 0}, Check: []int{0, 1, 2, 3, 2, 5, 2, 7, 2, 4, 6, 8, 9, 13, 2, 15}}
+)
 
 func request_PackagesService_GetAvailablePackageVersions_0(ctx context.Context, marshaler runtime.Marshaler, client PackagesServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetAvailablePackageVersionsRequest
+	var metadata runtime.ServerMetadata
+
 	var (
-		protoReq GetAvailablePackageVersionsRequest
-		metadata runtime.ServerMetadata
-		err      error
+		val string
+		ok  bool
+		err error
+		_   = err
 	)
-	if req.Body != nil {
-		_, _ = io.Copy(io.Discard, req.Body)
-	}
-	val, ok := pathParams["available_package_ref.plugin.name"]
+
+	val, ok = pathParams["available_package_ref.plugin.name"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.plugin.name")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.plugin.name", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.plugin.name", err)
 	}
+
 	val, ok = pathParams["available_package_ref.plugin.version"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.plugin.version")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.plugin.version", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.plugin.version", err)
 	}
+
 	val, ok = pathParams["available_package_ref.context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.context.cluster")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.context.cluster", err)
 	}
+
 	val, ok = pathParams["available_package_ref.context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.context.namespace")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.context.namespace", err)
 	}
+
 	val, ok = pathParams["available_package_ref.identifier"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.identifier")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.identifier", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.identifier", err)
 	}
+
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_PackagesService_GetAvailablePackageVersions_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+
 	msg, err := client.GetAvailablePackageVersions(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
+
 }
 
 func local_request_PackagesService_GetAvailablePackageVersions_0(ctx context.Context, marshaler runtime.Marshaler, server PackagesServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetAvailablePackageVersionsRequest
+	var metadata runtime.ServerMetadata
+
 	var (
-		protoReq GetAvailablePackageVersionsRequest
-		metadata runtime.ServerMetadata
-		err      error
+		val string
+		ok  bool
+		err error
+		_   = err
 	)
-	val, ok := pathParams["available_package_ref.plugin.name"]
+
+	val, ok = pathParams["available_package_ref.plugin.name"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.plugin.name")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.plugin.name", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.plugin.name", err)
 	}
+
 	val, ok = pathParams["available_package_ref.plugin.version"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.plugin.version")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.plugin.version", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.plugin.version", err)
 	}
+
 	val, ok = pathParams["available_package_ref.context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.context.cluster")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.context.cluster", err)
 	}
+
 	val, ok = pathParams["available_package_ref.context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.context.namespace")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.context.namespace", err)
 	}
+
 	val, ok = pathParams["available_package_ref.identifier"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.identifier")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.identifier", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.identifier", err)
 	}
+
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_PackagesService_GetAvailablePackageVersions_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+
 	msg, err := server.GetAvailablePackageVersions(ctx, &protoReq)
 	return msg, metadata, err
+
 }
 
-var filter_PackagesService_GetAvailablePackageMetadatas_0 = &utilities.DoubleArray{Encoding: map[string]int{"available_package_ref": 0, "plugin": 1, "name": 2, "version": 3, "context": 4, "cluster": 5, "namespace": 6, "identifier": 7}, Base: []int{1, 7, 1, 1, 2, 2, 2, 3, 6, 0, 0, 0, 5, 0, 7, 0}, Check: []int{0, 1, 2, 3, 2, 5, 2, 7, 2, 4, 6, 8, 9, 13, 2, 15}}
+var (
+	filter_PackagesService_GetAvailablePackageMetadatas_0 = &utilities.DoubleArray{Encoding: map[string]int{"available_package_ref": 0, "plugin": 1, "name": 2, "version": 3, "context": 4, "cluster": 5, "namespace": 6, "identifier": 7}, Base: []int{1, 7, 1, 1, 2, 2, 2, 3, 6, 0, 0, 0, 5, 0, 7, 0}, Check: []int{0, 1, 2, 3, 2, 5, 2, 7, 2, 4, 6, 8, 9, 13, 2, 15}}
+)
 
 func request_PackagesService_GetAvailablePackageMetadatas_0(ctx context.Context, marshaler runtime.Marshaler, client PackagesServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetAvailablePackageMetadatasRequest
+	var metadata runtime.ServerMetadata
+
 	var (
-		protoReq GetAvailablePackageMetadatasRequest
-		metadata runtime.ServerMetadata
-		err      error
+		val string
+		ok  bool
+		err error
+		_   = err
 	)
-	if req.Body != nil {
-		_, _ = io.Copy(io.Discard, req.Body)
-	}
-	val, ok := pathParams["available_package_ref.plugin.name"]
+
+	val, ok = pathParams["available_package_ref.plugin.name"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.plugin.name")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.plugin.name", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.plugin.name", err)
 	}
+
 	val, ok = pathParams["available_package_ref.plugin.version"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.plugin.version")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.plugin.version", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.plugin.version", err)
 	}
+
 	val, ok = pathParams["available_package_ref.context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.context.cluster")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.context.cluster", err)
 	}
+
 	val, ok = pathParams["available_package_ref.context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.context.namespace")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.context.namespace", err)
 	}
+
 	val, ok = pathParams["available_package_ref.identifier"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.identifier")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.identifier", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.identifier", err)
 	}
+
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_PackagesService_GetAvailablePackageMetadatas_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+
 	msg, err := client.GetAvailablePackageMetadatas(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
+
 }
 
 func local_request_PackagesService_GetAvailablePackageMetadatas_0(ctx context.Context, marshaler runtime.Marshaler, server PackagesServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetAvailablePackageMetadatasRequest
+	var metadata runtime.ServerMetadata
+
 	var (
-		protoReq GetAvailablePackageMetadatasRequest
-		metadata runtime.ServerMetadata
-		err      error
+		val string
+		ok  bool
+		err error
+		_   = err
 	)
-	val, ok := pathParams["available_package_ref.plugin.name"]
+
+	val, ok = pathParams["available_package_ref.plugin.name"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.plugin.name")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.plugin.name", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.plugin.name", err)
 	}
+
 	val, ok = pathParams["available_package_ref.plugin.version"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.plugin.version")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.plugin.version", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.plugin.version", err)
 	}
+
 	val, ok = pathParams["available_package_ref.context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.context.cluster")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.context.cluster", err)
 	}
+
 	val, ok = pathParams["available_package_ref.context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.context.namespace")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.context.namespace", err)
 	}
+
 	val, ok = pathParams["available_package_ref.identifier"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "available_package_ref.identifier")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "available_package_ref.identifier", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "available_package_ref.identifier", err)
 	}
+
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_PackagesService_GetAvailablePackageMetadatas_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+
 	msg, err := server.GetAvailablePackageMetadatas(ctx, &protoReq)
 	return msg, metadata, err
+
 }
 
-var filter_PackagesService_GetInstalledPackageSummaries_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+var (
+	filter_PackagesService_GetInstalledPackageSummaries_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
 
 func request_PackagesService_GetInstalledPackageSummaries_0(ctx context.Context, marshaler runtime.Marshaler, client PackagesServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var (
-		protoReq GetInstalledPackageSummariesRequest
-		metadata runtime.ServerMetadata
-	)
-	if req.Body != nil {
-		_, _ = io.Copy(io.Discard, req.Body)
-	}
+	var protoReq GetInstalledPackageSummariesRequest
+	var metadata runtime.ServerMetadata
+
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_PackagesService_GetInstalledPackageSummaries_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+
 	msg, err := client.GetInstalledPackageSummaries(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
+
 }
 
 func local_request_PackagesService_GetInstalledPackageSummaries_0(ctx context.Context, marshaler runtime.Marshaler, server PackagesServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var (
-		protoReq GetInstalledPackageSummariesRequest
-		metadata runtime.ServerMetadata
-	)
+	var protoReq GetInstalledPackageSummariesRequest
+	var metadata runtime.ServerMetadata
+
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_PackagesService_GetInstalledPackageSummaries_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+
 	msg, err := server.GetInstalledPackageSummaries(ctx, &protoReq)
 	return msg, metadata, err
+
 }
 
-var filter_PackagesService_GetInstalledPackageDetail_0 = &utilities.DoubleArray{Encoding: map[string]int{"installed_package_ref": 0, "plugin": 1, "name": 2, "version": 3, "context": 4, "cluster": 5, "namespace": 6, "identifier": 7}, Base: []int{1, 7, 1, 1, 2, 2, 2, 3, 6, 0, 0, 0, 5, 0, 7, 0}, Check: []int{0, 1, 2, 3, 2, 5, 2, 7, 2, 4, 6, 8, 9, 13, 2, 15}}
+var (
+	filter_PackagesService_GetInstalledPackageDetail_0 = &utilities.DoubleArray{Encoding: map[string]int{"installed_package_ref": 0, "plugin": 1, "name": 2, "version": 3, "context": 4, "cluster": 5, "namespace": 6, "identifier": 7}, Base: []int{1, 7, 1, 1, 2, 2, 2, 3, 6, 0, 0, 0, 5, 0, 7, 0}, Check: []int{0, 1, 2, 3, 2, 5, 2, 7, 2, 4, 6, 8, 9, 13, 2, 15}}
+)
 
 func request_PackagesService_GetInstalledPackageDetail_0(ctx context.Context, marshaler runtime.Marshaler, client PackagesServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetInstalledPackageDetailRequest
+	var metadata runtime.ServerMetadata
+
 	var (
-		protoReq GetInstalledPackageDetailRequest
-		metadata runtime.ServerMetadata
-		err      error
+		val string
+		ok  bool
+		err error
+		_   = err
 	)
-	if req.Body != nil {
-		_, _ = io.Copy(io.Discard, req.Body)
-	}
-	val, ok := pathParams["installed_package_ref.plugin.name"]
+
+	val, ok = pathParams["installed_package_ref.plugin.name"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.plugin.name")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.plugin.name", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.plugin.name", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.plugin.version"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.plugin.version")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.plugin.version", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.plugin.version", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.context.cluster")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.context.cluster", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.context.namespace")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.context.namespace", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.identifier"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.identifier")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.identifier", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.identifier", err)
 	}
+
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_PackagesService_GetInstalledPackageDetail_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+
 	msg, err := client.GetInstalledPackageDetail(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
+
 }
 
 func local_request_PackagesService_GetInstalledPackageDetail_0(ctx context.Context, marshaler runtime.Marshaler, server PackagesServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetInstalledPackageDetailRequest
+	var metadata runtime.ServerMetadata
+
 	var (
-		protoReq GetInstalledPackageDetailRequest
-		metadata runtime.ServerMetadata
-		err      error
+		val string
+		ok  bool
+		err error
+		_   = err
 	)
-	val, ok := pathParams["installed_package_ref.plugin.name"]
+
+	val, ok = pathParams["installed_package_ref.plugin.name"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.plugin.name")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.plugin.name", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.plugin.name", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.plugin.version"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.plugin.version")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.plugin.version", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.plugin.version", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.context.cluster")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.context.cluster", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.context.namespace")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.context.namespace", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.identifier"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.identifier")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.identifier", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.identifier", err)
 	}
+
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_PackagesService_GetInstalledPackageDetail_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+
 	msg, err := server.GetInstalledPackageDetail(ctx, &protoReq)
 	return msg, metadata, err
+
 }
 
 func request_PackagesService_CreateInstalledPackage_0(ctx context.Context, marshaler runtime.Marshaler, client PackagesServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var (
-		protoReq CreateInstalledPackageRequest
-		metadata runtime.ServerMetadata
-	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+	var protoReq CreateInstalledPackageRequest
+	var metadata runtime.ServerMetadata
+
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if req.Body != nil {
-		_, _ = io.Copy(io.Discard, req.Body)
-	}
+
 	msg, err := client.CreateInstalledPackage(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
+
 }
 
 func local_request_PackagesService_CreateInstalledPackage_0(ctx context.Context, marshaler runtime.Marshaler, server PackagesServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var (
-		protoReq CreateInstalledPackageRequest
-		metadata runtime.ServerMetadata
-	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+	var protoReq CreateInstalledPackageRequest
+	var metadata runtime.ServerMetadata
+
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+
 	msg, err := server.CreateInstalledPackage(ctx, &protoReq)
 	return msg, metadata, err
+
 }
 
 func request_PackagesService_UpdateInstalledPackage_0(ctx context.Context, marshaler runtime.Marshaler, client PackagesServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var (
-		protoReq UpdateInstalledPackageRequest
-		metadata runtime.ServerMetadata
-		err      error
-	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+	var protoReq UpdateInstalledPackageRequest
+	var metadata runtime.ServerMetadata
+
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if req.Body != nil {
-		_, _ = io.Copy(io.Discard, req.Body)
-	}
-	val, ok := pathParams["installed_package_ref.plugin.name"]
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["installed_package_ref.plugin.name"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.plugin.name")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.plugin.name", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.plugin.name", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.plugin.version"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.plugin.version")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.plugin.version", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.plugin.version", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.context.cluster")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.context.cluster", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.context.namespace")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.context.namespace", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.identifier"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.identifier")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.identifier", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.identifier", err)
 	}
+
 	msg, err := client.UpdateInstalledPackage(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
+
 }
 
 func local_request_PackagesService_UpdateInstalledPackage_0(ctx context.Context, marshaler runtime.Marshaler, server PackagesServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var (
-		protoReq UpdateInstalledPackageRequest
-		metadata runtime.ServerMetadata
-		err      error
-	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+	var protoReq UpdateInstalledPackageRequest
+	var metadata runtime.ServerMetadata
+
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	val, ok := pathParams["installed_package_ref.plugin.name"]
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["installed_package_ref.plugin.name"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.plugin.name")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.plugin.name", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.plugin.name", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.plugin.version"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.plugin.version")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.plugin.version", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.plugin.version", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.context.cluster")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.context.cluster", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.context.namespace")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.context.namespace", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.identifier"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.identifier")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.identifier", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.identifier", err)
 	}
+
 	msg, err := server.UpdateInstalledPackage(ctx, &protoReq)
 	return msg, metadata, err
+
 }
 
-var filter_PackagesService_DeleteInstalledPackage_0 = &utilities.DoubleArray{Encoding: map[string]int{"installed_package_ref": 0, "plugin": 1, "name": 2, "version": 3, "context": 4, "cluster": 5, "namespace": 6, "identifier": 7}, Base: []int{1, 7, 1, 1, 2, 2, 2, 3, 6, 0, 0, 0, 5, 0, 7, 0}, Check: []int{0, 1, 2, 3, 2, 5, 2, 7, 2, 4, 6, 8, 9, 13, 2, 15}}
+var (
+	filter_PackagesService_DeleteInstalledPackage_0 = &utilities.DoubleArray{Encoding: map[string]int{"installed_package_ref": 0, "plugin": 1, "name": 2, "version": 3, "context": 4, "cluster": 5, "namespace": 6, "identifier": 7}, Base: []int{1, 7, 1, 1, 2, 2, 2, 3, 6, 0, 0, 0, 5, 0, 7, 0}, Check: []int{0, 1, 2, 3, 2, 5, 2, 7, 2, 4, 6, 8, 9, 13, 2, 15}}
+)
 
 func request_PackagesService_DeleteInstalledPackage_0(ctx context.Context, marshaler runtime.Marshaler, client PackagesServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq DeleteInstalledPackageRequest
+	var metadata runtime.ServerMetadata
+
 	var (
-		protoReq DeleteInstalledPackageRequest
-		metadata runtime.ServerMetadata
-		err      error
+		val string
+		ok  bool
+		err error
+		_   = err
 	)
-	if req.Body != nil {
-		_, _ = io.Copy(io.Discard, req.Body)
-	}
-	val, ok := pathParams["installed_package_ref.plugin.name"]
+
+	val, ok = pathParams["installed_package_ref.plugin.name"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.plugin.name")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.plugin.name", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.plugin.name", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.plugin.version"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.plugin.version")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.plugin.version", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.plugin.version", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.context.cluster")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.context.cluster", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.context.namespace")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.context.namespace", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.identifier"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.identifier")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.identifier", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.identifier", err)
 	}
+
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_PackagesService_DeleteInstalledPackage_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+
 	msg, err := client.DeleteInstalledPackage(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
+
 }
 
 func local_request_PackagesService_DeleteInstalledPackage_0(ctx context.Context, marshaler runtime.Marshaler, server PackagesServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq DeleteInstalledPackageRequest
+	var metadata runtime.ServerMetadata
+
 	var (
-		protoReq DeleteInstalledPackageRequest
-		metadata runtime.ServerMetadata
-		err      error
+		val string
+		ok  bool
+		err error
+		_   = err
 	)
-	val, ok := pathParams["installed_package_ref.plugin.name"]
+
+	val, ok = pathParams["installed_package_ref.plugin.name"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.plugin.name")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.plugin.name", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.plugin.name", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.plugin.version"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.plugin.version")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.plugin.version", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.plugin.version", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.context.cluster")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.context.cluster", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.context.namespace")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.context.namespace", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.identifier"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.identifier")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.identifier", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.identifier", err)
 	}
+
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_PackagesService_DeleteInstalledPackage_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+
 	msg, err := server.DeleteInstalledPackage(ctx, &protoReq)
 	return msg, metadata, err
+
 }
 
-var filter_PackagesService_GetInstalledPackageResourceRefs_0 = &utilities.DoubleArray{Encoding: map[string]int{"installed_package_ref": 0, "plugin": 1, "name": 2, "version": 3, "context": 4, "cluster": 5, "namespace": 6, "identifier": 7}, Base: []int{1, 7, 1, 1, 2, 2, 2, 3, 6, 0, 0, 0, 5, 0, 7, 0}, Check: []int{0, 1, 2, 3, 2, 5, 2, 7, 2, 4, 6, 8, 9, 13, 2, 15}}
+var (
+	filter_PackagesService_GetInstalledPackageResourceRefs_0 = &utilities.DoubleArray{Encoding: map[string]int{"installed_package_ref": 0, "plugin": 1, "name": 2, "version": 3, "context": 4, "cluster": 5, "namespace": 6, "identifier": 7}, Base: []int{1, 7, 1, 1, 2, 2, 2, 3, 6, 0, 0, 0, 5, 0, 7, 0}, Check: []int{0, 1, 2, 3, 2, 5, 2, 7, 2, 4, 6, 8, 9, 13, 2, 15}}
+)
 
 func request_PackagesService_GetInstalledPackageResourceRefs_0(ctx context.Context, marshaler runtime.Marshaler, client PackagesServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetInstalledPackageResourceRefsRequest
+	var metadata runtime.ServerMetadata
+
 	var (
-		protoReq GetInstalledPackageResourceRefsRequest
-		metadata runtime.ServerMetadata
-		err      error
+		val string
+		ok  bool
+		err error
+		_   = err
 	)
-	if req.Body != nil {
-		_, _ = io.Copy(io.Discard, req.Body)
-	}
-	val, ok := pathParams["installed_package_ref.plugin.name"]
+
+	val, ok = pathParams["installed_package_ref.plugin.name"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.plugin.name")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.plugin.name", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.plugin.name", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.plugin.version"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.plugin.version")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.plugin.version", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.plugin.version", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.context.cluster")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.context.cluster", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.context.namespace")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.context.namespace", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.identifier"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.identifier")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.identifier", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.identifier", err)
 	}
+
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_PackagesService_GetInstalledPackageResourceRefs_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+
 	msg, err := client.GetInstalledPackageResourceRefs(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
+
 }
 
 func local_request_PackagesService_GetInstalledPackageResourceRefs_0(ctx context.Context, marshaler runtime.Marshaler, server PackagesServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetInstalledPackageResourceRefsRequest
+	var metadata runtime.ServerMetadata
+
 	var (
-		protoReq GetInstalledPackageResourceRefsRequest
-		metadata runtime.ServerMetadata
-		err      error
+		val string
+		ok  bool
+		err error
+		_   = err
 	)
-	val, ok := pathParams["installed_package_ref.plugin.name"]
+
+	val, ok = pathParams["installed_package_ref.plugin.name"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.plugin.name")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.plugin.name", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.plugin.name", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.plugin.version"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.plugin.version")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.plugin.version", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.plugin.version", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.context.cluster"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.context.cluster")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.context.cluster", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.context.cluster", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.context.namespace"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.context.namespace")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.context.namespace", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.context.namespace", err)
 	}
+
 	val, ok = pathParams["installed_package_ref.identifier"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "installed_package_ref.identifier")
 	}
+
 	err = runtime.PopulateFieldFromPath(&protoReq, "installed_package_ref.identifier", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "installed_package_ref.identifier", err)
 	}
+
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_PackagesService_GetInstalledPackageResourceRefs_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+
 	msg, err := server.GetInstalledPackageResourceRefs(ctx, &protoReq)
 	return msg, metadata, err
+
 }
 
 // RegisterPackagesServiceHandlerServer registers the http handlers for service PackagesService to "mux".
 // UnaryRPC     :call PackagesServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterPackagesServiceHandlerFromEndpoint instead.
-// GRPC interceptors will not work for this type of registration. To use interceptors, you must use the "runtime.WithMiddlewares" option in the "runtime.NewServeMux" call.
 func RegisterPackagesServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server PackagesServiceServer) error {
-	mux.Handle(http.MethodGet, pattern_PackagesService_GetAvailablePackageSummaries_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+
+	mux.Handle("GET", pattern_PackagesService_GetAvailablePackageSummaries_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetAvailablePackageSummaries", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/availablepackages"))
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetAvailablePackageSummaries", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/availablepackages"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -967,15 +1195,20 @@ func RegisterPackagesServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
+
 		forward_PackagesService_GetAvailablePackageSummaries_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
-	mux.Handle(http.MethodGet, pattern_PackagesService_GetAvailablePackageDetail_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+
+	mux.Handle("GET", pattern_PackagesService_GetAvailablePackageDetail_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetAvailablePackageDetail", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/availablepackages/plugin/{available_package_ref.plugin.name}/{available_package_ref.plugin.version}/c/{available_package_ref.context.cluster}/ns/{available_package_ref.context.namespace}/{available_package_ref.identifier=**}"))
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetAvailablePackageDetail", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/availablepackages/plugin/{available_package_ref.plugin.name}/{available_package_ref.plugin.version}/c/{available_package_ref.context.cluster}/ns/{available_package_ref.context.namespace}/{available_package_ref.identifier=**}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -987,15 +1220,20 @@ func RegisterPackagesServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
+
 		forward_PackagesService_GetAvailablePackageDetail_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
-	mux.Handle(http.MethodGet, pattern_PackagesService_GetAvailablePackageVersions_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+
+	mux.Handle("GET", pattern_PackagesService_GetAvailablePackageVersions_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetAvailablePackageVersions", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/availablepackages/plugin/{available_package_ref.plugin.name}/{available_package_ref.plugin.version}/c/{available_package_ref.context.cluster}/ns/{available_package_ref.context.namespace}/{available_package_ref.identifier=**}/versions"))
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetAvailablePackageVersions", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/availablepackages/plugin/{available_package_ref.plugin.name}/{available_package_ref.plugin.version}/c/{available_package_ref.context.cluster}/ns/{available_package_ref.context.namespace}/{available_package_ref.identifier=**}/versions"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1007,15 +1245,20 @@ func RegisterPackagesServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
+
 		forward_PackagesService_GetAvailablePackageVersions_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
-	mux.Handle(http.MethodGet, pattern_PackagesService_GetAvailablePackageMetadatas_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+
+	mux.Handle("GET", pattern_PackagesService_GetAvailablePackageMetadatas_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetAvailablePackageMetadatas", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/availablepackages/plugin/{available_package_ref.plugin.name}/{available_package_ref.plugin.version}/c/{available_package_ref.context.cluster}/ns/{available_package_ref.context.namespace}/{available_package_ref.identifier=**}/metadata"))
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetAvailablePackageMetadatas", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/availablepackages/plugin/{available_package_ref.plugin.name}/{available_package_ref.plugin.version}/c/{available_package_ref.context.cluster}/ns/{available_package_ref.context.namespace}/{available_package_ref.identifier=**}/metadata"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1027,15 +1270,20 @@ func RegisterPackagesServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
+
 		forward_PackagesService_GetAvailablePackageMetadatas_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
-	mux.Handle(http.MethodGet, pattern_PackagesService_GetInstalledPackageSummaries_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+
+	mux.Handle("GET", pattern_PackagesService_GetInstalledPackageSummaries_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetInstalledPackageSummaries", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages"))
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetInstalledPackageSummaries", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1047,15 +1295,20 @@ func RegisterPackagesServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
+
 		forward_PackagesService_GetInstalledPackageSummaries_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
-	mux.Handle(http.MethodGet, pattern_PackagesService_GetInstalledPackageDetail_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+
+	mux.Handle("GET", pattern_PackagesService_GetInstalledPackageDetail_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetInstalledPackageDetail", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages/plugin/{installed_package_ref.plugin.name}/{installed_package_ref.plugin.version}/c/{installed_package_ref.context.cluster}/ns/{installed_package_ref.context.namespace}/{installed_package_ref.identifier}"))
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetInstalledPackageDetail", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages/plugin/{installed_package_ref.plugin.name}/{installed_package_ref.plugin.version}/c/{installed_package_ref.context.cluster}/ns/{installed_package_ref.context.namespace}/{installed_package_ref.identifier}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1067,15 +1320,20 @@ func RegisterPackagesServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
+
 		forward_PackagesService_GetInstalledPackageDetail_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
-	mux.Handle(http.MethodPost, pattern_PackagesService_CreateInstalledPackage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+
+	mux.Handle("POST", pattern_PackagesService_CreateInstalledPackage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/CreateInstalledPackage", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages"))
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/CreateInstalledPackage", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1087,15 +1345,20 @@ func RegisterPackagesServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
+
 		forward_PackagesService_CreateInstalledPackage_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
-	mux.Handle(http.MethodPut, pattern_PackagesService_UpdateInstalledPackage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+
+	mux.Handle("PUT", pattern_PackagesService_UpdateInstalledPackage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/UpdateInstalledPackage", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages/plugin/{installed_package_ref.plugin.name}/{installed_package_ref.plugin.version}/c/{installed_package_ref.context.cluster}/ns/{installed_package_ref.context.namespace}/{installed_package_ref.identifier}"))
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/UpdateInstalledPackage", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages/plugin/{installed_package_ref.plugin.name}/{installed_package_ref.plugin.version}/c/{installed_package_ref.context.cluster}/ns/{installed_package_ref.context.namespace}/{installed_package_ref.identifier}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1107,15 +1370,20 @@ func RegisterPackagesServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
+
 		forward_PackagesService_UpdateInstalledPackage_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
-	mux.Handle(http.MethodDelete, pattern_PackagesService_DeleteInstalledPackage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+
+	mux.Handle("DELETE", pattern_PackagesService_DeleteInstalledPackage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/DeleteInstalledPackage", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages/plugin/{installed_package_ref.plugin.name}/{installed_package_ref.plugin.version}/c/{installed_package_ref.context.cluster}/ns/{installed_package_ref.context.namespace}/{installed_package_ref.identifier}"))
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/DeleteInstalledPackage", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages/plugin/{installed_package_ref.plugin.name}/{installed_package_ref.plugin.version}/c/{installed_package_ref.context.cluster}/ns/{installed_package_ref.context.namespace}/{installed_package_ref.identifier}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1127,15 +1395,20 @@ func RegisterPackagesServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
+
 		forward_PackagesService_DeleteInstalledPackage_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
-	mux.Handle(http.MethodGet, pattern_PackagesService_GetInstalledPackageResourceRefs_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+
+	mux.Handle("GET", pattern_PackagesService_GetInstalledPackageResourceRefs_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetInstalledPackageResourceRefs", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages/plugin/{installed_package_ref.plugin.name}/{installed_package_ref.plugin.version}/c/{installed_package_ref.context.cluster}/ns/{installed_package_ref.context.namespace}/{installed_package_ref.identifier}/resourcerefs"))
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetInstalledPackageResourceRefs", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages/plugin/{installed_package_ref.plugin.name}/{installed_package_ref.plugin.version}/c/{installed_package_ref.context.cluster}/ns/{installed_package_ref.context.namespace}/{installed_package_ref.identifier}/resourcerefs"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1147,7 +1420,9 @@ func RegisterPackagesServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
+
 		forward_PackagesService_GetInstalledPackageResourceRefs_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	return nil
@@ -1174,6 +1449,7 @@ func RegisterPackagesServiceHandlerFromEndpoint(ctx context.Context, mux *runtim
 			}
 		}()
 	}()
+
 	return RegisterPackagesServiceHandler(ctx, mux, conn)
 }
 
@@ -1187,13 +1463,16 @@ func RegisterPackagesServiceHandler(ctx context.Context, mux *runtime.ServeMux, 
 // to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "PackagesServiceClient".
 // Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "PackagesServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "PackagesServiceClient" to call the correct interceptors. This client ignores the HTTP middlewares.
+// "PackagesServiceClient" to call the correct interceptors.
 func RegisterPackagesServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client PackagesServiceClient) error {
-	mux.Handle(http.MethodGet, pattern_PackagesService_GetAvailablePackageSummaries_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+
+	mux.Handle("GET", pattern_PackagesService_GetAvailablePackageSummaries_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetAvailablePackageSummaries", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/availablepackages"))
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetAvailablePackageSummaries", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/availablepackages"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1204,13 +1483,18 @@ func RegisterPackagesServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
+
 		forward_PackagesService_GetAvailablePackageSummaries_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
-	mux.Handle(http.MethodGet, pattern_PackagesService_GetAvailablePackageDetail_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+
+	mux.Handle("GET", pattern_PackagesService_GetAvailablePackageDetail_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetAvailablePackageDetail", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/availablepackages/plugin/{available_package_ref.plugin.name}/{available_package_ref.plugin.version}/c/{available_package_ref.context.cluster}/ns/{available_package_ref.context.namespace}/{available_package_ref.identifier=**}"))
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetAvailablePackageDetail", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/availablepackages/plugin/{available_package_ref.plugin.name}/{available_package_ref.plugin.version}/c/{available_package_ref.context.cluster}/ns/{available_package_ref.context.namespace}/{available_package_ref.identifier=**}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1221,13 +1505,18 @@ func RegisterPackagesServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
+
 		forward_PackagesService_GetAvailablePackageDetail_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
-	mux.Handle(http.MethodGet, pattern_PackagesService_GetAvailablePackageVersions_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+
+	mux.Handle("GET", pattern_PackagesService_GetAvailablePackageVersions_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetAvailablePackageVersions", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/availablepackages/plugin/{available_package_ref.plugin.name}/{available_package_ref.plugin.version}/c/{available_package_ref.context.cluster}/ns/{available_package_ref.context.namespace}/{available_package_ref.identifier=**}/versions"))
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetAvailablePackageVersions", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/availablepackages/plugin/{available_package_ref.plugin.name}/{available_package_ref.plugin.version}/c/{available_package_ref.context.cluster}/ns/{available_package_ref.context.namespace}/{available_package_ref.identifier=**}/versions"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1238,13 +1527,18 @@ func RegisterPackagesServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
+
 		forward_PackagesService_GetAvailablePackageVersions_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
-	mux.Handle(http.MethodGet, pattern_PackagesService_GetAvailablePackageMetadatas_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+
+	mux.Handle("GET", pattern_PackagesService_GetAvailablePackageMetadatas_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetAvailablePackageMetadatas", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/availablepackages/plugin/{available_package_ref.plugin.name}/{available_package_ref.plugin.version}/c/{available_package_ref.context.cluster}/ns/{available_package_ref.context.namespace}/{available_package_ref.identifier=**}/metadata"))
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetAvailablePackageMetadatas", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/availablepackages/plugin/{available_package_ref.plugin.name}/{available_package_ref.plugin.version}/c/{available_package_ref.context.cluster}/ns/{available_package_ref.context.namespace}/{available_package_ref.identifier=**}/metadata"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1255,13 +1549,18 @@ func RegisterPackagesServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
+
 		forward_PackagesService_GetAvailablePackageMetadatas_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
-	mux.Handle(http.MethodGet, pattern_PackagesService_GetInstalledPackageSummaries_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+
+	mux.Handle("GET", pattern_PackagesService_GetInstalledPackageSummaries_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetInstalledPackageSummaries", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages"))
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetInstalledPackageSummaries", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1272,13 +1571,18 @@ func RegisterPackagesServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
+
 		forward_PackagesService_GetInstalledPackageSummaries_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
-	mux.Handle(http.MethodGet, pattern_PackagesService_GetInstalledPackageDetail_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+
+	mux.Handle("GET", pattern_PackagesService_GetInstalledPackageDetail_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetInstalledPackageDetail", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages/plugin/{installed_package_ref.plugin.name}/{installed_package_ref.plugin.version}/c/{installed_package_ref.context.cluster}/ns/{installed_package_ref.context.namespace}/{installed_package_ref.identifier}"))
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetInstalledPackageDetail", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages/plugin/{installed_package_ref.plugin.name}/{installed_package_ref.plugin.version}/c/{installed_package_ref.context.cluster}/ns/{installed_package_ref.context.namespace}/{installed_package_ref.identifier}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1289,13 +1593,18 @@ func RegisterPackagesServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
+
 		forward_PackagesService_GetInstalledPackageDetail_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
-	mux.Handle(http.MethodPost, pattern_PackagesService_CreateInstalledPackage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+
+	mux.Handle("POST", pattern_PackagesService_CreateInstalledPackage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/CreateInstalledPackage", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages"))
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/CreateInstalledPackage", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1306,13 +1615,18 @@ func RegisterPackagesServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
+
 		forward_PackagesService_CreateInstalledPackage_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
-	mux.Handle(http.MethodPut, pattern_PackagesService_UpdateInstalledPackage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+
+	mux.Handle("PUT", pattern_PackagesService_UpdateInstalledPackage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/UpdateInstalledPackage", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages/plugin/{installed_package_ref.plugin.name}/{installed_package_ref.plugin.version}/c/{installed_package_ref.context.cluster}/ns/{installed_package_ref.context.namespace}/{installed_package_ref.identifier}"))
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/UpdateInstalledPackage", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages/plugin/{installed_package_ref.plugin.name}/{installed_package_ref.plugin.version}/c/{installed_package_ref.context.cluster}/ns/{installed_package_ref.context.namespace}/{installed_package_ref.identifier}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1323,13 +1637,18 @@ func RegisterPackagesServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
+
 		forward_PackagesService_UpdateInstalledPackage_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
-	mux.Handle(http.MethodDelete, pattern_PackagesService_DeleteInstalledPackage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+
+	mux.Handle("DELETE", pattern_PackagesService_DeleteInstalledPackage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/DeleteInstalledPackage", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages/plugin/{installed_package_ref.plugin.name}/{installed_package_ref.plugin.version}/c/{installed_package_ref.context.cluster}/ns/{installed_package_ref.context.namespace}/{installed_package_ref.identifier}"))
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/DeleteInstalledPackage", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages/plugin/{installed_package_ref.plugin.name}/{installed_package_ref.plugin.version}/c/{installed_package_ref.context.cluster}/ns/{installed_package_ref.context.namespace}/{installed_package_ref.identifier}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1340,13 +1659,18 @@ func RegisterPackagesServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
+
 		forward_PackagesService_DeleteInstalledPackage_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
-	mux.Handle(http.MethodGet, pattern_PackagesService_GetInstalledPackageResourceRefs_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+
+	mux.Handle("GET", pattern_PackagesService_GetInstalledPackageResourceRefs_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetInstalledPackageResourceRefs", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages/plugin/{installed_package_ref.plugin.name}/{installed_package_ref.plugin.version}/c/{installed_package_ref.context.cluster}/ns/{installed_package_ref.context.namespace}/{installed_package_ref.identifier}/resourcerefs"))
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/kubeappsapis.core.packages.v1alpha1.PackagesService/GetInstalledPackageResourceRefs", runtime.WithHTTPPathPattern("/core/packages/v1alpha1/installedpackages/plugin/{installed_package_ref.plugin.name}/{installed_package_ref.plugin.version}/c/{installed_package_ref.context.cluster}/ns/{installed_package_ref.context.namespace}/{installed_package_ref.identifier}/resourcerefs"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1357,33 +1681,54 @@ func RegisterPackagesServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
+
 		forward_PackagesService_GetInstalledPackageResourceRefs_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
+
 	return nil
 }
 
 var (
-	pattern_PackagesService_GetAvailablePackageSummaries_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"core", "packages", "v1alpha1", "availablepackages"}, ""))
-	pattern_PackagesService_GetAvailablePackageDetail_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7, 1, 0, 4, 1, 5, 8, 2, 9, 1, 0, 4, 1, 5, 10, 3, 0, 4, 1, 5, 11}, []string{"core", "packages", "v1alpha1", "availablepackages", "plugin", "available_package_ref.plugin.name", "available_package_ref.plugin.version", "c", "available_package_ref.context.cluster", "ns", "available_package_ref.context.namespace", "available_package_ref.identifier"}, ""))
-	pattern_PackagesService_GetAvailablePackageVersions_0     = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7, 1, 0, 4, 1, 5, 8, 2, 9, 1, 0, 4, 1, 5, 10, 3, 0, 4, 1, 5, 11, 2, 12}, []string{"core", "packages", "v1alpha1", "availablepackages", "plugin", "available_package_ref.plugin.name", "available_package_ref.plugin.version", "c", "available_package_ref.context.cluster", "ns", "available_package_ref.context.namespace", "available_package_ref.identifier", "versions"}, ""))
-	pattern_PackagesService_GetAvailablePackageMetadatas_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7, 1, 0, 4, 1, 5, 8, 2, 9, 1, 0, 4, 1, 5, 10, 3, 0, 4, 1, 5, 11, 2, 12}, []string{"core", "packages", "v1alpha1", "availablepackages", "plugin", "available_package_ref.plugin.name", "available_package_ref.plugin.version", "c", "available_package_ref.context.cluster", "ns", "available_package_ref.context.namespace", "available_package_ref.identifier", "metadata"}, ""))
-	pattern_PackagesService_GetInstalledPackageSummaries_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"core", "packages", "v1alpha1", "installedpackages"}, ""))
-	pattern_PackagesService_GetInstalledPackageDetail_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7, 1, 0, 4, 1, 5, 8, 2, 9, 1, 0, 4, 1, 5, 10, 1, 0, 4, 1, 5, 11}, []string{"core", "packages", "v1alpha1", "installedpackages", "plugin", "installed_package_ref.plugin.name", "installed_package_ref.plugin.version", "c", "installed_package_ref.context.cluster", "ns", "installed_package_ref.context.namespace", "installed_package_ref.identifier"}, ""))
-	pattern_PackagesService_CreateInstalledPackage_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"core", "packages", "v1alpha1", "installedpackages"}, ""))
-	pattern_PackagesService_UpdateInstalledPackage_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7, 1, 0, 4, 1, 5, 8, 2, 9, 1, 0, 4, 1, 5, 10, 1, 0, 4, 1, 5, 11}, []string{"core", "packages", "v1alpha1", "installedpackages", "plugin", "installed_package_ref.plugin.name", "installed_package_ref.plugin.version", "c", "installed_package_ref.context.cluster", "ns", "installed_package_ref.context.namespace", "installed_package_ref.identifier"}, ""))
-	pattern_PackagesService_DeleteInstalledPackage_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7, 1, 0, 4, 1, 5, 8, 2, 9, 1, 0, 4, 1, 5, 10, 1, 0, 4, 1, 5, 11}, []string{"core", "packages", "v1alpha1", "installedpackages", "plugin", "installed_package_ref.plugin.name", "installed_package_ref.plugin.version", "c", "installed_package_ref.context.cluster", "ns", "installed_package_ref.context.namespace", "installed_package_ref.identifier"}, ""))
+	pattern_PackagesService_GetAvailablePackageSummaries_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"core", "packages", "v1alpha1", "availablepackages"}, ""))
+
+	pattern_PackagesService_GetAvailablePackageDetail_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7, 1, 0, 4, 1, 5, 8, 2, 9, 1, 0, 4, 1, 5, 10, 3, 0, 4, 1, 5, 11}, []string{"core", "packages", "v1alpha1", "availablepackages", "plugin", "available_package_ref.plugin.name", "available_package_ref.plugin.version", "c", "available_package_ref.context.cluster", "ns", "available_package_ref.context.namespace", "available_package_ref.identifier"}, ""))
+
+	pattern_PackagesService_GetAvailablePackageVersions_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7, 1, 0, 4, 1, 5, 8, 2, 9, 1, 0, 4, 1, 5, 10, 3, 0, 4, 1, 5, 11, 2, 12}, []string{"core", "packages", "v1alpha1", "availablepackages", "plugin", "available_package_ref.plugin.name", "available_package_ref.plugin.version", "c", "available_package_ref.context.cluster", "ns", "available_package_ref.context.namespace", "available_package_ref.identifier", "versions"}, ""))
+
+	pattern_PackagesService_GetAvailablePackageMetadatas_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7, 1, 0, 4, 1, 5, 8, 2, 9, 1, 0, 4, 1, 5, 10, 3, 0, 4, 1, 5, 11, 2, 12}, []string{"core", "packages", "v1alpha1", "availablepackages", "plugin", "available_package_ref.plugin.name", "available_package_ref.plugin.version", "c", "available_package_ref.context.cluster", "ns", "available_package_ref.context.namespace", "available_package_ref.identifier", "metadata"}, ""))
+
+	pattern_PackagesService_GetInstalledPackageSummaries_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"core", "packages", "v1alpha1", "installedpackages"}, ""))
+
+	pattern_PackagesService_GetInstalledPackageDetail_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7, 1, 0, 4, 1, 5, 8, 2, 9, 1, 0, 4, 1, 5, 10, 1, 0, 4, 1, 5, 11}, []string{"core", "packages", "v1alpha1", "installedpackages", "plugin", "installed_package_ref.plugin.name", "installed_package_ref.plugin.version", "c", "installed_package_ref.context.cluster", "ns", "installed_package_ref.context.namespace", "installed_package_ref.identifier"}, ""))
+
+	pattern_PackagesService_CreateInstalledPackage_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"core", "packages", "v1alpha1", "installedpackages"}, ""))
+
+	pattern_PackagesService_UpdateInstalledPackage_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7, 1, 0, 4, 1, 5, 8, 2, 9, 1, 0, 4, 1, 5, 10, 1, 0, 4, 1, 5, 11}, []string{"core", "packages", "v1alpha1", "installedpackages", "plugin", "installed_package_ref.plugin.name", "installed_package_ref.plugin.version", "c", "installed_package_ref.context.cluster", "ns", "installed_package_ref.context.namespace", "installed_package_ref.identifier"}, ""))
+
+	pattern_PackagesService_DeleteInstalledPackage_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7, 1, 0, 4, 1, 5, 8, 2, 9, 1, 0, 4, 1, 5, 10, 1, 0, 4, 1, 5, 11}, []string{"core", "packages", "v1alpha1", "installedpackages", "plugin", "installed_package_ref.plugin.name", "installed_package_ref.plugin.version", "c", "installed_package_ref.context.cluster", "ns", "installed_package_ref.context.namespace", "installed_package_ref.identifier"}, ""))
+
 	pattern_PackagesService_GetInstalledPackageResourceRefs_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7, 1, 0, 4, 1, 5, 8, 2, 9, 1, 0, 4, 1, 5, 10, 1, 0, 4, 1, 5, 11, 2, 12}, []string{"core", "packages", "v1alpha1", "installedpackages", "plugin", "installed_package_ref.plugin.name", "installed_package_ref.plugin.version", "c", "installed_package_ref.context.cluster", "ns", "installed_package_ref.context.namespace", "installed_package_ref.identifier", "resourcerefs"}, ""))
 )
 
 var (
-	forward_PackagesService_GetAvailablePackageSummaries_0    = runtime.ForwardResponseMessage
-	forward_PackagesService_GetAvailablePackageDetail_0       = runtime.ForwardResponseMessage
-	forward_PackagesService_GetAvailablePackageVersions_0     = runtime.ForwardResponseMessage
-	forward_PackagesService_GetAvailablePackageMetadatas_0    = runtime.ForwardResponseMessage
-	forward_PackagesService_GetInstalledPackageSummaries_0    = runtime.ForwardResponseMessage
-	forward_PackagesService_GetInstalledPackageDetail_0       = runtime.ForwardResponseMessage
-	forward_PackagesService_CreateInstalledPackage_0          = runtime.ForwardResponseMessage
-	forward_PackagesService_UpdateInstalledPackage_0          = runtime.ForwardResponseMessage
-	forward_PackagesService_DeleteInstalledPackage_0          = runtime.ForwardResponseMessage
+	forward_PackagesService_GetAvailablePackageSummaries_0 = runtime.ForwardResponseMessage
+
+	forward_PackagesService_GetAvailablePackageDetail_0 = runtime.ForwardResponseMessage
+
+	forward_PackagesService_GetAvailablePackageVersions_0 = runtime.ForwardResponseMessage
+
+	forward_PackagesService_GetAvailablePackageMetadatas_0 = runtime.ForwardResponseMessage
+
+	forward_PackagesService_GetInstalledPackageSummaries_0 = runtime.ForwardResponseMessage
+
+	forward_PackagesService_GetInstalledPackageDetail_0 = runtime.ForwardResponseMessage
+
+	forward_PackagesService_CreateInstalledPackage_0 = runtime.ForwardResponseMessage
+
+	forward_PackagesService_UpdateInstalledPackage_0 = runtime.ForwardResponseMessage
+
+	forward_PackagesService_DeleteInstalledPackage_0 = runtime.ForwardResponseMessage
+
 	forward_PackagesService_GetInstalledPackageResourceRefs_0 = runtime.ForwardResponseMessage
 )
