@@ -35,6 +35,23 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Record original ref
+        id: origref
+        run: |
+          set -eu
+          # Try to get the current branch name; returns 'HEAD' if detached
+          current_branch=$(git rev-parse --abbrev-ref HEAD || echo HEAD)
+          if [[ "${current_branch}" == "HEAD" ]]; then
+            # Attempt to use the workflow ref if available
+            workflow_ref="${GITHUB_REF:-}"
+            echo "Detected detached HEAD; workflow ref: ${workflow_ref}"
+            # Fallback to default branch if workflow ref is not a branch
+            default_branch=$(gh api repos/${GITHUB_REPOSITORY} --jq '.default_branch')
+            echo "original_branch=${default_branch}" >> $GITHUB_OUTPUT
+          else
+            echo "original_branch=${current_branch}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Install Helm
         run: |
           set -eu
@@ -112,6 +129,13 @@ jobs:
           helm repo index "${tmpdir}" --url "${HELM_URL_BASE}"
           mv "${tmpdir}/index.yaml" site/static/helm/dev/index.yaml
           rm -rf "${tmpdir}"
+
+      - name: Return to original branch/ref
+        run: |
+          set -eu
+          original_branch='${{ steps.origref.outputs.original_branch }}'
+          echo "Switching back to: ${original_branch}"
+          git checkout --quiet "${original_branch}"
 
       - name: Commit and push dev helm index and chart
         env:

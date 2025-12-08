@@ -122,6 +122,15 @@ jobs:
           mv "${tmpdir}/index.yaml" site/static/helm/index.yaml
           rm -rf "${tmpdir}"
 
+      - name: Return to default branch
+        id: retbranch
+        run: |
+          set -eu
+          default_branch=$(gh api repos/${GITHUB_REPOSITORY} --jq '.default_branch')
+          echo "Switching to default branch: ${default_branch}"
+          git checkout --quiet "${default_branch}"
+          echo "default_branch=${default_branch}" >> $GITHUB_OUTPUT
+
       - name: Commit and push helm index and chart
         env:
           GIT_AUTHOR_NAME: github-actions[bot]
