@@ -1,0 +1,138 @@
+---
+name: Helm Index Publisher
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Only package this specific chart version (optional)"
+        required: false
+        type: string
+      full_regeneration:
+        description: "Rebuild index.yaml from scratch and repackage all versions"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+env:
+  HELM_URL_BASE: https://sap.github.io/kubeapps/helm
+  CHART_DIR: chart/kubeapps
+  CHART_NAME: kubeapps
+
+jobs:
+  publish_index:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Helm
+        run: |
+          set -eu
+          source ./script/lib/libcitools.sh
+          installHelm ${HELM_VERSION_STABLE:-v4.0.0} helm-stable
+
+      - name: Compute base URL (sanity)
+        id: baseurl
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER}"
+          repo="${GITHUB_REPOSITORY#*/}"
+          base_url="https://${owner}.github.io/${repo}/helm"
+          echo "base_url=${base_url}" >> "$GITHUB_OUTPUT"
+
+      - name: Discover release tags (vX.Y.Z only)
+        id: discover
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          set -eu
+          # If a single version is specified, use it directly
+          if [[ -n "${INPUT_VERSION}" ]]; then
+            echo "tags=[\"${INPUT_VERSION}\"]" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Query releases via gh API and filter by tag_name matching semantic version vX.Y.Z
+          tags=$(gh api --paginate repos/${GITHUB_REPOSITORY}/releases --jq '[.[] | .tag_name | select(test("^v[0-9]+\\.[0-9]+\\.[0-9]+$"))]')
+          echo "Found tags: ${tags}"
+          echo "tags=${tags}" >> $GITHUB_OUTPUT
+
+      - name: Prepare helm static dir
+        run: |
+          set -eu
+          mkdir -p site/static/helm
+
+      - name: Package chart per version (with caching)
+        env:
+          FULL_REGEN: ${{ inputs.full_regeneration }}
+        run: |
+          set -eu
+          tags='${{ steps.discover.outputs.tags }}'
+          if [[ -z "${tags}" || "${tags}" == "null" ]]; then
+            echo "No matching release tags found."
+            exit 0
+          fi
+          for tag in $(echo "${tags}" | jq -r '.[]'); do
+            version="${tag}"
+            # version string without leading v for chart filename
+            version_nov=$(echo "${version}" | sed -E 's/^v//')
+            outdir="site/static/helm/${version}"
+            tgz="${outdir}/${CHART_NAME}-${version_nov}.tgz"
+            meta="${outdir}/result.json"
+
+            if [[ "${FULL_REGEN}" != "true" && -f "${tgz}" && -f "${meta}" ]]; then
+              echo "Cache hit for ${version}, skipping repackage"
+              continue
+            fi
+
+            echo "Packaging chart for ${version}"
+            git checkout --quiet "${version}"
+            mkdir -p "${outdir}"
+            # Package chart from the repo at the tag
+            helm package "${CHART_DIR}" --destination "/tmp"
+            # Move packaged tgz into versioned cache folder
+            mv "/tmp/${CHART_NAME}-${version_nov}.tgz" "${tgz}"
+            # Write a simple meta file
+            jq -n --arg version "${version}" --arg path "${tgz}" '{version:$version, path:$path, ts:now}' > "${meta}"
+          done
+
+      - name: Generate/Update Helm index.yaml from cached folders
+        run: |
+          set -eu
+          # Flatten all tgz into a temp folder to let helm repo index pick them up
+          tmpdir=$(mktemp -d)
+          find site/static/helm -type f -name "*.tgz" -print -exec cp {} "${tmpdir}/" \;
+          helm repo index "${tmpdir}" --url "${HELM_URL_BASE}"
+          # Move index.yaml to static dir root
+          mv "${tmpdir}/index.yaml" site/static/helm/index.yaml
+          rm -rf "${tmpdir}"
+
+      - name: Commit and push helm index and chart
+        env:
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: |
+          set -eu
+          git status --porcelain
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git add site/static/helm
+            git commit -m "Helm: refresh index.yaml and cache packages"
+            git push
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Show Helm repo add instructions
+        run: |
+          echo "Users can run:"
+          echo "  helm repo add kubeapps ${HELM_URL_BASE}"
+          echo "  helm repo update"
