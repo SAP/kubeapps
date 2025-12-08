@@ -157,7 +157,7 @@ cargo update
 
 #### Security and chart sync PRs
 
-Finally, look at the [pull requests](https://github.com/vmware-tanzu/kubeapps/pulls) and ensure there is no PR open by Snyk
+Finally, look at the [pull requests](https://github.com/vmware-tanzu/kubeapps/pulls) and ensure there is no PR open by Dependabot
 or `kubeapps-bot` fixing a security issue or bringing upstream chart changes. If so, discuss it with another Kubeapps maintainer
 and come to a decision on it, trying not to release with a high/medium severity issue.
 

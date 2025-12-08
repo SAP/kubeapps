@@ -85,26 +85,6 @@ job uses a matrix to parameterize and parallelize the `local_e2e_tests` job, so 
 (flux, main, etc), and we would need to configure a status check in the branch protections rules for every item in the matrix.
 * `push_images`: each time a new commit is pushed to the main branch or a new version tag is created, the CI images
 (which have already been built) get re-tagged and pushed to the `kubeapps` account in Dockerhub.
-* `sync_chart_from_bitnami`: each time a new commit is pushed to the main branch, it brings the current changes in the upstream
-[bitnami/charts repository](https://github.com/bitnami/charts/tree/main/bitnami/kubeapps) and merges the changes. This step involves:
-  * Checking if the Bitnami chart version is greater than the Kubeapps development chart version. If not, stop.
-  * Deleting the local `chart/kubeapps` folder (note that the changes are already committed in git).
-  * Cloning the fork [kubeapps-bot/charts repository](https://github.com/kubeapps-bot/charts/tree/main/bitnami/kubeapps),
-  pulling the latest upstream changes and pushing them back to the fork.
-  * Retrieving the latest version of the chart provided by Bitnami.
-  * Renaming the production images (`bitnami/kubeapps-xxx`) by the development ones (`kubeapps/xxx`) with the `latest` tag.
-  * Using `DEVEL` as the `appVersion`.
-  * Sending a draft PR in the Kubeapps repository with these changes (from a pushed branch in the Kubeapps repository).
-* `sync_chart_to_bitnami`: when releasing (each time a new version tag is created), it synchronizes our development chart
-with the [bitnami/charts repository](https://github.com/bitnami/charts/tree/main/bitnami/kubeapps) and merges the changes.
-This step involves:
-  * Checking if the Kubeapps development chart version is greater than the Bitnami chart version. If not, stop.
-  * Deleting the local `bitnami/kubeapps` folder (note that the changes are already committed in git).
-  * Cloning the fork [kubeapps-bot/charts repository](https://github.com/kubeapps-bot/charts/tree/main/bitnami/kubeapps), pulling the latest upstream changes and pushing them back to the fork.
-  * Retrieving the latest version of the chart provided by Kubeapps.
-  * Renaming the development images (`kubeapps/xxx`) by the production ones (`bitnami/kubeapps-xxx`) with the `vX.X.X` tag.
-  * Using `vX.X.X` as the `appVersion`.
-  * Sending a draft PR to the Bitnami Charts repository with these changes (from the robot account's personal fork)
 * `release`: every time a new version tag is pushed to the repository, it creates a GitHub release based on the current
 tag by running the script [create_release.sh](https://github.com/vmware-tanzu/kubeapps/blob/main/script/create_release.sh).
 
