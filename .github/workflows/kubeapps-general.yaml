@@ -682,15 +682,15 @@ jobs:
       - push_chart
       - local_e2e_tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v5
       - run: |
           set -eu
           source ./script/lib/libcitools.sh
           installGithubCLI ${GITHUB_VERSION}
-      - # Assuming there is a personal access token created in GitHub granted with the scopes
-        # "repo:status", "public_repo" and "read:org"
-        name: Run the create_release script
+      - name: Run the create_release script
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
