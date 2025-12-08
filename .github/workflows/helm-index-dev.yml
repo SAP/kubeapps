@@ -73,22 +73,35 @@ jobs:
           fi
           for tag in $(echo "${tags}" | jq -r '.[]'); do
             version="${tag}"
-            version_nov=$(echo "${version}" | sed -E 's/^v//')
             outdir="site/static/helm/dev/${version}"
-            tgz="${outdir}/${CHART_NAME}-${version_nov}.tgz"
+            tgz_glob="/tmp/${CHART_NAME}-*.tgz"
             meta="${outdir}/result.json"
 
-            if [[ "${FULL_REGEN}" != "true" && -f "${tgz}" && -f "${meta}" ]]; then
-              echo "Cache hit for ${version}, skipping repackage"
-              continue
+            if [[ "${FULL_REGEN}" != "true" && -f "${meta}" ]]; then
+              echo "Cache meta exists for ${version}, checking tgz presence"
+              # If tgz missing, we'll repackage
+              existing_tgz=$(jq -r '.path // empty' "${meta}" || true)
+              if [[ -n "${existing_tgz}" && -f "${existing_tgz}" ]]; then
+                echo "Cache hit for ${version}, skipping repackage"
+                continue
+              fi
             fi
 
             echo "Packaging chart for ${version}"
             git checkout --quiet "${version}"
             mkdir -p "${outdir}"
+            # Read chart version from Chart.yaml to track mapping
+            chart_version=$(grep '^version:' "${CHART_DIR}/Chart.yaml" | awk '{print $2}')
             helm package "${CHART_DIR}" --destination "/tmp"
-            mv "/tmp/${CHART_NAME}-${version_nov}.tgz" "${tgz}"
-            jq -n --arg version "${version}" --arg path "${tgz}" '{version:$version, path:$path, ts:now}' > "${meta}"
+            # Detect packaged file
+            packaged_tgz=$(ls ${tgz_glob} | tail -n 1)
+            if [[ -z "${packaged_tgz}" || ! -f "${packaged_tgz}" ]]; then
+              echo "Packaged chart not found in /tmp for ${version}" >&2
+              exit 1
+            fi
+            dest_tgz="${outdir}/$(basename "${packaged_tgz}")"
+            mv "${packaged_tgz}" "${dest_tgz}"
+            jq -n --arg tag "${version}" --arg chart_version "${chart_version}" --arg path "${dest_tgz}" '{tag:$tag, chart_version:$chart_version, path:$path, ts:now}' > "${meta}"
           done
 
       - name: Generate/Update dev Helm index.yaml from cached folders
@@ -122,4 +135,3 @@ jobs:
           echo "Users can run:"
           echo "  helm repo add kubeapps-dev https://sap.github.io/kubeapps/helm/dev"
           echo "  helm repo update"
-
