@@ -180,10 +180,11 @@ discover_tags() {
   [[ -n "$filtered" ]] && filt_count=$(echo "$filtered" | wc -l | awk '{print $1}')
   step "Filtered tag count: ${filt_count}"
 
+  # Return filtered tags as newline-separated list
   if [[ -z "$filtered" ]]; then
-    echo "[]"
+    echo ""
   else
-    echo "$filtered" | sort -u | join_json_array
+    echo "$filtered" | sort -u
   fi
 }
 
@@ -298,21 +299,25 @@ main() {
   fi
 
   section "Discover and process tags"
-  local tags_json
-  tags_json=$(discover_tags)
-  step "Tags JSON: ${tags_json}"
-  if [[ -z "$tags_json" || "$tags_json" == "null" || "$tags_json" == "[]" ]]; then
+  local tags_list
+  tags_list=$(discover_tags)
+  step "Tags (newline-separated):"
+  push_indent
+  echo "$tags_list"
+  pop_indent
+  if [[ -z "$tags_list" ]]; then
     step "No tags found for mode '${MODE}'. Nothing to do."
     exit 0
   fi
   local processed=0
-  for tag in $(echo "$tags_json" | jq -r '.[]'); do
+  while IFS= read -r tag; do
+    [[ -z "$tag" ]] && continue
     step "Process tag: ${tag}"
     push_indent
     package_and_upload "$tag"
     pop_indent
     processed=$((processed+1))
-  done
+  done <<< "$tags_list"
   step "Processed ${processed} tag(s)"
 
   generate_index
