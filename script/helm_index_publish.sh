@@ -20,8 +20,12 @@ for arg in "$@"; do
     --mode=stable)
       MODE="stable" ;;
     --mode)
-      shift; MODE="$1" ;;
+      shift; MODE="${1:-$MODE}" ;;
+    dev|stable)
+      # Allow positional mode argument without flag
+      MODE="$arg" ;;
     *)
+      # Ignore unknown arguments rather than failing
       echo "Unknown argument: $arg" >&2 ;;
   esac
 done
@@ -122,6 +126,11 @@ return_branch_and_commit() {
   local message="Helm(${MODE}): refresh index.yaml (asset URLs) and metadata only"
   echo "Switching back to: $ORIG_BRANCH"
   git checkout --quiet "$ORIG_BRANCH"
+  # Configure git identity for CI if missing
+  if ! git config user.email >/dev/null; then
+    git config user.name "${GITHUB_ACTOR:-github-actions}"
+    git config user.email "${GITHUB_ACTOR:-github-actions}@users.noreply.github.com"
+  fi
   if [[ -n $(git status --porcelain "$commit_path") ]]; then
     git add "$commit_path"
     git commit -m "$message"
@@ -140,7 +149,8 @@ main() {
   local tags_json
   tags_json=$(discover_tags)
   echo "Tags: $tags_json"
-  if [[ -z "$tags_json" || "$tags_json" == "null" ]]; then
+  # Treat empty array or null as no work
+  if [[ -z "$tags_json" || "$tags_json" == "null" || "$tags_json" == "[]" ]]; then
     echo "No tags found"
     exit 0
   fi

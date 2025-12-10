@@ -38,10 +38,20 @@ jobs:
           source ./script/lib/libcitools.sh
           installHelm ${HELM_VERSION_STABLE:-v4.0.0} helm-stable
 
-      - name: Publish dev helm index via script
+      - name: Configure git identity (bot)
         run: |
           set -eu
-          ./script/helm_index_publish.sh --mode dev
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Publish dev helm index via script
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_VERSION: ${{ inputs.version }}
+          FULL_REGEN: ${{ inputs.full_regeneration }}
+        run: |
+          set -eu
+          bash script/helm_index_publish.sh --mode dev
 
       - name: Show Helm repo add instructions (dev)
         run: |
