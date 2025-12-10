@@ -30,12 +30,21 @@ MODE="stable"
 FULL_REGEN="${FULL_REGEN:-false}"
 INPUT_VERSION="${INPUT_VERSION:-}"
 
-log "Starting helm index publish script (mode=${MODE}, FULL_REGEN=${FULL_REGEN}, INPUT_VERSION=${INPUT_VERSION:-<none>})"
-section "Environment and Inputs"
-step "Mode: ${MODE}"
-step "Full regen: ${FULL_REGEN}"
-step "Input version: ${INPUT_VERSION:-<none>}"
-step "Repo: ${GITHUB_REPOSITORY:-${REPO_OWNER}/${REPO_NAME}}"
+# Parse arguments first so MODE reflects actual input
+for arg in "$@"; do
+  case "$arg" in
+    --mode=dev)
+      MODE="dev" ;;
+    --mode=stable)
+      MODE="stable" ;;
+    --mode)
+      shift; MODE="${1:-$MODE}" ;;
+    dev|stable)
+      MODE="$arg" ;;
+    *)
+      step "Ignoring unknown argument: $arg" ;;
+  esac
+done
 
 # Constants derived from environment/repo
 REPO_OWNER="${GITHUB_REPOSITORY_OWNER:-SAP}"
@@ -47,6 +56,14 @@ CHART_DIR="chart/kubeapps"
 CHART_NAME="kubeapps"
 OUTPUT_DIR="site/static/helm"
 [[ "$MODE" == "dev" ]] && OUTPUT_DIR="${OUTPUT_DIR}/dev"
+
+# Now log environment and inputs with the correct MODE
+log "Starting helm index publish script"
+section "Environment and Inputs"
+step "Mode: ${MODE}"
+step "Full regen: ${FULL_REGEN}"
+step "Input version: ${INPUT_VERSION:-<none>}"
+step "Repo: ${GITHUB_REPOSITORY:-${REPO_OWNER}/${REPO_NAME}}"
 
 # Verify required tools and auth
 require_tool() { command -v "$1" >/dev/null 2>&1 || { log "ERROR: Required tool '$1' not found"; return 1; }; }
@@ -94,7 +111,9 @@ discover_tags() {
   # Helper to join lines into JSON array
   join_json_array() { awk 'BEGIN{print "["} { if (NR>1) printf ","; printf "\""$0"\"" } END{print "]"}'; }
 
-  local stable_re='^v?[0-9]+\.[0-9]+\.[0-9]+$'
+  # Define tag classification
+  local stable_re='^v[0-9]+\.[0-9]+\.[0-9]+$'
+  local dev_re='^v[0-9]+\.[0-9]+\.[0-9]+-.+'
 
   # 1) Try GitHub releases
   step "GitHub releases"
@@ -149,10 +168,10 @@ discover_tags() {
     push_indent
     if [[ "$MODE" == "stable" ]]; then
       filtered=$(echo "$candidates" | grep -E "$stable_re" || true)
-      substep "Stable regex: ${stable_re}"
+      substep "Stable regex: ${stable_re} (eg: v3.0.0)"
     else
-      filtered=$(echo "$candidates" | grep -Ev "$stable_re" || true)
-      substep "Dev = not matching stable regex"
+      filtered=$(echo "$candidates" | grep -E "$dev_re" || true)
+      substep "Dev regex: ${dev_re} (eg: v3.0.0-rc1, v3.0.0-rc1-rc4)"
     fi
     pop_indent
   fi
