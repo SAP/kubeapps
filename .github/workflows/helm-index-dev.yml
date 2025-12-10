@@ -19,38 +19,18 @@ on:
 permissions:
   contents: write
 
-env:
-  HELM_URL_BASE: https://sap.github.io/kubeapps/helm/dev
-  CHART_DIR: chart/kubeapps
-  CHART_NAME: kubeapps
-
 jobs:
   publish_dev_index:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
+      INPUT_VERSION: ${{ inputs.version }}
+      FULL_REGEN: ${{ inputs.full_regeneration }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-
-      - name: Record original ref
-        id: origref
-        run: |
-          set -eu
-          # Try to get the current branch name; returns 'HEAD' if detached
-          current_branch=$(git rev-parse --abbrev-ref HEAD || echo HEAD)
-          if [[ "${current_branch}" == "HEAD" ]]; then
-            # Attempt to use the workflow ref if available
-            workflow_ref="${GITHUB_REF:-}"
-            echo "Detected detached HEAD; workflow ref: ${workflow_ref}"
-            # Fallback to default branch if workflow ref is not a branch
-            default_branch=$(gh api repos/${GITHUB_REPOSITORY} --jq '.default_branch')
-            echo "original_branch=${default_branch}" >> $GITHUB_OUTPUT
-          else
-            echo "original_branch=${current_branch}" >> $GITHUB_OUTPUT
-          fi
 
       - name: Install Helm
         run: |
@@ -58,104 +38,13 @@ jobs:
           source ./script/lib/libcitools.sh
           installHelm ${HELM_VERSION_STABLE:-v4.0.0} helm-stable
 
-      - name: Discover pre-release tags (exclude strict vX.Y.Z)
-        id: discover
-        env:
-          INPUT_VERSION: ${{ inputs.version }}
+      - name: Publish dev helm index via script
         run: |
           set -eu
-          if [[ -n "${INPUT_VERSION}" ]]; then
-            echo "tags=[\"${INPUT_VERSION}\"]" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          # Get all releases, include tags that start with v but do NOT match strict semver vX.Y.Z (e.g., rc/beta)
-          tags=$(gh api --paginate repos/${GITHUB_REPOSITORY}/releases --jq '[.[] | .tag_name | select(test("^v") and (test("^v[0-9]+\\.[0-9]+\\.[0-9]+$") | not))]')
-          echo "Found pre-release tags: ${tags}"
-          echo "tags=${tags}" >> $GITHUB_OUTPUT
-
-      - name: Prepare dev helm static dir
-        run: |
-          set -eu
-          mkdir -p site/static/helm/dev
-
-      - name: Package chart per pre-release version (with caching)
-        env:
-          FULL_REGEN: ${{ inputs.full_regeneration }}
-        run: |
-          set -eu
-          tags='${{ steps.discover.outputs.tags }}'
-          if [[ -z "${tags}" || "${tags}" == "null" ]]; then
-            echo "No matching pre-release tags found."
-            exit 0
-          fi
-          for tag in $(echo "${tags}" | jq -r '.[]'); do
-            version="${tag}"
-            outdir="site/static/helm/dev/${version}"
-            tgz_glob="/tmp/${CHART_NAME}-*.tgz"
-            meta="${outdir}/result.json"
-
-            if [[ "${FULL_REGEN}" != "true" && -f "${meta}" ]]; then
-              echo "Cache meta exists for ${version}, checking tgz presence"
-              # If tgz missing, we'll repackage
-              existing_tgz=$(jq -r '.path // empty' "${meta}" || true)
-              if [[ -n "${existing_tgz}" && -f "${existing_tgz}" ]]; then
-                echo "Cache hit for ${version}, skipping repackage"
-                continue
-              fi
-            fi
-
-            echo "Packaging chart for ${version}"
-            git checkout --quiet "${version}"
-            mkdir -p "${outdir}"
-            # Read chart version from Chart.yaml to track mapping
-            chart_version=$(grep '^version:' "${CHART_DIR}/Chart.yaml" | awk '{print $2}')
-            helm package "${CHART_DIR}" --destination "/tmp"
-            # Detect packaged file
-            packaged_tgz=$(ls ${tgz_glob} | tail -n 1)
-            if [[ -z "${packaged_tgz}" || ! -f "${packaged_tgz}" ]]; then
-              echo "Packaged chart not found in /tmp for ${version}" >&2
-              exit 1
-            fi
-            dest_tgz="${outdir}/$(basename "${packaged_tgz}")"
-            mv "${packaged_tgz}" "${dest_tgz}"
-            jq -n --arg tag "${version}" --arg chart_version "${chart_version}" --arg path "${dest_tgz}" '{tag:$tag, chart_version:$chart_version, path:$path, ts:now}' > "${meta}"
-          done
-
-      - name: Generate/Update dev Helm index.yaml from cached folders
-        run: |
-          set -eu
-          tmpdir=$(mktemp -d)
-          find site/static/helm/dev -type f -name "*.tgz" -print -exec cp {} "${tmpdir}/" \;
-          helm repo index "${tmpdir}" --url "${HELM_URL_BASE}"
-          mv "${tmpdir}/index.yaml" site/static/helm/dev/index.yaml
-          rm -rf "${tmpdir}"
-
-      - name: Return to original branch/ref
-        run: |
-          set -eu
-          original_branch='${{ steps.origref.outputs.original_branch }}'
-          echo "Switching back to: ${original_branch}"
-          git checkout --quiet "${original_branch}"
-
-      - name: Commit and push dev helm index and chart
-        env:
-          GIT_AUTHOR_NAME: github-actions[bot]
-          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
-          GIT_COMMITTER_NAME: github-actions[bot]
-          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
-        run: |
-          set -eu
-          git status --porcelain
-          if [[ -n "$(git status --porcelain)" ]]; then
-            git add site/static/helm/dev
-            git commit -m "Helm(dev): refresh index.yaml and cache pre-release packages"
-            git push
-          else
-            echo "No changes to commit"
-          fi
+          ./script/helm_index_publish.sh --mode dev
 
       - name: Show Helm repo add instructions (dev)
         run: |
           echo "Users can run:"
-          echo "  helm repo add kubeapps-dev https://sap.github.io/kubeapps/helm/dev"
+          echo "  helm repo add kubeapps-dev https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/helm/dev"
           echo "  helm repo update"

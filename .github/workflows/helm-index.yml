@@ -19,16 +19,13 @@ on:
 permissions:
   contents: write
 
-env:
-  HELM_URL_BASE: https://sap.github.io/kubeapps/helm
-  CHART_DIR: chart/kubeapps
-  CHART_NAME: kubeapps
-
 jobs:
   publish_index:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
+      INPUT_VERSION: ${{ inputs.version }}
+      FULL_REGEN: ${{ inputs.full_regeneration }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -41,115 +38,13 @@ jobs:
           source ./script/lib/libcitools.sh
           installHelm ${HELM_VERSION_STABLE:-v4.0.0} helm-stable
 
-      - name: Compute base URL (sanity)
-        id: baseurl
-        run: |
-          owner="${GITHUB_REPOSITORY_OWNER}"
-          repo="${GITHUB_REPOSITORY#*/}"
-          base_url="https://${owner}.github.io/${repo}/helm"
-          echo "base_url=${base_url}" >> "$GITHUB_OUTPUT"
-
-      - name: Discover release tags (vX.Y.Z only)
-        id: discover
-        env:
-          INPUT_VERSION: ${{ inputs.version }}
+      - name: Publish stable helm index via script
         run: |
           set -eu
-          # If a single version is specified, use it directly
-          if [[ -n "${INPUT_VERSION}" ]]; then
-            echo "tags=[\"${INPUT_VERSION}\"]" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          # Query releases via gh API and filter by tag_name matching semantic version vX.Y.Z
-          tags=$(gh api --paginate repos/${GITHUB_REPOSITORY}/releases --jq '[.[] | .tag_name | select(test("^v[0-9]+\\.[0-9]+\\.[0-9]+$"))]')
-          echo "Found tags: ${tags}"
-          echo "tags=${tags}" >> $GITHUB_OUTPUT
-
-      - name: Prepare helm static dir
-        run: |
-          set -eu
-          mkdir -p site/static/helm
-
-      - name: Package chart per version (with caching)
-        env:
-          FULL_REGEN: ${{ inputs.full_regeneration }}
-        run: |
-          set -eu
-          tags='${{ steps.discover.outputs.tags }}'
-          if [[ -z "${tags}" || "${tags}" == "null" ]]; then
-            echo "No matching release tags found."
-            exit 0
-          fi
-          for tag in $(echo "${tags}" | jq -r '.[]'); do
-            version="${tag}"
-            outdir="site/static/helm/${version}"
-            tgz_glob="/tmp/${CHART_NAME}-*.tgz"
-            meta="${outdir}/result.json"
-
-            if [[ "${FULL_REGEN}" != "true" && -f "${meta}" ]]; then
-              echo "Cache meta exists for ${version}, checking tgz presence"
-              existing_tgz=$(jq -r '.path // empty' "${meta}" || true)
-              if [[ -n "${existing_tgz}" && -f "${existing_tgz}" ]]; then
-                echo "Cache hit for ${version}, skipping repackage"
-                continue
-              fi
-            fi
-
-            echo "Packaging chart for ${version}"
-            git checkout --quiet "${version}"
-            mkdir -p "${outdir}"
-            chart_version=$(grep '^version:' "${CHART_DIR}/Chart.yaml" | awk '{print $2}')
-            helm package "${CHART_DIR}" --destination "/tmp"
-            packaged_tgz=$(ls ${tgz_glob} | tail -n 1)
-            if [[ -z "${packaged_tgz}" || ! -f "${packaged_tgz}" ]]; then
-              echo "Packaged chart not found in /tmp for ${version}" >&2
-              exit 1
-            fi
-            dest_tgz="${outdir}/$(basename "${packaged_tgz}")"
-            mv "${packaged_tgz}" "${dest_tgz}"
-            jq -n --arg tag "${version}" --arg chart_version "${chart_version}" --arg path "${dest_tgz}" '{tag:$tag, chart_version:$chart_version, path:$path, ts:now}' > "${meta}"
-          done
-
-      - name: Generate/Update Helm index.yaml from cached folders
-        run: |
-          set -eu
-          # Flatten all tgz into a temp folder to let helm repo index pick them up
-          tmpdir=$(mktemp -d)
-          find site/static/helm -type f -name "*.tgz" -print -exec cp {} "${tmpdir}/" \;
-          helm repo index "${tmpdir}" --url "${HELM_URL_BASE}"
-          # Move index.yaml to static dir root
-          mv "${tmpdir}/index.yaml" site/static/helm/index.yaml
-          rm -rf "${tmpdir}"
-
-      - name: Return to default branch
-        id: retbranch
-        run: |
-          set -eu
-          default_branch=$(gh api repos/${GITHUB_REPOSITORY} --jq '.default_branch')
-          echo "Switching to default branch: ${default_branch}"
-          git checkout --quiet "${default_branch}"
-          echo "default_branch=${default_branch}" >> $GITHUB_OUTPUT
-
-      - name: Commit and push helm index and chart
-        env:
-          GIT_AUTHOR_NAME: github-actions[bot]
-          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
-          GIT_COMMITTER_NAME: github-actions[bot]
-          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
-        run: |
-          set -eu
-          git status --porcelain
-          if [[ -n "$(git status --porcelain)" ]]; then
-            git add site/static/helm
-            git commit -m "Helm: refresh index.yaml and cache packages"
-            git push
-          else
-            echo "No changes to commit"
-          fi
+          ./script/helm_index_publish.sh --mode stable
 
       - name: Show Helm repo add instructions
         run: |
           echo "Users can run:"
-          echo "  helm repo add kubeapps ${HELM_URL_BASE}"
+          echo "  helm repo add kubeapps https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/helm"
           echo "  helm repo update"
