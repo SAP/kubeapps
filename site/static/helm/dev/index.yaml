@@ -1,121 +1,20 @@
-apiVersion: v1
 entries:
   kubeapps:
-  - annotations:
-      category: Infrastructure
-      images: |
-        - name: kubeapps-apis
-          image: ghcr.io/sap/kubeapps-apis:v3.0.0-rc4
-        - name: kubeapps-apprepository-controller
-          image: ghcr.io/sap/kubeapps-apprepository-controller:v3.0.0-rc4
-        - name: kubeapps-asset-syncer
-          image: ghcr.io/sap/kubeapps-asset-syncer:v3.0.0-rc4
-        - name: kubeapps-dashboard
-          image: ghcr.io/sap/kubeapps-dashboard:v3.0.0-rc4
-        - name: kubeapps-oci-catalog
-          image: ghcr.io/sap/kubeapps-oci-catalog:v3.0.0-rc4
-        - name: kubeapps-pinniped-proxy
-          image: ghcr.io/sap/kubeapps-pinniped-proxy:v3.0.0-rc4
-        - name: nginx
-          image: ghcr.io/sap/kubeapps/bitnami-deprecated-nginx:1.29.1
-        - name: oauth2-proxy
-          image: ghcr.io/sap/kubeapps/bitnami-deprecated-oauth2-proxy:7.12.0
-      licenses: Apache-2.0
-    apiVersion: v2
-    appVersion: DEVEL
-    created: "2025-12-08T15:51:57.04416529Z"
-    dependencies:
-    - condition: packaging.flux.enabled
-      name: redis
-      repository: file://./charts/redis
-      version: 23.0.2
-    - condition: packaging.helm.enabled
-      name: postgresql
-      repository: file://./charts/postgresql
-      version: 17.0.0
-    - name: common
-      repository: file://./charts/common
-      tags:
-      - bitnami-common
-      version: 2.x.x
-    description: Kubeapps is a web-based UI for launching and managing applications
-      on Kubernetes. It allows users to deploy trusted applications and operators
-      to control users access to the cluster.
-    digest: 0949d5fee7dbd3fb41f3d3e2a6dc49b434c56d19641692b2fbdac139a49cec83
-    home: https://sap.com
-    icon: https://sap.github.io/kubeapps/img/chart-asset/kubeapps-stack-220x234.png
-    keywords:
-    - helm
-    - dashboard
-    - service catalog
-    - deployment
-    kubeVersion: '>=1.25.0-0'
-    maintainers:
-    - name: Siegfried Kiermayer
-    - name: SAP SE All Rights Reserved.
-      url: https://sap.com
-    name: kubeapps
-    sources:
-    - https://github.com/sap/kubeapps/
-    urls:
-    - https://sap.github.io/kubeapps/helm/dev/kubeapps-18.0.0.tgz
-    version: 18.0.0
-  - annotations:
-      category: Infrastructure
-      images: |
-        - name: kubeapps-apis
-          image: docker.io/bitnami/kubeapps-apis:2.12.1-debian-12-r0
-        - name: kubeapps-apprepository-controller
-          image: docker.io/bitnami/kubeapps-apprepository-controller:2.12.1-debian-12-r0
-        - name: kubeapps-asset-syncer
-          image: docker.io/bitnami/kubeapps-asset-syncer:2.12.1-debian-12-r0
-        - name: kubeapps-dashboard
-          image: docker.io/bitnami/kubeapps-dashboard:2.12.1-debian-12-r0
-        - name: kubeapps-oci-catalog
-          image: docker.io/bitnami/kubeapps-oci-catalog:2.12.1-debian-12-r0
-        - name: kubeapps-pinniped-proxy
-          image: docker.io/bitnami/kubeapps-pinniped-proxy:2.12.1-debian-12-r0
-        - name: nginx
-          image: ghcr.io/sap/kubeapps/bitnami-deprecated-nginx:1.29.1
-        - name: oauth2-proxy
-          image: ghcr.io/sap/kubeapps/bitnami-deprecated-oauth2-proxy:7.12.0
-      licenses: Apache-2.0
-    apiVersion: v2
-    appVersion: DEVEL
-    created: "2025-12-08T15:51:57.029125937Z"
-    dependencies:
-    - condition: packaging.flux.enabled
-      name: redis
-      repository: file://./charts/redis
-      version: 23.0.2
-    - condition: packaging.helm.enabled
-      name: postgresql
-      repository: file://./charts/postgresql
-      version: 17.0.0
-    - name: common
-      repository: file://./charts/common
-      tags:
-      - bitnami-common
-      version: 2.x.x
-    description: Kubeapps is a web-based UI for launching and managing applications
-      on Kubernetes. It allows users to deploy trusted applications and operators
-      to control users access to the cluster.
-    digest: fdfe057fbd651a93b86a2521a8453591ace4f3cf7afc46105e6099fd21be3266
-    home: https://bitnami.com
-    icon: https://bitnami.com/assets/stacks/kubeapps/img/kubeapps-stack-220x234.png
-    keywords:
-    - helm
-    - dashboard
-    - service catalog
-    - deployment
-    kubeVersion: '>=1.21.0-0'
-    maintainers:
-    - name: Broadcom, Inc. All Rights Reserved.
-      url: https://github.com/bitnami/charts
-    name: kubeapps
-    sources:
-    - https://github.com/bitnami/charts/tree/main/bitnami/kubeapps
-    urls:
-    - https://sap.github.io/kubeapps/helm/dev/kubeapps-17.1.1.tgz
-    version: 17.1.1
-generated: "2025-12-08T15:51:57.0136466Z"
+    - name: "null"
+      version: 17.1.1
+      urls:
+        - "null"
+      created: "null"
+      digest: "null"
+    - name: "null"
+      version: 18.0.0
+      urls:
+        - "null"
+      created: "null"
+      digest: "null"
+    - name: "null"
+      version: 18.0.0
+      urls:
+        - "null"
+      created: "null"
+      digest: "null"
