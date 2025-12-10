@@ -12,16 +12,16 @@ set -euo pipefail
 
 # Structured logging helpers (define early)
 INDENT_LEVEL=0
-indent() { printf '%*s' $((INDENT_LEVEL*2)) ''; }
-section() { echo; echo "== $* =="; }
-step()    { echo "$(indent)- $*"; }
-substep() { INDENT_LEVEL=$((INDENT_LEVEL+1)); echo "$(indent)> $*"; INDENT_LEVEL=$((INDENT_LEVEL-1)); }
+indent() { printf '%*s' $((INDENT_LEVEL*2)) '' >&2; }
+section() { echo >&2; echo "== $* ==" >&2; }
+step()    { printf "%s- %s\n" "$(indent)" "$*" >&2; }
+substep() { INDENT_LEVEL=$((INDENT_LEVEL+1)); printf "%s> %s\n" "$(indent)" "$*" >&2; INDENT_LEVEL=$((INDENT_LEVEL-1)); }
 push_indent() { INDENT_LEVEL=$((INDENT_LEVEL+1)); }
 pop_indent()  { if [[ $INDENT_LEVEL -gt 0 ]]; then INDENT_LEVEL=$((INDENT_LEVEL-1)); fi }
 
 # Simple logger with timestamp
 log() {
-  echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] $*"
+  echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] $*" >&2
 }
 
 [[ "${DEBUG:-false}" == "true" ]] && set -x
@@ -104,12 +104,9 @@ discover_tags() {
   local single="$INPUT_VERSION"
   if [[ -n "$single" ]]; then
     step "Using single tag from INPUT_VERSION: $single"
-    echo "[\"$single\"]"
+    echo "$single"
     return 0
   fi
-
-  # Helper to join lines into JSON array
-  join_json_array() { awk 'BEGIN{print "["} { if (NR>1) printf ","; printf "\""$0"\"" } END{print "]"}'; }
 
   # Define tag classification
   local stable_re='^v[0-9]+\.[0-9]+\.[0-9]+$'
@@ -310,8 +307,19 @@ main() {
     exit 0
   fi
   local processed=0
+  # Mode-specific tag regex for validation
+  local stable_re='^v[0-9]+\.[0-9]+\.[0-9]+$'
+  local dev_re='^v[0-9]+\.[0-9]+\.[0-9]+-.+'
   while IFS= read -r tag; do
+    # Trim whitespace
+    tag=${tag%%[[:space:]]*}
     [[ -z "$tag" ]] && continue
+    # Validate tag according to mode
+    if [[ "$MODE" == "stable" ]]; then
+      [[ "$tag" =~ $stable_re ]] || { substep "Skip non-stable line: $tag"; continue; }
+    else
+      [[ "$tag" =~ $dev_re ]] || { substep "Skip non-dev line: $tag"; continue; }
+    fi
     step "Process tag: ${tag}"
     push_indent
     package_and_upload "$tag"
