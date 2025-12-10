@@ -11,7 +11,7 @@ It consists of four main stages: update the development images, update the CI, u
 
 For building the [development container images](https://github.com/orgs/SAP/packages?repo_name=kubeapps), a number of base images are used in the build stage. Specifically:
 
-- The [dashboard/Dockerfile](https://github.com/sap/kubeapps/blob/main/dashboard/Dockerfile) uses:
+- The [dashboard/Dockerfile](https://github.com/SAP/kubeapps/blob/main/dashboard/Dockerfile) uses:
   - [bitnami/node](https://hub.docker.com/r/bitnami/node/tags) for building the static files for production.
   - [bitnami/nginx](https://github.com/SAP/kubeapps/tree/main/external/bitnami-deprecated-nginx/nginx) for serving the HTML and JS files as a simple web server.
 - Those services written in Golang use the same [bitnami/golang](https://github.com/SAP/kubeapps/tree/main/external/bitnami-deprecated-golang/1.25/debian-12) image for building the binary, but then a [scratch](https://hub.docker.com/_/scratch) image is used for actually running it. These Dockerfiles are:
@@ -35,7 +35,7 @@ Find further information in the [CI configuration](../testing/ci.md) and the [e2
 
 #### 0.2.1 - CI configuration
 
-In the [GitHub Actions Kubeapps General Workflow definition](https://github.com/sap/kubeapps/blob/main/.github/workflows/kubeapps-general.yaml)
+In the [GitHub Actions Kubeapps General Workflow definition](https://github.com/SAP/kubeapps/blob/main/.github/workflows/kubeapps-general.yaml)
 we have an initial declaration of the variables used along with the file.
 The versions used there _must_ match the ones used for building the container images. Consequently, these variables _must_ be changed accordingly:
 
@@ -66,7 +66,7 @@ The versions used there _must_ match the ones used for building the container im
 
 We use a separate integration image for running the e2e tests consisting of a simple Node image with a set of dependencies. Therefore, upgrading it includes:
 
-- The [integration dependencies](https://github.com/sap/kubeapps/blob/main/integration/package.json) can be updated by running:
+- The [integration dependencies](https://github.com/SAP/kubeapps/blob/main/integration/package.json) can be updated by running:
 
 ```bash
 cd integration
@@ -141,7 +141,7 @@ go get -u ./...
 
 #### Rust dependencies
 
-Upgrade the [rust dependencies](https://github.com/vmware-tanzu/kubeapps/blob/main/cmd/pinniped-proxy/Cargo.toml) by running:
+Upgrade the [rust dependencies](https://github.com/SAP/kubeapps/blob/main/cmd/pinniped-proxy/Cargo.toml) by running:
 
 ```bash
 cd cmd/pinniped-proxy/
@@ -157,7 +157,7 @@ cargo update
 
 #### Security and chart sync PRs
 
-Finally, look at the [pull requests](https://github.com/vmware-tanzu/kubeapps/pulls) and ensure there is no PR open by Dependabot
+Finally, look at the [pull requests](https://github.com/SAP/kubeapps/pulls) and ensure there is no PR open by Dependabot
 or `kubeapps-bot` fixing a security issue or bringing upstream chart changes. If so, discuss it with another Kubeapps maintainer
 and come to a decision on it, trying not to release with a high/medium severity issue.
 
@@ -170,11 +170,19 @@ another Kubeapps maintainer to review and accept so you can merge it.
 
 ### 0.5 - Update the website engine
 
-The Kubeapps website is built using [Hugo](https://gohugo.io/). Hugo is a static site generator written in Go. It is used to generate the Kubeapps website from Markdown files and HTML templates.
-The Kubeapps website is hosted on [Netlify](https://www.netlify.com/). Netlify is a cloud-based platform that automatically builds and deploys websites when new code is pushed to a Git repository.
+The Kubeapps website is built using [Docusaurus](https://docusaurus.io/). Docusaurus is a static site generator written in Go. It is used to generate the Kubeapps website from Markdown files and HTML templates.
+The Kubeapps website is hosted on [GitHub Pages](https://sap.github.io/kubeapps/).The GitHub Action in this repository automatically builds and deploys websites when new code is pushed to our git repository.
 
-To update the website engine, you need to Update the `HUGO_VERSION` variable in the [netlify.toml](https://github.com/vmware-tanzu/kubeapps/blob/main/site/netlify.toml)
-to the latest [Hugo release](https://github.com/gohugoio/hugo/releases/).
+To update the website engine, go to /site and execute a docusaurus upgrade based on the [official documentation](https://docusaurus.io/docs/migration).
+
+### 0.6 - Update the Helm chart
+
+The Kubeapps Helm chart is located in the `chart/kubeapps` directory. It _must_ be updated to reflect the new versions of the container images used in this release.
+
+To do so, follow these steps:
+1. Update the `values.yaml` file in the `chart/kubeapps` directory to reflect the new versions of the container images used in this release.
+1. Update the `Chart.yaml` file in the `chart/kubeapps` directory to reflect the new version of the chart. The chart version _must_ be updated according to the [Semantic Versioning](https://semver.org/) rules based on the changes included in this release.
+
 
 ## 1 - Select the commit to be tagged and perform some tests
 
@@ -218,59 +226,26 @@ git push origin ${VERSION_NAME} # replace `origin` by your remote name
 > export VERSION_NAME="v$(semver bump <major|minor|patch> $(git fetch --tags && git describe --tags $(git rev-list --tags --max-count=1)))"
 > ```
 
-A new tag pushed to the repository will trigger, apart from the usual test and build steps, the [_Release Pipeline_](https://github.com/vmware-tanzu/kubeapps/actions/workflows/kubeapps-release.yml) as described in the [CI documentation](../testing/ci.md).
+A new tag pushed to the repository will trigger, apart from the usual test and build steps, the [_Release Pipeline_](https://github.com/SAP/kubeapps/actions/workflows/kubeapps-release.yml) as described in the [CI documentation](../testing/ci.md).
 An example of the triggered workflow is depicted below:
 
 ![CI workflow after pushing a new tag](/img/ci-workflow-release.png "CI workflow after pushing a new tag")
 
 ## 3 - Complete the GitHub release notes
 
-Once the release job is finished, you will have a pre-populated [draft GitHub release](https://github.com/vmware-tanzu/kubeapps/releases).
+Once the release job is finished, you will have a pre-populated [draft GitHub release](https://github.com/SAP/kubeapps/releases).
 
 You still _must_ add a high-level description with the release highlights. Please take apart those commits just bumping
 dependencies up; it may prevent important commits from being clearly identified by our users.
 
 Then, save the draft and **do not publish it yet** and get these notes reviewed by another Kubeapps maintainer.
 
-## 4 - Manually review the PR created in the bitnami/charts repository
+## 4 - Publish the GitHub release
 
-Since the chart that we host in the Kubeapps repository is only intended for development purposes, we need to synchronize it
-with the official one in the [bitnami/charts repository](https://github.com/bitnami/charts/tree/main/bitnami/kubeapps).
+Once the new version of the Kubeapps Chart has been added to the helm index.yaml through the [Helm Index Publisher](https://github.com/SAP/kubeapps/actions/workflows/helm-index.yml) has been published and the release notes reviewed,
+you are ready to publish the release by clicking on the _publish_ button in the [GitHub releases page](https://github.com/SAP/kubeapps/releases).
 
-To this end, our CI system will automatically (in the `sync_chart_to_bitnami` job, as described in the [CI documentation](../testing/ci.md).)
-send a PR with the current development changes to [their repository](https://github.com/bitnami/charts/pulls) whenever a new release is triggered.
-Once the PR has been created, have a look at it (eg. remove any development changes that should not be released) and wait
-for someone from the Bitnami team to review and accept it.
-
-> Some issues can arise here, so please check the app versions are being properly updated at once and ensure you have the latest
-> changes in the PR branch. Note that the [bitnami-bot](https://github.com/bitnami-bot) usually performs some automated commits
-> to the main branch that might collide with the changes in our PR. In particular, it will release a new version of the chart with the updated images.
-
-## 5 - Check Dockerfiles and notify the proper teams
-
-Eventually, as the Kubeapps code continues to evolve, some changes are often introduced in our own [development container images](https://hub.docker.com/u/kubeapps).
-However, those changes won't get released in the official Bitnami repository unless we manually notify the proper team to also include those changes in their building system.
-
-> As part of this release process, each Kubeapps component's Dockerfile _must_ be compared against the one in the previous release.
-> If they functionally differ each other, the Bitnami Content team _must_ be notified.
-
-## 6 - Check released version is in Bitnami repository
-
-Make sure the version is now publicly available in Bitnami repository.
-The correct app and chart versions should appear when performing a search:
-
-```bash
-helm repo update && helm search repo kubeapps
-```
-
-## 7 - Publish the GitHub release
-
-Once the new version of the [Kubeapps official chart](https://github.com/bitnami/charts/tree/main/bitnami/kubeapps) has been published and the release notes reviewed,
-you are ready to publish the release by clicking on the _publish_ button in the [GitHub releases page](https://github.com/vmware-tanzu/kubeapps/releases).
-
-> Take into account that the chart version will be eventually published as part of the usual Bitnami release cycle. So expect this step to take a certain amount of time.
-
-## 8 - Promote the release
+## 5 - Promote the release
 
 Tell the community about the new release by using our Kubernetes slack [#kubeapps channel](https://kubernetes.slack.com/messages/kubeapps).
 If it includes major features, you might consider promoting it on social media.
