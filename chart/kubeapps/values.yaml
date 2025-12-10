@@ -627,7 +627,7 @@ dashboard:
   image:
     registry: ghcr.io
     repository: sap/kubeapps/dashboard
-    tag: v3.0.0-rc4
+    tag: v3.0.0-rc4-rc2
     digest: ""
     ## Specify a imagePullPolicy
     ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
@@ -1028,7 +1028,7 @@ apprepository:
   image:
     registry: ghcr.io
     repository: sap/kubeapps/apprepository-controller
-    tag: v3.0.0-rc4
+    tag: v3.0.0-rc4-rc2
     digest: ""
     ## Specify a imagePullPolicy
     ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
@@ -1054,7 +1054,7 @@ apprepository:
   syncImage:
     registry: ghcr.io
     repository: sap/kubeapps/asset-syncer
-    tag: v3.0.0-rc4
+    tag: v3.0.0-rc4-rc2
     digest: ""
     ## Specify a imagePullPolicy
     ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
@@ -1575,7 +1575,7 @@ pinnipedProxy:
   image:
     registry: ghcr.io
     repository: sap/kubeapps/pinniped-proxy
-    tag: v3.0.0-rc4
+    tag: v3.0.0-rc4-rc2
     digest: ""
     ## Specify a imagePullPolicy
     ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
@@ -1871,7 +1871,7 @@ kubeappsapis:
   image:
     registry: ghcr.io
     repository: sap/kubeapps/kubeapps-apis
-    tag: v3.0.0-rc4
+    tag: v3.0.0-rc4-rc2
     digest: ""
     ## Specify a imagePullPolicy
     ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
@@ -2250,7 +2250,7 @@ ociCatalog:
   image:
     registry: ghcr.io
     repository: sap/kubeapps/oci-catalog
-    tag: v3.0.0-rc4
+    tag: v3.0.0-rc4-rc2
     digest: ""
     ## Specify a imagePullPolicy
     ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
