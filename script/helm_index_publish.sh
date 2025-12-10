@@ -56,10 +56,54 @@ discover_tags() {
     echo "[\"$single\"]"
     return 0
   fi
-  if [[ "$MODE" == "stable" ]]; then
-    gh api --paginate repos/${GITHUB_REPOSITORY}/releases --jq '[.[] | .tag_name | select(test("^v[0-9]+\\.[0-9]+\\.[0-9]+$"))]'
+
+  # Helper to join lines into JSON array
+  join_json_array() {
+    awk 'BEGIN{print "["} { if (NR>1) printf ","; printf "\""$0"\"" } END{print "]"}'
+  }
+
+  # Stable regex: optional leading v and x.y.z
+  local stable_re='^v?[0-9]+\.[0-9]+\.[0-9]+$'
+
+  # 1) Try GitHub releases
+  local releases
+  releases=$(gh api --paginate repos/${GITHUB_REPOSITORY}/releases --jq '.[].tag_name' 2>/dev/null || true)
+  # 2) Fallback to GitHub tags
+  local gh_tags
+  if [[ -z "$releases" ]]; then
+    gh_tags=$(gh api --paginate repos/${GITHUB_REPOSITORY}/tags --jq '.[].name' 2>/dev/null || true)
+  fi
+  # 3) Fallback to local git tags
+  local git_tags
+  if [[ -z "$releases" && -z "$gh_tags" ]]; then
+    git_tags=$(git tag --list || true)
+  fi
+
+  # Build candidate list
+  local candidates
+  if [[ -n "$releases" ]]; then
+    candidates="$releases"
+  elif [[ -n "$gh_tags" ]]; then
+    candidates="$gh_tags"
   else
-    gh api --paginate repos/${GITHUB_REPOSITORY}/releases --jq '[.[] | .tag_name | select(test("^v") and (test("^v[0-9]+\\.[0-9]+\\.[0-9]+$") | not))]'
+    candidates="$git_tags"
+  fi
+
+  # Filter per mode
+  local filtered
+  if [[ -n "$candidates" ]]; then
+    if [[ "$MODE" == "stable" ]]; then
+      filtered=$(echo "$candidates" | grep -E "$stable_re" || true)
+    else
+      # dev: anything not matching stable
+      filtered=$(echo "$candidates" | grep -Ev "$stable_re" || true)
+    fi
+  fi
+
+  if [[ -z "${filtered:-}" ]]; then
+    echo "[]"
+  else
+    echo "$filtered" | sort -u | join_json_array
   fi
 }
 
