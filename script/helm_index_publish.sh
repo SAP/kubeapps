@@ -10,6 +10,15 @@ set -euo pipefail
 #   DEBUG: true to enable bash tracing
 # Requirements: gh, helm, jq, yq must be available; GH_TOKEN must be set in the environment.
 
+# Structured logging helpers (define early)
+INDENT_LEVEL=0
+indent() { printf '%*s' $((INDENT_LEVEL*2)) ''; }
+section() { echo; echo "== $* =="; }
+step()    { echo "$(indent)- $*"; }
+substep() { INDENT_LEVEL=$((INDENT_LEVEL+1)); echo "$(indent)> $*"; INDENT_LEVEL=$((INDENT_LEVEL-1)); }
+push_indent() { INDENT_LEVEL=$((INDENT_LEVEL+1)); }
+pop_indent()  { if [[ $INDENT_LEVEL -gt 0 ]]; then INDENT_LEVEL=$((INDENT_LEVEL-1)); fi }
+
 # Simple logger with timestamp
 log() {
   echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] $*"
@@ -38,15 +47,6 @@ CHART_DIR="chart/kubeapps"
 CHART_NAME="kubeapps"
 OUTPUT_DIR="site/static/helm"
 [[ "$MODE" == "dev" ]] && OUTPUT_DIR="${OUTPUT_DIR}/dev"
-
-# Structured logging helpers
-INDENT_LEVEL=0
-indent() { printf '%*s' $((INDENT_LEVEL*2)) ''; }
-section() { echo; echo "== $* =="; }
-step()    { echo "$(indent)- $*"; }
-substep() { INDENT_LEVEL=$((INDENT_LEVEL+1)); echo "$(indent)> $*"; INDENT_LEVEL=$((INDENT_LEVEL-1)); }
-push_indent() { INDENT_LEVEL=$((INDENT_LEVEL+1)); }
-pop_indent()  { if [[ $INDENT_LEVEL -gt 0 ]]; then INDENT_LEVEL=$((INDENT_LEVEL-1)); fi }
 
 # Verify required tools and auth
 require_tool() { command -v "$1" >/dev/null 2>&1 || { log "ERROR: Required tool '$1' not found"; return 1; }; }
