@@ -12,7 +12,6 @@ TEST_LATEST_RELEASE=${TEST_LATEST_RELEASE:-false}
 
 # If we want to test the latest version instead we override the image to be used
 if [[ "${TEST_LATEST_RELEASE}" == "true" ]]; then
-  source "${ROOT_DIR}/script/chart_sync_utils.sh"
   latest="$(latestReleaseTag)"
   IMG_DEV_TAG=${latest/v/}
   IMG_MODIFIER=""

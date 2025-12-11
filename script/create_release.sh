@@ -7,8 +7,6 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-source "$(dirname "$0")/chart_sync_utils.sh"
-
 TAG=${1:?Missing tag}
 KUBEAPPS_REPO=${2:?Missing kubeapps repo}
 GH_TOKEN=${GH_TOKEN:?Missing GitHub token}
@@ -18,4 +16,8 @@ if [[ -z "${TAG}" ]]; then
   exit 1
 fi
 
-gh release create -R "${KUBEAPPS_REPO}" -d "${TAG}" -t "${TAG}" -F "${RELEASE_NOTES_TEMPLATE_FILE}"
+# Build release asset from the checked-out repository only
+ASSET_PATH=$(bash "$(dirname "$0")/prepare_release_asset.sh" "${TAG}")
+
+# Create the release in draft mode and attach the packaged chart asset
+ gh release create -R "${KUBEAPPS_REPO}" -d "${TAG}" -t "${TAG}" -F "script/tpl/release_notes.md" "${ASSET_PATH}"

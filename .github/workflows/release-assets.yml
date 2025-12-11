@@ -1,0 +1,41 @@
+# Copyright 2025 the Kubeapps contributors.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Release assets
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+env:
+  ASSET_NAME_PREFIX: kubeapps
+
+jobs:
+  build_release_asset:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository at tag
+        uses: actions/checkout@v5
+        with:
+          # Ensure we check out the exact tag that triggered the release
+          ref: ${{ github.ref }}
+
+      - name: Build asset from chart using local scripts
+        id: prepare
+        shell: bash
+        run: |
+          set -eu
+          TAG="${GITHUB_REF_NAME}"
+          ASSET_PATH=$(bash script/prepare_release_asset.sh "${TAG}")
+          echo "Asset created at: ${ASSET_PATH}"
+          echo "asset_path=${ASSET_PATH}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload asset to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.prepare.outputs.asset_path }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

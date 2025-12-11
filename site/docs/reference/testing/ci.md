@@ -86,7 +86,7 @@ job uses a matrix to parameterize and parallelize the `local_e2e_tests` job, so 
 * `push_images`: each time a new commit is pushed to the main branch or a new version tag is created, the CI images
 (which have already been built) get re-tagged and pushed to the `kubeapps` account in Dockerhub.
 * `release`: every time a new version tag is pushed to the repository, it creates a GitHub release based on the current
-tag by running the script [create_release.sh](https://github.com/vmware-tanzu/kubeapps/blob/main/script/create_release.sh).
+tag by running the script [create_release.sh](https://github.com/SAP/kubeapps/blob/main/script/create_release.sh).
 
 Note that this process is independent of the release of the official Bitnami images and chart. These Bitnami images will
 be created according to their internal process (so the Golang, Node or Rust versions we define here are not used by them.

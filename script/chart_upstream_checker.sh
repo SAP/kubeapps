@@ -9,7 +9,6 @@ set -o pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$ROOT_DIR/script/lib/liblog.sh"
-source "$ROOT_DIR/script/chart_sync_utils.sh"
 
 USERNAME=${1:?Missing git username}
 EMAIL=${2:?Missing git email}
@@ -43,6 +42,11 @@ semverCompare=$(semver compare "${currentVersion}" "${externalVersion}")
 
 info "currentVersion: ${currentVersion}"
 info "externalVersion: ${externalVersion}"
+
+# Deprecated: This script previously relied on chart_sync_utils.sh for syncing charts with Bitnami.
+# It is no longer supported in this repository setup.
+echo "chart_upstream_checker.sh is deprecated and no longer supported." >&2
+exit 0
 
 # If current version is less than the chart external version, then retrieve the changes and send an internal PR with them
 if [[ ${semverCompare} -lt 0 ]]; then
