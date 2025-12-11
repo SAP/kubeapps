@@ -200,17 +200,30 @@ package_and_upload() {
     return 0
   fi
 
-  substep "Checkout ${tag} and read chart version"
-  git checkout --quiet "$tag"
+  # Export chart directory from the specified tag without switching branches
+  local tmpdir
+  tmpdir=$(mktemp -d)
+  substep "Export chart files from ${tag} to ${tmpdir}"
+  git archive --format=tar "$tag" "$CHART_DIR" | tar -x -C "$tmpdir"
+  local chart_src="$tmpdir/$CHART_DIR"
+  if [[ ! -f "$chart_src/Chart.yaml" ]]; then
+    substep "ERROR: Chart.yaml not found in exported chart from ${tag}"
+    rm -rf "$tmpdir"
+    pop_indent
+    return 1
+  fi
+
   local chart_version
-  chart_version=$(grep '^version:' "$CHART_DIR/Chart.yaml" | awk '{print $2}')
+  chart_version=$(grep '^version:' "$chart_src/Chart.yaml" | awk '{print $2}')
   substep "Chart version: ${chart_version}"
-  substep "helm package ${CHART_DIR}"
-  helm package "$CHART_DIR" --destination "/tmp"
+
+  substep "helm package ${chart_src}"
+  helm package "$chart_src" --destination "/tmp"
   local packaged_tgz
   packaged_tgz=$(ls /tmp/${CHART_NAME}-*.tgz | tail -n 1)
   if [[ -z "$packaged_tgz" || ! -f "$packaged_tgz" ]]; then
     substep "ERROR: packaged chart not found"
+    rm -rf "$tmpdir"
     pop_indent
     return 1
   fi
@@ -224,6 +237,7 @@ package_and_upload() {
   asset_url=$(gh api repos/${REPO_SLUG}/releases/tags/${tag} --jq ".assets[] | select(.name == \"${asset_name}\") | .browser_download_url")
   if [[ -z "$asset_url" ]]; then
     substep "ERROR: failed to resolve asset URL"
+    rm -rf "$tmpdir"
     pop_indent
     return 1
   fi
@@ -232,6 +246,7 @@ package_and_upload() {
   jq -n --arg tag "$tag" --arg chart_version "$chart_version" --arg asset_url "$asset_url" --arg sha256 "$sha256" --arg created "$created_ts" --arg name "$CHART_NAME" \
     '{tag:$tag, chart_version:$chart_version, asset_url:$asset_url, digest:$sha256, created:$created, name:$name}' > "$meta"
   substep "Wrote metadata: ${meta}"
+  rm -rf "$tmpdir"
   pop_indent
 }
 
@@ -262,8 +277,7 @@ return_branch_and_commit() {
   section "Commit and push changes"
   local commit_path="$OUTPUT_DIR"
   local message="Helm(${MODE}): refresh index.yaml (asset URLs) and metadata only"
-  step "Switch back to: ${ORIG_BRANCH}"
-  git checkout --quiet "$ORIG_BRANCH"
+  # We are already on ${ORIG_BRANCH}; do not checkout again to avoid overwriting local changes
   if ! git config user.email >/dev/null; then
     step "Configure git identity"
     push_indent
@@ -327,6 +341,11 @@ main() {
     processed=$((processed+1))
   done <<< "$tags_list"
   step "Processed ${processed} tag(s)"
+
+  # Switch back to original branch before generating index to avoid checkout conflicts
+  section "Switch back to original branch before index"
+  step "Checkout: ${ORIG_BRANCH}"
+  git checkout --quiet "$ORIG_BRANCH"
 
   generate_index
   return_branch_and_commit
