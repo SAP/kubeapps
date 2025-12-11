@@ -12,6 +12,12 @@ entries:
         - "null"
       created: "null"
       digest: "null"
+    - name: kubeapps
+      version: 18.0.0
+      urls:
+        - https://github.com/SAP/kubeapps/releases/download/v3.0.0-rc4-rc2-rc1/kubeapps-18.0.0.tgz
+      created: "2025-12-11T09:59:17Z"
+      digest: eabe3f34118cfa848e3e92cec53bb359e527d0008f0de4206c28e276af616ae4
     - name: "null"
       version: 18.0.0
       urls:
