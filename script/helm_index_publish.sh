@@ -56,7 +56,6 @@ REPO_NAME="${GITHUB_REPOSITORY##*/}"
 REPO_SLUG="${GITHUB_REPOSITORY:-${REPO_OWNER}/${REPO_NAME}}"
 BASE_URL="https://${REPO_OWNER}.github.io/${REPO_NAME}/helm"
 [[ "$MODE" == "dev" ]] && BASE_URL="${BASE_URL}/dev"
-CHART_DIR="chart/kubeapps"
 CHART_NAME="kubeapps"
 OUTPUT_DIR="site/static/helm"
 [[ "$MODE" == "dev" ]] && OUTPUT_DIR="${OUTPUT_DIR}/dev"
@@ -204,14 +203,15 @@ package_and_upload() {
     return 0
   fi
 
-  # Export chart directory from the specified tag without switching branches
+  # Export chart files from root directory of the specified tag without switching branches
   local tmpdir
   tmpdir=$(mktemp -d)
-  substep "Export chart files from ${tag} to ${tmpdir}"
-  git archive --format=tar "$tag" "$CHART_DIR" | tar -x -C "$tmpdir"
-  local chart_src="$tmpdir/$CHART_DIR"
+  substep "Export chart files from ${tag} (root) to ${tmpdir}"
+  # Export entire repo at tag and use root as chart source
+  git archive --format=tar "$tag" | tar -x -C "$tmpdir"
+  local chart_src="$tmpdir"
   if [[ ! -f "$chart_src/Chart.yaml" ]]; then
-    substep "ERROR: Chart.yaml not found in exported chart from ${tag}"
+    substep "ERROR: Chart.yaml not found in root directory of tag ${tag}"
     rm -rf "$tmpdir"
     pop_indent
     return 1
