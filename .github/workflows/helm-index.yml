@@ -1,9 +1,12 @@
 # Copyright 2025 the Kubeapps contributors.
 # SPDX-License-Identifier: Apache-2.0
 
+---
 name: Generate Helm Repository Index
 
 on:
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       mode:
@@ -45,23 +48,6 @@ jobs:
         with:
           version: 'v4.0.0'
 
-      - name: Install GitHub CLI
-        run: |
-          type -p gh >/dev/null || {
-            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-            sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
-            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-            sudo apt update
-            sudo apt install gh -y
-          }
-
-      - name: Install jq and yq
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq
-          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
-          sudo chmod +x /usr/local/bin/yq
-
       - name: Generate Helm repository index
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -76,7 +62,7 @@ jobs:
           if [[ -n "${INPUT_VERSION}" ]]; then
             echo "Processing single version: ${INPUT_VERSION}"
           fi
-          
+
           bash script/helm_index_publish.sh --mode="${MODE}"
 
       - name: Display index summary
@@ -90,4 +76,3 @@ jobs:
           else
             echo "No index.yaml file found"
           fi
-
