@@ -189,7 +189,7 @@ discover_tags() {
 }
 
 package_and_upload() {
-  section "Package and upload tag"
+  section "Download and process release asset"
   step "Tag: $1"
   push_indent
   local tag=$1
@@ -203,52 +203,81 @@ package_and_upload() {
     return 0
   fi
 
-  # Export chart files from root directory of the specified tag without switching branches
+  # Download the release asset that was created by prepare_release_asset.sh
+  substep "Fetching release assets for ${tag}"
+  local asset_name asset_url
+
+  # Get all assets for this release
+  local assets_json
+  assets_json=$(gh api repos/${REPO_SLUG}/releases/tags/${tag} --jq '.assets' 2>/dev/null || echo "[]")
+
+  # Find the kubeapps chart asset (should be kubeapps-*.tgz)
+  asset_name=$(echo "$assets_json" | jq -r '.[] | select(.name | test("^kubeapps-.*\\.tgz$")) | .name' | head -1)
+  asset_url=$(echo "$assets_json" | jq -r '.[] | select(.name | test("^kubeapps-.*\\.tgz$")) | .browser_download_url' | head -1)
+
+  if [[ -z "$asset_name" || -z "$asset_url" ]]; then
+    substep "ERROR: No Helm chart asset found for release ${tag}"
+    substep "Expected asset name pattern: kubeapps-*.tgz"
+    pop_indent
+    return 1
+  fi
+
+  substep "Found asset: ${asset_name}"
+  substep "Downloading from: ${asset_url}"
+
+  # Download the asset
   local tmpdir
   tmpdir=$(mktemp -d)
-  substep "Export chart files from ${tag} (root) to ${tmpdir}"
-  # Export entire repo at tag and use root as chart source
-  git archive --format=tar "$tag" | tar -x -C "$tmpdir"
-  local chart_src="$tmpdir"
-  if [[ ! -f "$chart_src/Chart.yaml" ]]; then
-    substep "ERROR: Chart.yaml not found in root directory of tag ${tag}"
+  local downloaded_tgz="${tmpdir}/${asset_name}"
+
+  if ! curl -fsSL -o "${downloaded_tgz}" "${asset_url}"; then
+    substep "ERROR: Failed to download asset"
+    rm -rf "$tmpdir"
+    pop_indent
+    return 1
+  fi
+
+  # Extract Chart.yaml to read metadata
+  local extract_dir="${tmpdir}/extracted"
+  mkdir -p "${extract_dir}"
+  tar -xzf "${downloaded_tgz}" -C "${extract_dir}"
+
+  # Find Chart.yaml (should be in kubeapps/Chart.yaml based on package structure)
+  local chart_yaml
+  chart_yaml=$(find "${extract_dir}" -name "Chart.yaml" | head -1)
+
+  if [[ -z "$chart_yaml" || ! -f "$chart_yaml" ]]; then
+    substep "ERROR: Chart.yaml not found in downloaded package"
     rm -rf "$tmpdir"
     pop_indent
     return 1
   fi
 
   local chart_version
-  chart_version=$(grep '^version:' "$chart_src/Chart.yaml" | awk '{print $2}')
+  chart_version=$(grep '^version:' "$chart_yaml" | awk '{print $2}')
   substep "Chart version: ${chart_version}"
 
-  substep "helm package ${chart_src}"
-  helm package "$chart_src" --destination "/tmp"
-  local packaged_tgz
-  packaged_tgz=$(ls /tmp/${CHART_NAME}-*.tgz | tail -n 1)
-  if [[ -z "$packaged_tgz" || ! -f "$packaged_tgz" ]]; then
-    substep "ERROR: packaged chart not found"
-    rm -rf "$tmpdir"
-    pop_indent
-    return 1
-  fi
+  # Calculate SHA256 of the downloaded asset
   local sha256
-  sha256=$(sha256sum "$packaged_tgz" | awk '{print $1}')
-
-  substep "Upload asset to release: $(basename "$packaged_tgz")"
-  gh release upload "$tag" "$packaged_tgz" --clobber
-  local asset_name asset_url
-  asset_name=$(basename "$packaged_tgz")
-  asset_url=$(gh api repos/${REPO_SLUG}/releases/tags/${tag} --jq ".assets[] | select(.name == \"${asset_name}\") | .browser_download_url")
-  if [[ -z "$asset_url" ]]; then
-    substep "ERROR: failed to resolve asset URL"
-    rm -rf "$tmpdir"
-    pop_indent
-    return 1
+  if command -v sha256sum &>/dev/null; then
+    sha256=$(sha256sum "$downloaded_tgz" | awk '{print $1}')
+  else
+    # macOS fallback
+    sha256=$(shasum -a 256 "$downloaded_tgz" | awk '{print $1}')
   fi
+
   local created_ts
   created_ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-  jq -n --arg tag "$tag" --arg chart_version "$chart_version" --arg asset_url "$asset_url" --arg sha256 "$sha256" --arg created "$created_ts" --arg name "$CHART_NAME" \
+
+  # Write metadata for index generation
+  jq -n --arg tag "$tag" \
+        --arg chart_version "$chart_version" \
+        --arg asset_url "$asset_url" \
+        --arg sha256 "$sha256" \
+        --arg created "$created_ts" \
+        --arg name "$CHART_NAME" \
     '{tag:$tag, chart_version:$chart_version, asset_url:$asset_url, digest:$sha256, created:$created, name:$name}' > "$meta"
+
   substep "Wrote metadata: ${meta}"
   rm -rf "$tmpdir"
   pop_indent
