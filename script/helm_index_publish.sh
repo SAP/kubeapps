@@ -207,16 +207,25 @@ package_and_upload() {
   substep "Fetching release assets for ${tag}"
   local asset_name asset_url
 
-  # Get all assets for this release
+  # Get all assets for this release (handle errors gracefully)
   local assets_json
-  assets_json=$(gh api repos/${REPO_SLUG}/releases/tags/${tag} --jq '.assets' 2>/dev/null || echo "[]")
+  if ! assets_json=$(gh api repos/${REPO_SLUG}/releases/tags/${tag} --jq '.assets' 2>/dev/null); then
+    substep "WARNING: Failed to fetch release ${tag} from GitHub API"
+    pop_indent
+    return 1
+  fi
+
+  # Handle case where assets_json is empty or null
+  if [[ -z "$assets_json" || "$assets_json" == "null" ]]; then
+    assets_json="[]"
+  fi
 
   # Find the kubeapps chart asset (should be kubeapps-*.tgz)
   asset_name=$(echo "$assets_json" | jq -r '.[] | select(.name | test("^kubeapps-.*\\.tgz$")) | .name' | head -1)
   asset_url=$(echo "$assets_json" | jq -r '.[] | select(.name | test("^kubeapps-.*\\.tgz$")) | .browser_download_url' | head -1)
 
   if [[ -z "$asset_name" || -z "$asset_url" ]]; then
-    substep "ERROR: No Helm chart asset found for release ${tag}"
+    substep "WARNING: No Helm chart asset found for release ${tag}"
     substep "Expected asset name pattern: kubeapps-*.tgz"
     pop_indent
     return 1
@@ -231,7 +240,7 @@ package_and_upload() {
   local downloaded_tgz="${tmpdir}/${asset_name}"
 
   if ! curl -fsSL -o "${downloaded_tgz}" "${asset_url}"; then
-    substep "ERROR: Failed to download asset"
+    substep "WARNING: Failed to download asset from ${asset_url}"
     rm -rf "$tmpdir"
     pop_indent
     return 1
@@ -240,14 +249,20 @@ package_and_upload() {
   # Extract Chart.yaml to read metadata
   local extract_dir="${tmpdir}/extracted"
   mkdir -p "${extract_dir}"
-  tar -xzf "${downloaded_tgz}" -C "${extract_dir}"
+
+  if ! tar -xzf "${downloaded_tgz}" -C "${extract_dir}" 2>/dev/null; then
+    substep "WARNING: Failed to extract tarball (corrupted or invalid format)"
+    rm -rf "$tmpdir"
+    pop_indent
+    return 1
+  fi
 
   # Find Chart.yaml (should be in kubeapps/Chart.yaml based on package structure)
   local chart_yaml
   chart_yaml=$(find "${extract_dir}" -name "Chart.yaml" | head -1)
 
   if [[ -z "$chart_yaml" || ! -f "$chart_yaml" ]]; then
-    substep "ERROR: Chart.yaml not found in downloaded package"
+    substep "WARNING: Chart.yaml not found in downloaded package"
     rm -rf "$tmpdir"
     pop_indent
     return 1
@@ -255,6 +270,14 @@ package_and_upload() {
 
   local chart_version
   chart_version=$(grep '^version:' "$chart_yaml" | awk '{print $2}')
+
+  if [[ -z "$chart_version" ]]; then
+    substep "WARNING: Could not extract version from Chart.yaml"
+    rm -rf "$tmpdir"
+    pop_indent
+    return 1
+  fi
+
   substep "Chart version: ${chart_version}"
 
   # Calculate SHA256 of the downloaded asset
@@ -349,31 +372,39 @@ main() {
   push_indent
   echo "$tags_list"
   pop_indent
-  if [[ -z "$tags_list" ]]; then
-    step "No tags found for mode '${MODE}'. Nothing to do."
-    exit 0
-  fi
+
   local processed=0
-  # Mode-specific tag regex for validation
-  local stable_re='^v[0-9]+\.[0-9]+\.[0-9]+$'
-  local dev_re='^v[0-9]+\.[0-9]+\.[0-9]+-.+'
-  while IFS= read -r tag; do
-    # Trim whitespace
-    tag=${tag%%[[:space:]]*}
-    [[ -z "$tag" ]] && continue
-    # Validate tag according to mode
-    if [[ "$MODE" == "stable" ]]; then
-      [[ "$tag" =~ $stable_re ]] || { substep "Skip non-stable line: $tag"; continue; }
-    else
-      [[ "$tag" =~ $dev_re ]] || { substep "Skip non-dev line: $tag"; continue; }
-    fi
-    step "Process tag: ${tag}"
-    push_indent
-    package_and_upload "$tag"
-    pop_indent
-    processed=$((processed+1))
-  done <<< "$tags_list"
-  step "Processed ${processed} tag(s)"
+  local failed=0
+
+  if [[ -z "$tags_list" ]]; then
+    step "No tags found for mode '${MODE}'. Will generate empty index.yaml."
+  else
+    # Mode-specific tag regex for validation
+    local stable_re='^v[0-9]+\.[0-9]+\.[0-9]+$'
+    local dev_re='^v[0-9]+\.[0-9]+\.[0-9]+-.+'
+    while IFS= read -r tag; do
+      # Trim whitespace
+      tag=${tag%%[[:space:]]*}
+      [[ -z "$tag" ]] && continue
+      # Validate tag according to mode
+      if [[ "$MODE" == "stable" ]]; then
+        [[ "$tag" =~ $stable_re ]] || { substep "Skip non-stable line: $tag"; continue; }
+      else
+        [[ "$tag" =~ $dev_re ]] || { substep "Skip non-dev line: $tag"; continue; }
+      fi
+      step "Process tag: ${tag}"
+      push_indent
+      # Wrap in error handling to continue processing other tags if one fails
+      if package_and_upload "$tag"; then
+        processed=$((processed+1))
+      else
+        substep "WARNING: Failed to process tag ${tag}, continuing with next tag"
+        failed=$((failed+1))
+      fi
+      pop_indent
+    done <<< "$tags_list"
+    step "Processed ${processed} tag(s), ${failed} failed"
+  fi
 
   # Switch back to original branch before generating index to avoid checkout conflicts
   section "Switch back to original branch before index"

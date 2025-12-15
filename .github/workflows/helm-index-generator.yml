@@ -83,14 +83,36 @@ jobs:
       - name: Display index summary
         if: always()
         run: |
-          if [[ -f index.yaml ]]; then
+          set -eu
+          # Determine index file location based on mode
+          if [[ "${{ inputs.mode }}" == "dev" ]]; then
+            INDEX_FILE="site/static/helm/dev/index.yaml"
+          else
+            INDEX_FILE="site/static/helm/index.yaml"
+          fi
+          
+          if [[ -f "${INDEX_FILE}" ]]; then
             echo "## Generated index.yaml summary (${{ inputs.mode }} mode)" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            yq eval '.entries | to_entries | .[] | .key + ": " + (.value | length | tostring) + " version(s)"' index.yaml >> $GITHUB_STEP_SUMMARY || echo "Could not parse index entries" >> $GITHUB_STEP_SUMMARY
+            echo "📍 **Location:** \`${INDEX_FILE}\`" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Total entries:** $(yq eval '.entries | length' index.yaml)" >> $GITHUB_STEP_SUMMARY
+            
+            # Check if entries exist
+            ENTRY_COUNT=$(yq eval '.entries | length' "${INDEX_FILE}" 2>/dev/null || echo "0")
+            
+            if [[ "${ENTRY_COUNT}" -gt 0 ]]; then
+              yq eval '.entries | to_entries | .[] | .key + ": " + (.value | length | tostring) + " version(s)"' "${INDEX_FILE}" >> $GITHUB_STEP_SUMMARY || echo "Could not parse index entries" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "**Total chart entries:** ${ENTRY_COUNT}" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "ℹ️ Index is empty (no releases match the ${{ inputs.mode }} filter)" >> $GITHUB_STEP_SUMMARY
+            fi
           else
-            echo "## No index.yaml file found" >> $GITHUB_STEP_SUMMARY
+            echo "## ⚠️ No index.yaml file found" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Expected location: \`${INDEX_FILE}\`" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "This may indicate the script failed before generating the index." >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Show Helm repo add instructions
