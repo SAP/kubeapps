@@ -56,6 +56,14 @@ retag kubeapps-apis
 retag oci-catalog
 rm -f "${VALUES_FILE}.bk"
 
+# Copy LICENSE file to the chart directory
+if [[ -f "${PROJECT_DIR}/LICENSE" ]]; then
+  cp "${PROJECT_DIR}/LICENSE" "${WORKDIR}/kubeapps/LICENSE"
+  echo "Added LICENSE file to chart package"
+else
+  echo "WARNING: LICENSE file not found at ${PROJECT_DIR}/LICENSE" >&2
+fi
+
 # Package the chart using helm package to create a proper Helm chart tarball
 # The packaged file will be named according to the chart name and version in Chart.yaml
 PACKAGE_OUTPUT=$(helm package "${WORKDIR}/kubeapps" -d "${PROJECT_DIR}" 2>&1)
