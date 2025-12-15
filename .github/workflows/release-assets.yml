@@ -33,12 +33,12 @@ jobs:
             # Manual test mode - use tag as-is for Helm compatibility
             TAG="${{ inputs.tag }}"
             CREATE_RELEASE="${{ inputs.create_release }}"
-            
+
             echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
             echo "create_release=${CREATE_RELEASE}" >> "$GITHUB_OUTPUT"
             echo "is_test=true" >> "$GITHUB_OUTPUT"
             echo "ref=main" >> "$GITHUB_OUTPUT"
-            
+
             echo "::notice::Test mode - Tag: ${TAG}, Create Release: ${CREATE_RELEASE}"
           else
             # Automatic release mode
@@ -46,7 +46,7 @@ jobs:
             echo "create_release=true" >> "$GITHUB_OUTPUT"
             echo "is_test=false" >> "$GITHUB_OUTPUT"
             echo "ref=${GITHUB_REF}" >> "$GITHUB_OUTPUT"
-            
+
             echo "::notice::Release mode - Tag: ${GITHUB_REF_NAME}"
           fi
 
@@ -92,10 +92,10 @@ jobs:
           KUBEAPPS_REPO="${GITHUB_REPOSITORY}"
           ASSET_PATH="${{ steps.build.outputs.asset_path }}"
           IS_TEST="${{ steps.config.outputs.is_test }}"
-          
+
           # Create or update release
           bash script/create_release.sh "${TAG}" "${KUBEAPPS_REPO}"
-          
+
           if [[ "${IS_TEST}" == "true" ]]; then
             echo "::warning::Test release created: ${TAG}. Remember to delete this test release when done!"
           fi
@@ -116,9 +116,8 @@ jobs:
           echo "- **Asset**: ${{ steps.build.outputs.asset_path }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Test Mode**: ${{ steps.config.outputs.is_test }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Release Created**: ${{ steps.config.outputs.create_release }}" >> $GITHUB_STEP_SUMMARY
-          
+
           if [[ "${{ steps.config.outputs.create_release }}" == "true" ]]; then
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "View release: https://github.com/${{ github.repository }}/releases/tag/${{ steps.config.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
           fi
-

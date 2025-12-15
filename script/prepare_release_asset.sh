@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+
+# Copyright 2022 the Kubeapps contributors.
+# SPDX-License-Identifier: Apache-2.0
+
 # Prepares a release asset as a Helm package (.tgz) with proper Helm chart structure,
 # with appVersion set to DEVEL and images retagged to kubeapps/*:latest.
 # Usage: prepare_release_asset.sh <tag>
