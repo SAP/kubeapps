@@ -36,3 +36,9 @@ entries:
         - https://github.com/SAP/kubeapps/releases/download/v3.0.0-rc6/kubeapps-18.0.0.tgz
       created: "2025-12-15T16:28:53Z"
       digest: 7de664f10a849eb600ecd20ec992d95ef8ca24c7c8a3f2a99b1a86048a5550a1
+    - name: kubeapps
+      version: 18.0.0
+      urls:
+        - https://github.com/SAP/kubeapps/releases/download/v3.0.0-rc7/kubeapps-18.0.0.tgz
+      created: "2025-12-15T16:41:28Z"
+      digest: 7af687535a384c03a33239b9237213eb4c0a489a74fe1d7bf3661d3fbce6b8ec
