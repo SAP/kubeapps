@@ -9,19 +9,10 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag/version to test (e.g., v2.0.0)'
+        description: 'Tag/version to test (e.g., v2.0.0-test)'
         required: true
         type: string
         default: 'v0.0.0-test'
-      test_mode:
-        description: 'Add test prefix/suffix to release'
-        required: true
-        type: choice
-        default: 'test-prefix'
-        options:
-          - 'test-prefix'
-          - 'test-suffix'
-          - 'none'
       create_release:
         description: 'Create test release (or just generate asset)'
         required: true
@@ -39,29 +30,16 @@ jobs:
         id: config
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            # Manual test mode
-            BASE_TAG="${{ inputs.tag }}"
-            TEST_MODE="${{ inputs.test_mode }}"
+            # Manual test mode - use tag as-is for Helm compatibility
+            TAG="${{ inputs.tag }}"
             CREATE_RELEASE="${{ inputs.create_release }}"
             
-            case "${TEST_MODE}" in
-              test-prefix)
-                FINAL_TAG="test-${BASE_TAG}"
-                ;;
-              test-suffix)
-                FINAL_TAG="${BASE_TAG}-test"
-                ;;
-              none)
-                FINAL_TAG="${BASE_TAG}"
-                ;;
-            esac
-            
-            echo "tag=${FINAL_TAG}" >> "$GITHUB_OUTPUT"
+            echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
             echo "create_release=${CREATE_RELEASE}" >> "$GITHUB_OUTPUT"
             echo "is_test=true" >> "$GITHUB_OUTPUT"
             echo "ref=main" >> "$GITHUB_OUTPUT"
             
-            echo "::notice::Test mode - Tag: ${FINAL_TAG}, Create Release: ${CREATE_RELEASE}"
+            echo "::notice::Test mode - Tag: ${TAG}, Create Release: ${CREATE_RELEASE}"
           else
             # Automatic release mode
             echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
