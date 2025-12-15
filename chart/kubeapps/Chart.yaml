@@ -6,23 +6,23 @@ annotations:
   licenses: Apache-2.0
   images: |
     - name: kubeapps-apis
-      image: ghcr.io/sap/kubeapps-apis:v3.0.0-rc4-rc2
+      image: ghcr.io/sap/kubeapps-apis:DEVEL
     - name: kubeapps-apprepository-controller
-      image: ghcr.io/sap/kubeapps-apprepository-controller:v3.0.0-rc4-rc2
+      image: ghcr.io/sap/kubeapps-apprepository-controller:DEVEL
     - name: kubeapps-asset-syncer
-      image: ghcr.io/sap/kubeapps-asset-syncer:v3.0.0-rc4-rc2
+      image: ghcr.io/sap/kubeapps-asset-syncer:DEVEL
     - name: kubeapps-dashboard
-      image: ghcr.io/sap/kubeapps-dashboard:v3.0.0-rc4-rc2
+      image: ghcr.io/sap/kubeapps-dashboard:DEVEL
     - name: kubeapps-oci-catalog
-      image: ghcr.io/sap/kubeapps-oci-catalog:v3.0.0-rc4-rc2
+      image: ghcr.io/sap/kubeapps-oci-catalog:DEVEL
     - name: kubeapps-pinniped-proxy
-      image: ghcr.io/sap/kubeapps-pinniped-proxy:v3.0.0-rc4-rc2
+      image: ghcr.io/sap/kubeapps-pinniped-proxy:DEVEL
     - name: nginx
       image: ghcr.io/sap/kubeapps/bitnami-deprecated-nginx:1.29.1
     - name: oauth2-proxy
       image: ghcr.io/sap/kubeapps/bitnami-deprecated-oauth2-proxy:7.12.0
 apiVersion: v2
-appVersion: v3.0.0-rc4-rc2
+appVersion: DEVEL
 dependencies:
 - condition: packaging.flux.enabled
   name: redis

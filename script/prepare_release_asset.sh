@@ -4,8 +4,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Prepares a release asset as a Helm package (.tgz) with proper Helm chart structure,
-# with appVersion set to DEVEL and images retagged to kubeapps/*:latest.
+# with appVersion set to the release tag and images retagged to the same release version.
 # Usage: prepare_release_asset.sh <tag>
+# Example: prepare_release_asset.sh v3.0.0-rc4
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -28,24 +29,21 @@ fi
 WORKDIR=$(mktemp -d)
 cp -R "${CHART_SRC_DIR}" "${WORKDIR}/kubeapps"
 
-# Set appVersion: DEVEL in Chart.yaml
-sed -i.bk 's/^appVersion: .*/appVersion: DEVEL/' "${WORKDIR}/kubeapps/Chart.yaml"
+# Set appVersion to the actual tag version (strip 'v' prefix if present)
+APP_VERSION="${TAG#v}"
+sed -i.bk "s/^appVersion: .*/appVersion: ${APP_VERSION}/" "${WORKDIR}/kubeapps/Chart.yaml"
 rm -f "${WORKDIR}/kubeapps/Chart.yaml.bk"
+echo "Set appVersion to: ${APP_VERSION}"
 
-# Retag images in values.yaml to development (kubeapps/* repository, tag: latest)
+# Retag images in values.yaml to use the release tag
+# Current format: registry: ghcr.io, repository: sap/kubeapps/<service>, tag: vX.Y.Z
 VALUES_FILE="${WORKDIR}/kubeapps/values.yaml"
 
 retag() {
   local service=$1
-  local currentImageEscaped="bitnami\\/kubeapps-${service}"
-  # Special case for kubeapps-apis which may appear as bitnami/kubeapps-apis
-  if [[ "${currentImageEscaped}" == "bitnami\\/kubeapps-kubeapps-apis" ]]; then
-    currentImageEscaped="bitnami\\/kubeapps-apis"
-  fi
-  local targetImageEscaped="kubeapps\\/${service}"
-  sed -i.bk -e '1h;2,$H;$!d;g' -re \
-    's/repository:\s+'"${currentImageEscaped}"'\r?\n\s{4}tag:\s+\S*/repository: '"${targetImageEscaped}"'\n    tag: latest/g' \
-    "${VALUES_FILE}"
+  # Replace any existing tag with the new release tag
+  # Match pattern: tag: <anything> after repository: sap/kubeapps/<service>
+  sed -i.bk "/repository: sap\/kubeapps\/${service}/,/tag:/ s/tag: .*/tag: ${TAG}/" "${VALUES_FILE}"
 }
 
 retag dashboard
@@ -55,6 +53,7 @@ retag pinniped-proxy
 retag kubeapps-apis
 retag oci-catalog
 rm -f "${VALUES_FILE}.bk"
+echo "Retagged all images to: ${TAG}"
 
 # Copy LICENSE file to the chart directory
 if [[ -f "${PROJECT_DIR}/LICENSE" ]]; then
