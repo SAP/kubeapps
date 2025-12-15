@@ -6,6 +6,27 @@ name: Release assets
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag/version to test (e.g., v2.0.0)'
+        required: true
+        type: string
+        default: 'v0.0.0-test'
+      test_mode:
+        description: 'Add test prefix/suffix to release'
+        required: true
+        type: choice
+        default: 'test-prefix'
+        options:
+          - 'test-prefix'
+          - 'test-suffix'
+          - 'none'
+      create_release:
+        description: 'Create test release (or just generate asset)'
+        required: true
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -14,10 +35,47 @@ jobs:
   build_release_asset:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository at tag
+      - name: Determine tag and mode
+        id: config
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            # Manual test mode
+            BASE_TAG="${{ inputs.tag }}"
+            TEST_MODE="${{ inputs.test_mode }}"
+            CREATE_RELEASE="${{ inputs.create_release }}"
+            
+            case "${TEST_MODE}" in
+              test-prefix)
+                FINAL_TAG="test-${BASE_TAG}"
+                ;;
+              test-suffix)
+                FINAL_TAG="${BASE_TAG}-test"
+                ;;
+              none)
+                FINAL_TAG="${BASE_TAG}"
+                ;;
+            esac
+            
+            echo "tag=${FINAL_TAG}" >> "$GITHUB_OUTPUT"
+            echo "create_release=${CREATE_RELEASE}" >> "$GITHUB_OUTPUT"
+            echo "is_test=true" >> "$GITHUB_OUTPUT"
+            echo "ref=main" >> "$GITHUB_OUTPUT"
+            
+            echo "::notice::Test mode - Tag: ${FINAL_TAG}, Create Release: ${CREATE_RELEASE}"
+          else
+            # Automatic release mode
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+            echo "create_release=true" >> "$GITHUB_OUTPUT"
+            echo "is_test=false" >> "$GITHUB_OUTPUT"
+            echo "ref=${GITHUB_REF}" >> "$GITHUB_OUTPUT"
+            
+            echo "::notice::Release mode - Tag: ${GITHUB_REF_NAME}"
+          fi
+
+      - name: Checkout repository
         uses: actions/checkout@v5
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ steps.config.outputs.ref }}
 
       - name: Install Helm
         uses: azure/setup-helm@v4
@@ -34,15 +92,55 @@ jobs:
             sudo apt install gh -y
           }
 
-      - name: Create release with packaged chart asset
+      - name: Build release asset
+        id: build
+        env:
+          TAG: ${{ steps.config.outputs.tag }}
+        run: |
+          set -eu
+          echo "Building release asset for tag: ${TAG}"
+          ASSET_PATH=$(bash script/prepare_release_asset.sh "${TAG}")
+          echo "asset_path=${ASSET_PATH}" >> "$GITHUB_OUTPUT"
+          echo "::notice::Asset created: ${ASSET_PATH}"
+          ls -lh "${ASSET_PATH}"
+
+      - name: Create or update release
+        if: steps.config.outputs.create_release == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -eu
-          TAG="${GITHUB_REF_NAME}"
+          TAG="${{ steps.config.outputs.tag }}"
           KUBEAPPS_REPO="${GITHUB_REPOSITORY}"
+          ASSET_PATH="${{ steps.build.outputs.asset_path }}"
+          IS_TEST="${{ steps.config.outputs.is_test }}"
           
-          # The create_release.sh script will:
-          # 1. Call prepare_release_asset.sh to package the chart with helm
-          # 2. Upload the packaged chart as a release asset
+          # Create or update release
           bash script/create_release.sh "${TAG}" "${KUBEAPPS_REPO}"
+          
+          if [[ "${IS_TEST}" == "true" ]]; then
+            echo "::warning::Test release created: ${TAG}. Remember to delete this test release when done!"
+          fi
+
+      - name: Upload artifact (test mode without release)
+        if: steps.config.outputs.create_release == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: helm-chart-${{ steps.config.outputs.tag }}
+          path: ${{ steps.build.outputs.asset_path }}
+          retention-days: 7
+
+      - name: Summary
+        run: |
+          echo "## Release Asset Build Complete :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tag**: ${{ steps.config.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Asset**: ${{ steps.build.outputs.asset_path }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Test Mode**: ${{ steps.config.outputs.is_test }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Release Created**: ${{ steps.config.outputs.create_release }}" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ steps.config.outputs.create_release }}" == "true" ]]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "View release: https://github.com/${{ github.repository }}/releases/tag/${{ steps.config.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
