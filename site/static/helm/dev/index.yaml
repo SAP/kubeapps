@@ -1,0 +1,20 @@
+entries:
+  kubeapps:
+    - name: kubeapps
+      version: 18.0.0
+      urls:
+        - https://github.com/SAP/kubeapps/releases/download/v3.0.0-rc6/kubeapps-18.0.0.tgz
+      created: "2025-12-15T21:08:59Z"
+      digest: 87a4d2ccc9a7eaa1e5e2a4336aed94a7237ad2889e21b5cf92e259270a4fd265
+    - name: kubeapps
+      version: 18.0.0
+      urls:
+        - https://github.com/SAP/kubeapps/releases/download/v3.0.0-rc7/kubeapps-18.0.0.tgz
+      created: "2025-12-15T21:08:59Z"
+      digest: 87cdaaebda5759dc941ae76570f4fa8f77fd1e2f23e0c3ece299eece048b19b2
+    - name: kubeapps
+      version: 18.0.0
+      urls:
+        - https://github.com/SAP/kubeapps/releases/download/v3.0.0-rc8/kubeapps-18.0.0.tgz
+      created: "2025-12-15T21:09:00Z"
+      digest: adf58afe543e9f299efdcb938b7bd1be3acc71198d3a81a3614b92db1004bf40

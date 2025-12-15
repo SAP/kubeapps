@@ -1,0 +1,8 @@
+{
+  "tag": "v3.0.0-rc6",
+  "chart_version": "18.0.0",
+  "asset_url": "https://github.com/SAP/kubeapps/releases/download/v3.0.0-rc6/kubeapps-18.0.0.tgz",
+  "digest": "87a4d2ccc9a7eaa1e5e2a4336aed94a7237ad2889e21b5cf92e259270a4fd265",
+  "created": "2025-12-15T21:08:59Z",
+  "name": "kubeapps"
+}
