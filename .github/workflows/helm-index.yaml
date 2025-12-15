@@ -5,8 +5,23 @@
 name: Helm Index Publisher
 
 on:
-  release:
-    types: [published]
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Tag that was just released'
+        required: false
+        type: string
+        default: ''
+      mode:
+        description: 'Index mode (stable, dev, or both)'
+        required: false
+        type: string
+        default: 'auto'
+      full_regeneration:
+        description: 'Rebuild index from scratch'
+        required: false
+        type: boolean
+        default: false
   workflow_dispatch:
     inputs:
       mode:
@@ -33,26 +48,86 @@ permissions:
   contents: write
 
 jobs:
+  # Determine which mode to run based on tag or input
+  determine_mode:
+    runs-on: ubuntu-latest
+    outputs:
+      run_stable: ${{ steps.decide.outputs.run_stable }}
+      run_dev: ${{ steps.decide.outputs.run_dev }}
+      version: ${{ steps.decide.outputs.version }}
+    steps:
+      - name: Decide which indexes to generate
+        id: decide
+        run: |
+          set -eu
+          
+          if [[ "${{ github.event_name }}" == "workflow_call" ]]; then
+            # Called from release-assets.yml
+            TAG="${{ inputs.tag }}"
+            MODE="${{ inputs.mode }}"
+            
+            if [[ "${MODE}" == "auto" ]]; then
+              # Auto-detect based on tag
+              if [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                echo "run_stable=true" >> "$GITHUB_OUTPUT"
+                echo "run_dev=false" >> "$GITHUB_OUTPUT"
+                echo "Auto-detected: stable release (${TAG})"
+              elif [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+- ]]; then
+                echo "run_stable=false" >> "$GITHUB_OUTPUT"
+                echo "run_dev=true" >> "$GITHUB_OUTPUT"
+                echo "Auto-detected: dev release (${TAG})"
+              else
+                echo "run_stable=false" >> "$GITHUB_OUTPUT"
+                echo "run_dev=false" >> "$GITHUB_OUTPUT"
+                echo "Tag ${TAG} doesn't match stable or dev pattern"
+              fi
+            elif [[ "${MODE}" == "both" ]]; then
+              echo "run_stable=true" >> "$GITHUB_OUTPUT"
+              echo "run_dev=true" >> "$GITHUB_OUTPUT"
+            elif [[ "${MODE}" == "stable" ]]; then
+              echo "run_stable=true" >> "$GITHUB_OUTPUT"
+              echo "run_dev=false" >> "$GITHUB_OUTPUT"
+            elif [[ "${MODE}" == "dev" ]]; then
+              echo "run_stable=false" >> "$GITHUB_OUTPUT"
+              echo "run_dev=true" >> "$GITHUB_OUTPUT"
+            fi
+            echo "version=${TAG}" >> "$GITHUB_OUTPUT"
+          else
+            # Manual workflow_dispatch
+            MODE="${{ inputs.mode }}"
+            VERSION="${{ inputs.version }}"
+            
+            if [[ "${MODE}" == "both" ]]; then
+              echo "run_stable=true" >> "$GITHUB_OUTPUT"
+              echo "run_dev=true" >> "$GITHUB_OUTPUT"
+            elif [[ "${MODE}" == "stable" ]]; then
+              echo "run_stable=true" >> "$GITHUB_OUTPUT"
+              echo "run_dev=false" >> "$GITHUB_OUTPUT"
+            elif [[ "${MODE}" == "dev" ]]; then
+              echo "run_stable=false" >> "$GITHUB_OUTPUT"
+              echo "run_dev=true" >> "$GITHUB_OUTPUT"
+            fi
+            echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          fi
+
   # Generate stable index
   generate_stable_index:
-    if: |
-      (github.event_name == 'release' && !contains(github.event.release.tag_name, '-')) ||
-      (github.event_name == 'workflow_dispatch' && (inputs.mode == 'stable' || inputs.mode == 'both'))
+    needs: determine_mode
+    if: needs.determine_mode.outputs.run_stable == 'true'
     uses: ./.github/workflows/helm-index-generator.yml
     with:
       mode: 'stable'
-      version: ${{ inputs.version || '' }}
+      version: ${{ needs.determine_mode.outputs.version }}
       full_regeneration: ${{ inputs.full_regeneration || false }}
     secrets: inherit
 
   # Generate dev index
   generate_dev_index:
-    if: |
-      (github.event_name == 'release' && contains(github.event.release.tag_name, '-')) ||
-      (github.event_name == 'workflow_dispatch' && (inputs.mode == 'dev' || inputs.mode == 'both'))
+    needs: determine_mode
+    if: needs.determine_mode.outputs.run_dev == 'true'
     uses: ./.github/workflows/helm-index-generator.yml
     with:
       mode: 'dev'
-      version: ${{ inputs.version || '' }}
+      version: ${{ needs.determine_mode.outputs.version }}
       full_regeneration: ${{ inputs.full_regeneration || false }}
     secrets: inherit

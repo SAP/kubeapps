@@ -25,6 +25,9 @@ permissions:
 jobs:
   build_release_asset:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.config.outputs.tag }}
+      asset_path: ${{ steps.build.outputs.asset_path }}
     steps:
       - name: Determine tag and mode
         id: config
@@ -121,3 +124,14 @@ jobs:
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "View release: https://github.com/${{ github.repository }}/releases/tag/${{ steps.config.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
           fi
+
+  # Generate Helm index after release asset is created
+  generate_helm_index:
+    needs: build_release_asset
+    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.create_release == true)
+    uses: ./.github/workflows/helm-index.yaml
+    with:
+      tag: ${{ needs.build_release_asset.outputs.tag || github.event.release.tag_name }}
+      mode: 'auto'
+      full_regeneration: false
+    secrets: inherit
