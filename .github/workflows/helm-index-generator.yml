@@ -77,7 +77,7 @@ jobs:
           if [[ -n "${INPUT_VERSION}" ]]; then
             echo "Processing single version: ${INPUT_VERSION}"
           fi
-          
+
           bash script/helm_index_publish.sh --mode="${MODE}"
 
       - name: Display index summary
@@ -100,7 +100,7 @@ jobs:
           if [[ "${REPO_PATH}" == "stable" ]]; then
             REPO_PATH=""
           fi
-          
+
           echo "## 🎉 Helm Repository Published" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Users can add this repository with:" >> $GITHUB_STEP_SUMMARY
@@ -112,4 +112,3 @@ jobs:
           fi
           echo "helm repo update" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-

@@ -56,4 +56,3 @@ jobs:
       version: ${{ inputs.version || '' }}
       full_regeneration: ${{ inputs.full_regeneration || false }}
     secrets: inherit
-
