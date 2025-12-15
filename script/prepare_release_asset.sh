@@ -33,7 +33,7 @@ cp -R "${CHART_SRC_DIR}" "${WORKDIR}/kubeapps"
 APP_VERSION="${TAG#v}"
 sed -i.bk "s/^appVersion: .*/appVersion: ${APP_VERSION}/" "${WORKDIR}/kubeapps/Chart.yaml"
 rm -f "${WORKDIR}/kubeapps/Chart.yaml.bk"
-echo "Set appVersion to: ${APP_VERSION}"
+echo "Set appVersion to: ${APP_VERSION}" >&2
 
 # Retag images in values.yaml to use the release tag
 # Current format: registry: ghcr.io, repository: sap/kubeapps/<service>, tag: vX.Y.Z
@@ -53,12 +53,12 @@ retag pinniped-proxy
 retag kubeapps-apis
 retag oci-catalog
 rm -f "${VALUES_FILE}.bk"
-echo "Retagged all images to: ${TAG}"
+echo "Retagged all images to: ${TAG}" >&2
 
 # Copy LICENSE file to the chart directory
 if [[ -f "${PROJECT_DIR}/LICENSE" ]]; then
   cp "${PROJECT_DIR}/LICENSE" "${WORKDIR}/kubeapps/LICENSE"
-  echo "Added LICENSE file to chart package"
+  echo "Added LICENSE file to chart package" >&2
 else
   echo "WARNING: LICENSE file not found at ${PROJECT_DIR}/LICENSE" >&2
 fi
@@ -66,11 +66,11 @@ fi
 # Package the chart using helm package to create a proper Helm chart tarball
 # The packaged file will be named according to the chart name and version in Chart.yaml
 PACKAGE_OUTPUT=$(helm package "${WORKDIR}/kubeapps" -d "${PROJECT_DIR}" 2>&1)
-PACKAGE_FILE=$(echo "${PACKAGE_OUTPUT}" | grep -oP 'Successfully packaged chart and saved it to: \K.*' || true)
+PACKAGE_FILE=$(echo "${PACKAGE_OUTPUT}" | sed -n 's/^Successfully packaged chart and saved it to: //p' || true)
 
 if [[ -z "${PACKAGE_FILE}" ]]; then
   # Fallback: find the most recently created .tgz in the project directory
-  PACKAGE_FILE=$(find "${PROJECT_DIR}" -maxdepth 1 -name "kubeapps-*.tgz" -type f -printf '%T@ %p\n' | sort -n | tail -1 | cut -d' ' -f2-)
+  PACKAGE_FILE=$(find "${PROJECT_DIR}" -maxdepth 1 -name "kubeapps-*.tgz" -type f -print0 | xargs -0 ls -t | head -1)
 fi
 
 if [[ ! -f "${PACKAGE_FILE}" ]]; then
