@@ -1,0 +1,59 @@
+# Copyright 2025 the Kubeapps contributors.
+# SPDX-License-Identifier: Apache-2.0
+
+---
+name: Helm Index Publisher
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Index mode'
+        required: true
+        type: choice
+        default: 'both'
+        options:
+          - stable
+          - dev
+          - both
+      version:
+        description: 'Single version/tag to process (optional, leave empty for all)'
+        required: false
+        type: string
+        default: ''
+      full_regeneration:
+        description: 'Rebuild index from scratch'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  # Generate stable index
+  generate_stable_index:
+    if: |
+      (github.event_name == 'release' && !contains(github.event.release.tag_name, '-')) ||
+      (github.event_name == 'workflow_dispatch' && (inputs.mode == 'stable' || inputs.mode == 'both'))
+    uses: ./.github/workflows/helm-index-generator.yml
+    with:
+      mode: 'stable'
+      version: ${{ inputs.version || '' }}
+      full_regeneration: ${{ inputs.full_regeneration || false }}
+    secrets: inherit
+
+  # Generate dev index
+  generate_dev_index:
+    if: |
+      (github.event_name == 'release' && contains(github.event.release.tag_name, '-')) ||
+      (github.event_name == 'workflow_dispatch' && (inputs.mode == 'dev' || inputs.mode == 'both'))
+    uses: ./.github/workflows/helm-index-generator.yml
+    with:
+      mode: 'dev'
+      version: ${{ inputs.version || '' }}
+      full_regeneration: ${{ inputs.full_regeneration || false }}
+    secrets: inherit
+

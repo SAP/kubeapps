@@ -1,0 +1,115 @@
+# Copyright 2025 the Kubeapps contributors.
+# SPDX-License-Identifier: Apache-2.0
+
+---
+name: Helm Index Generator (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      mode:
+        description: 'Index mode (stable or dev)'
+        required: true
+        type: string
+      version:
+        description: 'Single version/tag to process (optional)'
+        required: false
+        type: string
+        default: ''
+      full_regeneration:
+        description: 'Rebuild index from scratch'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  generate_helm_index:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      INPUT_VERSION: ${{ inputs.version }}
+      FULL_REGEN: ${{ inputs.full_regeneration }}
+      DEBUG: 'false'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Helm
+        run: |
+          set -eu
+          source ./script/lib/libcitools.sh
+          installHelm ${HELM_VERSION_STABLE:-v3.13.0} helm-stable
+
+      - name: Install GitHub CLI
+        run: |
+          type -p gh >/dev/null || {
+            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+            sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+            sudo apt update
+            sudo apt install gh -y
+          }
+
+      - name: Install jq and yq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Configure git identity (bot)
+        run: |
+          set -eu
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Generate Helm repository index
+        run: |
+          set -eu
+          MODE="${{ inputs.mode }}"
+          echo "Generating Helm repository index in ${MODE} mode..."
+          echo "Full regeneration: ${FULL_REGEN}"
+          if [[ -n "${INPUT_VERSION}" ]]; then
+            echo "Processing single version: ${INPUT_VERSION}"
+          fi
+          
+          bash script/helm_index_publish.sh --mode="${MODE}"
+
+      - name: Display index summary
+        if: always()
+        run: |
+          if [[ -f index.yaml ]]; then
+            echo "## Generated index.yaml summary (${{ inputs.mode }} mode)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            yq eval '.entries | to_entries | .[] | .key + ": " + (.value | length | tostring) + " version(s)"' index.yaml >> $GITHUB_STEP_SUMMARY || echo "Could not parse index entries" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Total entries:** $(yq eval '.entries | length' index.yaml)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## No index.yaml file found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Show Helm repo add instructions
+        if: success()
+        run: |
+          REPO_PATH="${{ inputs.mode }}"
+          if [[ "${REPO_PATH}" == "stable" ]]; then
+            REPO_PATH=""
+          fi
+          
+          echo "## 🎉 Helm Repository Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Users can add this repository with:" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ inputs.mode }}" == "dev" ]]; then
+            echo "helm repo add kubeapps-dev https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/helm/dev" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "helm repo add kubeapps https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "helm repo update" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
