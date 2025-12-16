@@ -60,55 +60,55 @@ jobs:
         id: decide
         run: |
           set -eu
-          
-          if [[ "${{ github.event_name }}" == "workflow_call" ]]; then
-            # Called from release-assets.yml
+
+          EVENT_NAME="${{ github.event_name }}"
+          echo "Event name: ${EVENT_NAME}"
+
+          # Determine tag - from input or from release event
+          if [[ "${EVENT_NAME}" == "workflow_call" ]]; then
+            # Called from another workflow
             TAG="${{ inputs.tag }}"
             MODE="${{ inputs.mode }}"
-            
-            if [[ "${MODE}" == "auto" ]]; then
-              # Auto-detect based on tag
-              if [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                echo "run_stable=true" >> "$GITHUB_OUTPUT"
-                echo "run_dev=false" >> "$GITHUB_OUTPUT"
-                echo "Auto-detected: stable release (${TAG})"
-              elif [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+- ]]; then
-                echo "run_stable=false" >> "$GITHUB_OUTPUT"
-                echo "run_dev=true" >> "$GITHUB_OUTPUT"
-                echo "Auto-detected: dev release (${TAG})"
-              else
-                echo "run_stable=false" >> "$GITHUB_OUTPUT"
-                echo "run_dev=false" >> "$GITHUB_OUTPUT"
-                echo "Tag ${TAG} doesn't match stable or dev pattern"
-              fi
-            elif [[ "${MODE}" == "both" ]]; then
-              echo "run_stable=true" >> "$GITHUB_OUTPUT"
-              echo "run_dev=true" >> "$GITHUB_OUTPUT"
-            elif [[ "${MODE}" == "stable" ]]; then
-              echo "run_stable=true" >> "$GITHUB_OUTPUT"
-              echo "run_dev=false" >> "$GITHUB_OUTPUT"
-            elif [[ "${MODE}" == "dev" ]]; then
-              echo "run_stable=false" >> "$GITHUB_OUTPUT"
-              echo "run_dev=true" >> "$GITHUB_OUTPUT"
-            fi
-            echo "version=${TAG}" >> "$GITHUB_OUTPUT"
+            echo "Called from workflow with tag: ${TAG}, mode: ${MODE}"
           else
             # Manual workflow_dispatch
+            TAG="${{ inputs.version }}"
             MODE="${{ inputs.mode }}"
-            VERSION="${{ inputs.version }}"
-            
-            if [[ "${MODE}" == "both" ]]; then
-              echo "run_stable=true" >> "$GITHUB_OUTPUT"
-              echo "run_dev=true" >> "$GITHUB_OUTPUT"
-            elif [[ "${MODE}" == "stable" ]]; then
+            echo "Manual dispatch with tag: ${TAG}, mode: ${MODE}"
+          fi
+
+          # Auto-detect mode based on tag if mode is 'auto'
+          if [[ "${MODE}" == "auto" ]]; then
+            echo "Auto-detecting mode from tag: ${TAG}"
+            if [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
               echo "run_stable=true" >> "$GITHUB_OUTPUT"
               echo "run_dev=false" >> "$GITHUB_OUTPUT"
-            elif [[ "${MODE}" == "dev" ]]; then
+              echo "✓ Auto-detected: stable release (${TAG})"
+            elif [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+- ]]; then
               echo "run_stable=false" >> "$GITHUB_OUTPUT"
               echo "run_dev=true" >> "$GITHUB_OUTPUT"
+              echo "✓ Auto-detected: dev release (${TAG})"
+            else
+              echo "run_stable=false" >> "$GITHUB_OUTPUT"
+              echo "run_dev=false" >> "$GITHUB_OUTPUT"
+              echo "⚠ Tag ${TAG} doesn't match stable or dev pattern"
             fi
-            echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          elif [[ "${MODE}" == "both" ]]; then
+            echo "run_stable=true" >> "$GITHUB_OUTPUT"
+            echo "run_dev=true" >> "$GITHUB_OUTPUT"
+            echo "✓ Mode: both (generating stable and dev indexes)"
+          elif [[ "${MODE}" == "stable" ]]; then
+            echo "run_stable=true" >> "$GITHUB_OUTPUT"
+            echo "run_dev=false" >> "$GITHUB_OUTPUT"
+            echo "✓ Mode: stable only"
+          elif [[ "${MODE}" == "dev" ]]; then
+            echo "run_stable=false" >> "$GITHUB_OUTPUT"
+            echo "run_dev=true" >> "$GITHUB_OUTPUT"
+            echo "✓ Mode: dev only"
           fi
+
+          echo "version=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "Final outputs: run_stable=$(cat $GITHUB_OUTPUT | grep run_stable | cut -d= -f2), run_dev=$(cat $GITHUB_OUTPUT | grep run_dev | cut -d= -f2)"
 
   # Generate stable index
   generate_stable_index:
