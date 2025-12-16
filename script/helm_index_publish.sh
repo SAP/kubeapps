@@ -197,10 +197,11 @@ package_and_upload() {
   local meta="$outdir/result.json"
 
   mkdir -p "$outdir"
+
+  # Skip if metadata exists and FULL_REGEN is not set
+  # We'll also verify the digest hasn't changed below
   if [[ "$FULL_REGEN" != "true" && -f "$meta" ]]; then
-    substep "Meta exists, skipping"
-    pop_indent
-    return 0
+    substep "Meta exists, will verify digest hasn't changed"
   fi
 
   # Download the release asset that was created by prepare_release_asset.sh
@@ -289,8 +290,37 @@ package_and_upload() {
     sha256=$(shasum -a 256 "$downloaded_tgz" | awk '{print $1}')
   fi
 
+  # Check if digest has changed (skip regeneration if unchanged)
+  if [[ "$FULL_REGEN" != "true" && -f "$meta" ]]; then
+    local existing_digest
+    existing_digest=$(jq -r '.digest // ""' "$meta")
+    if [[ "$existing_digest" == "$sha256" ]]; then
+      substep "Digest unchanged, skipping regeneration"
+      rm -rf "$tmpdir"
+      pop_indent
+      return 0
+    else
+      substep "Digest changed: ${existing_digest:0:12}... -> ${sha256:0:12}..."
+    fi
+  fi
+
   local created_ts
   created_ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+  # Extract additional metadata from Chart.yaml
+  local chart_api_version chart_app_version chart_description chart_home chart_kube_version
+  chart_api_version=$(grep '^apiVersion:' "$chart_yaml" | awk '{print $2}' || echo "v2")
+  chart_app_version=$(grep '^appVersion:' "$chart_yaml" | awk '{print $2}' || echo "")
+  chart_description=$(grep '^description:' "$chart_yaml" | sed 's/^description: *//' || echo "")
+  chart_home=$(grep '^home:' "$chart_yaml" | awk '{print $2}' || echo "")
+  chart_kube_version=$(grep '^kubeVersion:' "$chart_yaml" | sed 's/^kubeVersion: *//' | tr -d "'" || echo "")
+
+  # Extract sources as JSON array
+  local chart_sources
+  chart_sources=$(awk '/^sources:/,/^[a-zA-Z]/ {if ($0 ~ /^- /) print $2}' "$chart_yaml" | jq -R -s -c 'split("\n") | map(select(length > 0))' || echo "[]")
+
+  substep "appVersion: ${chart_app_version}"
+  substep "description: ${chart_description:0:50}..."
 
   # Write metadata for index generation
   jq -n --arg tag "$tag" \
@@ -299,7 +329,13 @@ package_and_upload() {
         --arg sha256 "$sha256" \
         --arg created "$created_ts" \
         --arg name "$CHART_NAME" \
-    '{tag:$tag, chart_version:$chart_version, asset_url:$asset_url, digest:$sha256, created:$created, name:$name}' > "$meta"
+        --arg api_version "$chart_api_version" \
+        --arg app_version "$chart_app_version" \
+        --arg description "$chart_description" \
+        --arg home "$chart_home" \
+        --arg kube_version "$chart_kube_version" \
+        --argjson sources "$chart_sources" \
+    '{tag:$tag, chart_version:$chart_version, asset_url:$asset_url, digest:$sha256, created:$created, name:$name, apiVersion:$api_version, appVersion:$app_version, description:$description, home:$home, kubeVersion:$kube_version, sources:$sources}' > "$meta"
 
   substep "Wrote metadata: ${meta}"
   rm -rf "$tmpdir"
@@ -309,30 +345,90 @@ package_and_upload() {
 generate_index() {
   section "Generate index.yaml"
   local index_file="$OUTPUT_DIR/index.yaml"
+  local index_file_tmp="${index_file}.tmp"
   mkdir -p "$OUTPUT_DIR"
-  echo "entries: {}" > "$index_file"
-  yq -i '.entries.kubeapps = []' "$index_file"
+
+  # Initialize index with apiVersion
+  cat > "$index_file_tmp" << 'EOF'
+apiVersion: v1
+entries: {}
+EOF
+  yq -i '.entries.kubeapps = []' "$index_file_tmp"
+
   for meta in $(find "$OUTPUT_DIR" -maxdepth 2 -name result.json | sort); do
     push_indent
     substep "Add entry from: ${meta}"
-    local name ver url digest created
+    local name ver url digest created api_version app_version description home kube_version
     name=$(jq -r '.name' "$meta")
     ver=$(jq -r '.chart_version' "$meta")
     url=$(jq -r '.asset_url' "$meta")
     digest=$(jq -r '.digest' "$meta")
     created=$(jq -r '.created' "$meta")
-    yq -i \
-      ".entries.kubeapps += [{\"name\": \"${name}\", \"version\": \"${ver}\", \"urls\": [\"${url}\"], \"created\": \"${created}\", \"digest\": \"${digest}\"}]" \
-      "$index_file"
+    api_version=$(jq -r '.apiVersion // "v2"' "$meta")
+    app_version=$(jq -r '.appVersion // ""' "$meta")
+    description=$(jq -r '.description // ""' "$meta")
+    home=$(jq -r '.home // ""' "$meta")
+    kube_version=$(jq -r '.kubeVersion // ""' "$meta")
+
+    # Extract sources array
+    local sources_json
+    sources_json=$(jq -c '.sources // []' "$meta")
+
+    # Build entry with all required fields
+    local entry
+    entry=$(jq -n \
+      --arg name "$name" \
+      --arg version "$ver" \
+      --arg url "$url" \
+      --arg digest "$digest" \
+      --arg created "$created" \
+      --arg api_version "$api_version" \
+      --arg app_version "$app_version" \
+      --arg description "$description" \
+      --arg home "$home" \
+      --arg kube_version "$kube_version" \
+      --argjson sources "$sources_json" \
+      '{
+        name: $name,
+        version: $version,
+        apiVersion: $api_version,
+        appVersion: $app_version,
+        description: $description,
+        home: $home,
+        kubeVersion: $kube_version,
+        sources: $sources,
+        urls: [$url],
+        created: $created,
+        digest: $digest
+      }')
+
+    # Add entry to index
+    local tmp_entry
+    tmp_entry=$(mktemp)
+    echo "$entry" > "$tmp_entry"
+    yq -i ".entries.kubeapps += [$(cat "$tmp_entry")]" "$index_file_tmp"
+    rm -f "$tmp_entry"
     pop_indent
   done
-  step "Index written: ${index_file}"
+
+  # Only replace if content has changed or file doesn't exist
+  if [[ ! -f "$index_file" ]]; then
+    mv "$index_file_tmp" "$index_file"
+    step "Index created: ${index_file}"
+  elif ! diff -q "$index_file" "$index_file_tmp" >/dev/null 2>&1; then
+    mv "$index_file_tmp" "$index_file"
+    step "Index updated: ${index_file}"
+  else
+    rm -f "$index_file_tmp"
+    step "Index unchanged: ${index_file}"
+  fi
 }
 
 return_branch_and_commit() {
   section "Commit and push changes"
   local commit_path="$OUTPUT_DIR"
   local message="Helm(${MODE}): refresh index.yaml (asset URLs) and metadata only"
+
   # We are already on ${ORIG_BRANCH}; do not checkout again to avoid overwriting local changes
   if ! git config user.email >/dev/null; then
     step "Configure git identity"
@@ -341,17 +437,38 @@ return_branch_and_commit() {
     git config user.email "${GITHUB_ACTOR:-41898282+github-actions[bot]@users.noreply.github.com}"
     pop_indent
   fi
-  if [[ -n $(git status --porcelain "$commit_path") ]]; then
-    step "Commit and push changes"
-    push_indent
-    git add "$commit_path"
-    git commit -m "$message"
-    git push
-    pop_indent
-    step "Changes pushed"
-  else
-    step "No changes to commit"
+
+  # Check if there are any changes to commit
+  local changes
+  changes=$(git status --porcelain "$commit_path" 2>/dev/null || echo "")
+
+  if [[ -z "$changes" ]]; then
+    step "No changes to commit - index.yaml is up to date"
+    return 0
   fi
+
+  step "Detected changes in: ${commit_path}"
+  push_indent
+  echo "$changes" | while read -r line; do
+    substep "$line"
+  done
+  pop_indent
+
+  step "Commit and push changes"
+  push_indent
+  git add "$commit_path"
+
+  # Double check there are staged changes before committing
+  if git diff --cached --quiet; then
+    substep "No staged changes after git add, skipping commit"
+    pop_indent
+    return 0
+  fi
+
+  git commit -m "$message"
+  git push
+  pop_indent
+  step "Changes pushed successfully"
 }
 
 main() {
