@@ -3,6 +3,12 @@
   "chart_version": "18.0.0",
   "asset_url": "https://github.com/SAP/kubeapps/releases/download/v3.0.0-rc6/kubeapps-18.0.0.tgz",
   "digest": "87a4d2ccc9a7eaa1e5e2a4336aed94a7237ad2889e21b5cf92e259270a4fd265",
-  "created": "2025-12-16T12:30:05Z",
-  "name": "kubeapps"
+  "created": "2025-12-16T13:54:57Z",
+  "name": "kubeapps",
+  "apiVersion": "v2",
+  "appVersion": "3.0.0-rc6",
+  "description": "Kubeapps is a web-based UI for launching and managing applications on",
+  "home": "https://sap.com",
+  "kubeVersion": ">=1.25.0-0",
+  "sources": []
 }
