@@ -90,16 +90,16 @@ jobs:
           else
             INDEX_FILE="site/static/helm/index.yaml"
           fi
-          
+
           if [[ -f "${INDEX_FILE}" ]]; then
             echo "## Generated index.yaml summary (${{ inputs.mode }} mode)" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "📍 **Location:** \`${INDEX_FILE}\`" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            
+
             # Check if entries exist
             ENTRY_COUNT=$(yq eval '.entries | length' "${INDEX_FILE}" 2>/dev/null || echo "0")
-            
+
             if [[ "${ENTRY_COUNT}" -gt 0 ]]; then
               yq eval '.entries | to_entries | .[] | .key + ": " + (.value | length | tostring) + " version(s)"' "${INDEX_FILE}" >> $GITHUB_STEP_SUMMARY || echo "Could not parse index entries" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
