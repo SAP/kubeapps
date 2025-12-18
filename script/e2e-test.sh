@@ -301,17 +301,6 @@ installOrUpgradeKubeapps() {
   info "Installing Kubeapps from ${chartSource}..."
   kubectl -n kubeapps delete secret localhost-tls || true
 
-  # If installing from local chart, replace dev version with valid semver for helm validation
-  if [[ "${chartSource}" == "${ROOT_DIR}/chart/kubeapps" ]]; then
-    local chart_yaml="${chartSource}/Chart.yaml"
-    if [[ -f "${chart_yaml}" ]]; then
-      # Replace 0.0.0-dev with valid test version (no need to restore in CI environment)
-      sed -i.tmp -e 's/^version: 0\.0\.0-dev$/version: 0.0.0-e2e-test/' "${chart_yaml}"
-      rm -f "${chart_yaml}.tmp"
-      info "Replaced chart version with 0.0.0-e2e-test for installation"
-    fi
-  fi
-
   # Build optional PostgreSQL override flags if version provided
   local postgresql_override_flags=()
   if [[ -n "${POSTGRESQL_VERSION:-}" ]]; then
