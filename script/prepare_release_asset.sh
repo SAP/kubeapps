@@ -29,11 +29,11 @@ fi
 WORKDIR=$(mktemp -d)
 cp -R "${CHART_SRC_DIR}" "${WORKDIR}/kubeapps"
 
-# Set appVersion to the actual tag version (strip 'v' prefix if present)
-APP_VERSION="${TAG#v}"
-sed -i.bk "s/^appVersion: .*/appVersion: ${APP_VERSION}/" "${WORKDIR}/kubeapps/Chart.yaml"
+# Set version to the actual tag version (strip 'v' prefix if present)
+VERSION="${TAG#v}"
+sed -i.bk "s/^version: .*/version: ${VERSION}/" "${WORKDIR}/kubeapps/Chart.yaml"
 rm -f "${WORKDIR}/kubeapps/Chart.yaml.bk"
-echo "Set appVersion to: ${APP_VERSION}" >&2
+echo "Set version to: ${VERSION}" >&2
 
 # Replace DEVEL tags in Chart.yaml annotations images section
 # Format: image: ghcr.io/sap/kubeapps-<service>:DEVEL
