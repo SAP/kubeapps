@@ -12,8 +12,7 @@ CHART_DIR=$ROOT_DIR/chart/kubeapps/
 
 # Remove the kubeVersion field as it would fail otherwise as there isn't any k8s cluster
 # when running this command from the CI
-# Also replace DEVEL version with a valid semver for testing
-sed -i.bk -e "s/kubeVersion.*//g" -e "s/version: DEVEL/version: 0.0.0-dev/g" "${CHART_DIR}Chart.yaml"
+sed -i.bk -e "s/kubeVersion.*//g" "${CHART_DIR}Chart.yaml"
 
 helm dep up "${CHART_DIR}"
 
