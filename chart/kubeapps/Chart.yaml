@@ -52,4 +52,4 @@ maintainers:
 name: kubeapps
 sources:
 - https://github.com/sap/kubeapps/
-version: DEVEL
+version: 0.0.0-dev
