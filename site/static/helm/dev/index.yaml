@@ -2,7 +2,7 @@ apiVersion: v1
 entries:
   kubeapps:
     - name: kubeapps
-      version: 18.0.0
+      version: "v3.0.0-rc10"
       apiVersion: v2
       appVersion: ""
       description: Kubeapps is a web-based UI for launching and managing applications on
@@ -62,7 +62,7 @@ entries:
       created: "2025-12-18T14:08:40Z"
       digest: 55989b3a984b7bbe1b9cddf69c97a2e8c1dc352a46b3067eadb224c33922e952
     - name: kubeapps
-      version: 18.0.0
+      version: "v3.0.0-rc9"
       apiVersion: v2
       appVersion: ""
       description: Kubeapps is a web-based UI for launching and managing applications on
