@@ -1,0 +1,14 @@
+{
+  "tag": "v3.0.0-rc14",
+  "chart_version": "3.0.0-rc14",
+  "asset_url": "https://github.com/SAP/kubeapps/releases/download/v3.0.0-rc14/kubeapps-3.0.0-rc14.tgz",
+  "digest": "b58f813047118e9ab97f59c1d097d408ecc0eb0e577f4ff513501de84896e96d",
+  "created": "2025-12-18T15:22:14Z",
+  "name": "kubeapps",
+  "apiVersion": "v2",
+  "appVersion": "",
+  "description": "Kubeapps is a web-based UI for launching and managing applications on",
+  "home": "https://sap.com",
+  "kubeVersion": ">=1.25.0-0",
+  "sources": []
+}
