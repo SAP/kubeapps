@@ -310,7 +310,6 @@ package_and_upload() {
   # Extract additional metadata from Chart.yaml
   local chart_api_version chart_app_version chart_description chart_home chart_kube_version
   chart_api_version=$(grep '^apiVersion:' "$chart_yaml" | awk '{print $2}' || echo "v2")
-  chart_app_version=$(grep '^appVersion:' "$chart_yaml" | awk '{print $2}' || echo "")
   chart_description=$(grep '^description:' "$chart_yaml" | sed 's/^description: *//' || echo "")
   chart_home=$(grep '^home:' "$chart_yaml" | awk '{print $2}' || echo "")
   chart_kube_version=$(grep '^kubeVersion:' "$chart_yaml" | sed 's/^kubeVersion: *//' | tr -d "'" || echo "")
@@ -320,7 +319,7 @@ package_and_upload() {
   chart_sources=$(awk '/^sources:/,/^[a-zA-Z]/ {if ($0 ~ /^- /) print $2}' "$chart_yaml" | jq -R -s -c 'split("\n") | map(select(length > 0))' || echo "[]")
 
   substep "appVersion: ${chart_app_version}"
-  substep "description: ${chart_description:0:50}..."
+  substep "description: ${chart_description:0:100}..."
 
   # Write metadata for index generation
   jq -n --arg tag "$tag" \
@@ -330,12 +329,11 @@ package_and_upload() {
         --arg created "$created_ts" \
         --arg name "$CHART_NAME" \
         --arg api_version "$chart_api_version" \
-        --arg app_version "$chart_app_version" \
         --arg description "$chart_description" \
         --arg home "$chart_home" \
         --arg kube_version "$chart_kube_version" \
         --argjson sources "$chart_sources" \
-    '{tag:$tag, chart_version:$chart_version, asset_url:$asset_url, digest:$sha256, created:$created, name:$name, apiVersion:$api_version, appVersion:$app_version, description:$description, home:$home, kubeVersion:$kube_version, sources:$sources}' > "$meta"
+    '{tag:$tag, chart_version:$chart_version, asset_url:$asset_url, digest:$sha256, created:$created, name:$name, apiVersion:$api_version, description:$description, home:$home, kubeVersion:$kube_version, sources:$sources}' > "$meta"
 
   substep "Wrote metadata: ${meta}"
   rm -rf "$tmpdir"

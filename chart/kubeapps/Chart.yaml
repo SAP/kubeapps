@@ -22,7 +22,6 @@ annotations:
     - name: oauth2-proxy
       image: ghcr.io/sap/kubeapps/bitnami-deprecated-oauth2-proxy:7.12.0
 apiVersion: v2
-appVersion: DEVEL
 dependencies:
 - condition: packaging.flux.enabled
   name: redis
@@ -53,4 +52,4 @@ maintainers:
 name: kubeapps
 sources:
 - https://github.com/sap/kubeapps/
-version: 18.0.0
+version: DEVEL
