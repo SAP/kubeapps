@@ -310,6 +310,7 @@ package_and_upload() {
   # Extract additional metadata from Chart.yaml
   local chart_api_version chart_app_version chart_description chart_home chart_kube_version
   chart_api_version=$(grep '^apiVersion:' "$chart_yaml" | awk '{print $2}' || echo "v2")
+  chart_app_version=$(grep '^appVersion:' "$chart_yaml" | sed 's/^appVersion: *//' | tr -d "'" || echo "")
   chart_description=$(grep '^description:' "$chart_yaml" | sed 's/^description: *//' || echo "")
   chart_home=$(grep '^home:' "$chart_yaml" | awk '{print $2}' || echo "")
   chart_kube_version=$(grep '^kubeVersion:' "$chart_yaml" | sed 's/^kubeVersion: *//' | tr -d "'" || echo "")
