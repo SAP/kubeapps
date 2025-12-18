@@ -330,11 +330,12 @@ package_and_upload() {
         --arg created "$created_ts" \
         --arg name "$CHART_NAME" \
         --arg api_version "$chart_api_version" \
+        --arg app_version "$chart_app_version" \
         --arg description "$chart_description" \
         --arg home "$chart_home" \
         --arg kube_version "$chart_kube_version" \
         --argjson sources "$chart_sources" \
-    '{tag:$tag, chart_version:$chart_version, asset_url:$asset_url, digest:$sha256, created:$created, name:$name, apiVersion:$api_version, description:$description, home:$home, kubeVersion:$kube_version, sources:$sources}' > "$meta"
+    '{tag:$tag, chart_version:$chart_version, asset_url:$asset_url, digest:$sha256, created:$created, name:$name, apiVersion:$api_version, appVersion:$app_version, description:$description, home:$home, kubeVersion:$kube_version, sources:$sources}' > "$meta"
 
   substep "Wrote metadata: ${meta}"
   rm -rf "$tmpdir"
@@ -389,7 +390,7 @@ EOF
       --argjson sources "$sources_json" \
       '{
         name: $name,
-        version: $version,
+        version: "\($version)",
         apiVersion: $api_version,
         appVersion: $app_version,
         description: $description,
