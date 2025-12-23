@@ -1,18 +1,20 @@
 # Changelog
 
 
-## 18.0.0 (2025-)
+## v3.0.0 (2025-12-23)
+
+The version of the helm chart and application is now aligned on v3.0.0.
 
 * [bitnami/kubeapps] Migration of project to SAP GitHub Organization
 * [bitnami/kubeapps] Upgrade golang version to 1.25.4
 * [bitnami/kubeapps] Bump dependencies
-* [bitnami/*] Remove support for Carvel due to upgrade issues (contribution welcomed)
+* [bitnami/kubeapps] Remove support for Carvel due to upgrade issues (contribution welcomed)
 * [bitnami/*] Localized external dependencies from bitnami (see /external)
 * [bitnami/*] Convert hugo based static docupage to [Docusaurus](https://docusaurus.io/)
 * [bitnami/*] Upgrade Helm stable version to v4.0.0
 * [bitnami/*] Upgrade Chartmuseum to 3.10.4
-* [bitnami/*] Upgrade kind to v0.30.0 with kubectl 1.33.4 => kubernetes version 1.33.4
-* [bitnami/*] Upgrade golangci-lint to v2.6.2
+* [bitnami/build] Upgrade kind to v0.30.0 with kubectl 1.33.4 => kubernetes version 1.33.4
+* [bitnami/build] Upgrade golangci-lint to v2.6.2
 * [bitnami/build] Upgrade docker registry version to 3.0.0
 * [bitnami/build] Remove support for integration test on GKE
 * [bitnami/build] Upgrade GitHub CLI to 2.83.1
