@@ -3,7 +3,7 @@
   "chart_version": "3.0.0",
   "asset_url": "https://github.com/SAP/kubeapps/releases/download/v3.0.0/kubeapps-3.0.0.tgz",
   "digest": "0ea4b4bb0e79da0a9adc60c979b7ed92c90a99d11176d407a59b5f2ea0d3ecd1",
-  "created": "2025-12-23T11:47:48Z",
+  "created": "2025-12-23T12:44:38Z",
   "name": "kubeapps",
   "apiVersion": "v2",
   "appVersion": "",
