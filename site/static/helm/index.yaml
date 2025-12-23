@@ -1,2 +1,15 @@
+apiVersion: v1
 entries:
-  kubeapps: []
+  kubeapps:
+    - name: kubeapps
+      version: 3.0.0
+      apiVersion: v2
+      appVersion: ""
+      description: Kubeapps is a web-based UI for launching and managing applications on
+      home: https://sap.com
+      kubeVersion: '>=1.25.0-0'
+      sources: []
+      urls:
+        - https://github.com/SAP/kubeapps/releases/download/v3.0.0/kubeapps-3.0.0.tgz
+      created: "2025-12-23T11:47:48Z"
+      digest: 0ea4b4bb0e79da0a9adc60c979b7ed92c90a99d11176d407a59b5f2ea0d3ecd1
