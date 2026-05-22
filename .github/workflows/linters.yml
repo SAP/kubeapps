@@ -28,6 +28,9 @@ on:
         default: "v2.6.2"
         description: "golangci-lint version to use"
 
+permissions:
+  contents: read
+
 jobs:
   yaml-linter:
     runs-on: ubuntu-latest
