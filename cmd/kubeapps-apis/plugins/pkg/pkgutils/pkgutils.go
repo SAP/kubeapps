@@ -295,7 +295,7 @@ func DefaultValuesFromSchema(schema []byte, isCommentedOut bool) (string, error)
 		scanner.Split(bufio.ScanLines)
 		for scanner.Scan() {
 			sb.WriteString("# ")
-			sb.WriteString(fmt.Sprintln(scanner.Text()))
+			fmt.Fprintln(&sb, scanner.Text())
 		}
 		strYamlDefaultValues = sb.String()
 	}

@@ -505,15 +505,15 @@ func (c *NamespacedResourceWatcherCache) processOneEvent(event watch.Event) {
 		return
 	}
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("Got event: type: [%v], object: ", event.Type))
+	fmt.Fprintf(&sb, "Got event: type: [%v], object: ", event.Type)
 	if event.Object == nil {
 		sb.WriteString("<nil>")
 	} else if event.Type == watch.Deleted {
 		// when the object is deleted, we rarely care to look at all of its state,
 		// so save some log space
-		sb.WriteString(fmt.Sprintf("[%s]", common.PreferObjectName(event.Object)))
+		fmt.Fprintf(&sb, "[%s]", common.PreferObjectName(event.Object))
 	} else {
-		sb.WriteString(fmt.Sprintf("\n[%s]", common.PrettyPrint(event.Object)))
+		fmt.Fprintf(&sb, "\n[%s]", common.PrettyPrint(event.Object))
 	}
 	log.Info(sb.String())
 
