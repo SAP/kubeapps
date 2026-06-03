@@ -588,6 +588,7 @@ jobs:
 
   push_images:
     if: needs.setup.outputs.running_on_main == 'true' || inputs.trigger_release
+    environment: publishing
     runs-on: ubuntu-latest
     needs:
       - setup
@@ -633,6 +634,7 @@ jobs:
 
   push_chart:
     if: inputs.trigger_release
+    environment: publishing
     needs:
       - setup
       - local_e2e_tests
@@ -677,6 +679,7 @@ jobs:
 
   release:
     if: inputs.trigger_release
+    environment: publishing
     needs:
       - setup
       - push_chart

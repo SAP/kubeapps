@@ -21,7 +21,7 @@ concurrency:
 jobs:
   CI:
     permissions:
-      contents: read
+      contents: write
       packages: write
     uses: ./.github/workflows/kubeapps-general.yaml
     secrets: inherit

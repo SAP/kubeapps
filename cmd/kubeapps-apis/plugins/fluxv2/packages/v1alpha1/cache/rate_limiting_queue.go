@@ -400,7 +400,7 @@ func printOneItemPerLine(strs []string) string {
 		return "[]"
 	} else {
 		var sb strings.Builder
-		sb.WriteString(fmt.Sprintf("[%d] {\n", len(strs)))
+		fmt.Fprintf(&sb, "[%d] {\n", len(strs))
 		for _, s := range strs {
 			sb.WriteString("\t\t" + s + "\n")
 		}

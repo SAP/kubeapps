@@ -24,6 +24,7 @@ permissions:
 
 jobs:
   build_release_asset:
+    environment: publishing
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.config.outputs.tag }}
