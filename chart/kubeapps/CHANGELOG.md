@@ -1,6 +1,10 @@
 # Changelog
 
 
+## v3.0.1 (2026-07-10)
+
+* [bitnami/build] Fix OCI chart push to use correct version and image tags on release ([#61](https://github.com/SAP/kubeapps/pull/61))
+
 ## v3.0.0 (2025-12-23)
 
 The version of the helm chart and application is now aligned on v3.0.0.
