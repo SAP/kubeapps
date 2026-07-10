@@ -639,8 +639,6 @@ jobs:
       - setup
       - local_e2e_tests
     runs-on: ubuntu-latest
-    env:
-      CHART_DIR: chart/kubeapps
     steps:
       - uses: actions/checkout@v5
       - name: Install Helm
@@ -648,34 +646,30 @@ jobs:
           set -eu
           source ./script/lib/libcitools.sh
           installHelm ${HELM_VERSION_STABLE} helm-stable
-      - name: Show chart version
-        run: |
-          set -eu
-          grep '^version:' ${CHART_DIR}/Chart.yaml || true
       - name: Login to GHCR (OCI) for Helm
         run: |
           set -eu
           helm registry login ghcr.io --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}"
-      - name: Update chart dependencies
+      - name: Build release asset (with version/tag substitutions)
+        id: build
         run: |
           set -eu
-          helm dependency update ${CHART_DIR}
-      - name: Package chart
-        run: |
-          set -eu
-          helm package ${CHART_DIR} --destination /tmp
-          ls -l /tmp | grep kubeapps- || true
+          echo "Building release asset for tag: ${GITHUB_REF_NAME}"
+          ASSET_PATH=$(bash script/prepare_release_asset.sh "${GITHUB_REF_NAME}")
+          echo "asset_path=${ASSET_PATH}" >> "$GITHUB_OUTPUT"
+          echo "Asset created: ${ASSET_PATH}"
+          ls -lh "${ASSET_PATH}"
       - name: Push chart to GHCR
         run: |
           set -eu
-          CHART_PACKAGE=$(ls /tmp/kubeapps-*.tgz)
+          CHART_PACKAGE="${{ steps.build.outputs.asset_path }}"
           echo "Pushing ${CHART_PACKAGE} to oci://${CHART_OCI_REPO}"
           helm push "${CHART_PACKAGE}" oci://${CHART_OCI_REPO}
       - name: Upload chart artifact
         uses: actions/upload-artifact@v4
         with:
           name: kubeapps-chart
-          path: /tmp/kubeapps-*.tgz
+          path: ${{ steps.build.outputs.asset_path }}
 
   release:
     if: inputs.trigger_release
