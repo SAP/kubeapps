@@ -21,15 +21,22 @@ var (
 	version = "devel"
 )
 
+const redactedConfigValue = "REDACTED"
+
+func redactedServerConfig(config server.Config) server.Config {
+	config.DatabasePassword = redactedConfigValue
+	config.AuthorizationHeader = redactedConfigValue
+	config.DockerConfigJson = redactedConfigValue
+	return config
+}
+
 func newRootCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "asset-syncer",
 		Short: "Asset Synchronization utility",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			serveOpts.UserAgent = server.GetUserAgent(version, serveOpts.UserAgentComment)
-			serveOptsCopy := serveOpts
-			serveOptsCopy.DatabasePassword = "REDACTED"
-			log.InfoS("The component 'asset-syncer' has been configured with", "serverOptions", serveOptsCopy)
+			log.InfoS("The component 'asset-syncer' has been configured with", "serverOptions", redactedServerConfig(serveOpts))
 		},
 		Version: "devel",
 	}
