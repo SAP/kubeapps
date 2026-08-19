@@ -171,7 +171,7 @@ func NewServer(configGetter core.KubernetesConfigGetter, kubeappsCluster string,
 //     namespace) is not relevant since charts from a repository in any namespace
 //     accessible to the user are available to be installed in the target namespace.
 func (s *Server) GetAvailablePackageSummaries(ctx context.Context, request *connect.Request[corev1.GetAvailablePackageSummariesRequest]) (*connect.Response[corev1.GetAvailablePackageSummariesResponse], error) {
-	log.Infof("+fluxv2 GetAvailablePackageSummaries(request: [%v])", request)
+	safelog.Request("+fluxv2 GetAvailablePackageSummaries", request)
 	defer log.Info("-fluxv2 GetAvailablePackageSummaries")
 
 	// grpc compiles in getters for you which automatically return a default (empty) struct
@@ -230,7 +230,7 @@ func (s *Server) GetAvailablePackageSummaries(ctx context.Context, request *conn
 
 // GetAvailablePackageDetail returns the package metadata managed by the 'fluxv2' plugin
 func (s *Server) GetAvailablePackageDetail(ctx context.Context, request *connect.Request[corev1.GetAvailablePackageDetailRequest]) (*connect.Response[corev1.GetAvailablePackageDetailResponse], error) {
-	log.Infof("+fluxv2 GetAvailablePackageDetail(request: [%v])", request)
+	safelog.Request("+fluxv2 GetAvailablePackageDetail", request)
 	defer log.Info("-fluxv2 GetAvailablePackageDetail")
 
 	if request == nil || request.Msg.AvailablePackageRef == nil {
@@ -260,7 +260,7 @@ func (s *Server) GetAvailablePackageDetail(ctx context.Context, request *connect
 
 // GetAvailablePackageVersions returns the package versions managed by the 'fluxv2' plugin
 func (s *Server) GetAvailablePackageVersions(ctx context.Context, request *connect.Request[corev1.GetAvailablePackageVersionsRequest]) (*connect.Response[corev1.GetAvailablePackageVersionsResponse], error) {
-	log.Infof("+fluxv2 GetAvailablePackageVersions [%v]", request)
+	safelog.Request("+fluxv2 GetAvailablePackageVersions", request)
 	defer log.Info("-fluxv2 GetAvailablePackageVersions")
 
 	if request.Msg.GetPkgVersion() != "" {
@@ -302,7 +302,7 @@ func (s *Server) GetAvailablePackageVersions(ctx context.Context, request *conne
 
 // GetInstalledPackageSummaries returns the installed packages managed by the 'fluxv2' plugin
 func (s *Server) GetInstalledPackageSummaries(ctx context.Context, request *connect.Request[corev1.GetInstalledPackageSummariesRequest]) (*connect.Response[corev1.GetInstalledPackageSummariesResponse], error) {
-	log.Infof("+fluxv2 GetInstalledPackageSummaries [%v]", request)
+	safelog.Request("+fluxv2 GetInstalledPackageSummaries", request)
 	itemOffset, err := paginate.ItemOffsetFromPageToken(request.Msg.GetPaginationOptions().GetPageToken())
 	if err != nil {
 		return nil, err
@@ -336,7 +336,7 @@ func (s *Server) GetInstalledPackageSummaries(ctx context.Context, request *conn
 
 // GetInstalledPackageDetail returns the package metadata managed by the 'fluxv2' plugin
 func (s *Server) GetInstalledPackageDetail(ctx context.Context, request *connect.Request[corev1.GetInstalledPackageDetailRequest]) (*connect.Response[corev1.GetInstalledPackageDetailResponse], error) {
-	log.Infof("+fluxv2 GetInstalledPackageDetail [%v]", request)
+	safelog.Request("+fluxv2 GetInstalledPackageDetail", request)
 
 	if request == nil || request.Msg.InstalledPackageRef == nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("no request InstalledPackageRef provided"))
@@ -366,7 +366,7 @@ func (s *Server) GetInstalledPackageDetail(ctx context.Context, request *connect
 
 // CreateInstalledPackage creates an installed package based on the request.
 func (s *Server) CreateInstalledPackage(ctx context.Context, request *connect.Request[corev1.CreateInstalledPackageRequest]) (*connect.Response[corev1.CreateInstalledPackageResponse], error) {
-	log.Infof("+fluxv2 CreateInstalledPackage [%v]", request)
+	safelog.Request("+fluxv2 CreateInstalledPackage", request)
 
 	if request == nil || request.Msg.AvailablePackageRef == nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("no request AvailablePackageRef provided"))
@@ -410,7 +410,7 @@ func (s *Server) CreateInstalledPackage(ctx context.Context, request *connect.Re
 
 // UpdateInstalledPackage updates an installed package based on the request.
 func (s *Server) UpdateInstalledPackage(ctx context.Context, request *connect.Request[corev1.UpdateInstalledPackageRequest]) (*connect.Response[corev1.UpdateInstalledPackageResponse], error) {
-	log.Infof("+fluxv2 UpdateInstalledPackage [%v]", request)
+	safelog.Request("+fluxv2 UpdateInstalledPackage", request)
 
 	if request == nil || request.Msg.InstalledPackageRef == nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("no request InstalledPackageRef provided"))
@@ -439,7 +439,7 @@ func (s *Server) UpdateInstalledPackage(ctx context.Context, request *connect.Re
 
 // DeleteInstalledPackage deletes an installed package.
 func (s *Server) DeleteInstalledPackage(ctx context.Context, request *connect.Request[corev1.DeleteInstalledPackageRequest]) (*connect.Response[corev1.DeleteInstalledPackageResponse], error) {
-	log.Infof("+fluxv2 DeleteInstalledPackage [%v]", request)
+	safelog.Request("+fluxv2 DeleteInstalledPackage", request)
 
 	if request == nil || request.Msg.InstalledPackageRef == nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("no request InstalledPackageRef provided"))
@@ -519,7 +519,7 @@ func (s *Server) AddPackageRepository(ctx context.Context, request *connect.Requ
 }
 
 func (s *Server) GetPackageRepositoryDetail(ctx context.Context, request *connect.Request[corev1.GetPackageRepositoryDetailRequest]) (*connect.Response[corev1.GetPackageRepositoryDetailResponse], error) {
-	log.Infof("+fluxv2 GetPackageRepositoryDetail [%v]", request)
+	safelog.Request("+fluxv2 GetPackageRepositoryDetail", request)
 	defer log.Info("-fluxv2 GetPackageRepositoryDetail")
 	if request == nil || request.Msg.PackageRepoRef == nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("no request AvailablePackageRef provided"))
@@ -548,7 +548,7 @@ func (s *Server) GetPackageRepositoryDetail(ctx context.Context, request *connec
 
 // GetPackageRepositorySummaries returns the package repositories managed by the 'fluxv2' plugin
 func (s *Server) GetPackageRepositorySummaries(ctx context.Context, request *connect.Request[corev1.GetPackageRepositorySummariesRequest]) (*connect.Response[corev1.GetPackageRepositorySummariesResponse], error) {
-	log.Infof("+fluxv2 GetPackageRepositorySummaries [%v]", request)
+	safelog.Request("+fluxv2 GetPackageRepositorySummaries", request)
 	cluster := request.Msg.GetContext().GetCluster()
 	if cluster != "" && cluster != s.kubeappsCluster {
 		return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("not supported yet: request.Context.Cluster: [%v]", cluster))
@@ -565,7 +565,7 @@ func (s *Server) GetPackageRepositorySummaries(ctx context.Context, request *con
 
 // UpdatePackageRepository updates a package repository based on the request.
 func (s *Server) UpdatePackageRepository(ctx context.Context, request *connect.Request[corev1.UpdatePackageRepositoryRequest]) (*connect.Response[corev1.UpdatePackageRepositoryResponse], error) {
-	log.Infof("+fluxv2 UpdatePackageRepository [%v]", request)
+	safelog.Request("+fluxv2 UpdatePackageRepository", request)
 	if request == nil || request.Msg.PackageRepoRef == nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("no request PackageRepoRef provided"))
 	}
@@ -587,7 +587,7 @@ func (s *Server) UpdatePackageRepository(ctx context.Context, request *connect.R
 
 // DeletePackageRepository deletes a package repository based on the request.
 func (s *Server) DeletePackageRepository(ctx context.Context, request *connect.Request[corev1.DeletePackageRepositoryRequest]) (*connect.Response[corev1.DeletePackageRepositoryResponse], error) {
-	log.Infof("+fluxv2 DeletePackageRepository [%v]", request)
+	safelog.Request("+fluxv2 DeletePackageRepository", request)
 	if request == nil || request.Msg.PackageRepoRef == nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("no request PackageRepoRef provided"))
 	}
@@ -606,7 +606,7 @@ func (s *Server) DeletePackageRepository(ctx context.Context, request *connect.R
 }
 
 func (s *Server) GetPackageRepositoryPermissions(ctx context.Context, request *connect.Request[corev1.GetPackageRepositoryPermissionsRequest]) (*connect.Response[corev1.GetPackageRepositoryPermissionsResponse], error) {
-	log.Infof("+fluxv2 GetPackageRepositoryPermissions [%v]", request)
+	safelog.Request("+fluxv2 GetPackageRepositoryPermissions", request)
 
 	cluster := request.Msg.GetContext().GetCluster()
 	namespace := request.Msg.GetContext().GetNamespace()
