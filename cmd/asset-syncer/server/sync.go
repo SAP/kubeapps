@@ -150,6 +150,11 @@ func Sync(serveOpts Config, version string, args []string) error {
 
 		close(fileImporterJobs)
 
+		// Wait for file imports to complete.
+		log.V(4).Infof("Chart data syncing complete. Waiting for file imports to complete.")
+		<-fileImportsDone
+
+		// Remove missing charts AFTER file imports complete to avoid FK constraint violations
 		err = manager.RemoveMissingCharts(models.AppRepository{
 			Namespace: repo.Namespace,
 			Name:      repo.Name,
@@ -157,10 +162,6 @@ func Sync(serveOpts Config, version string, args []string) error {
 		if err != nil {
 			return fmt.Errorf("error while removing missing charts: %w", err)
 		}
-
-		// Wait for file imports to complete.
-		log.V(4).Infof("Chart data syncing complete. Waiting for file imports to complete.")
-		<-fileImportsDone
 
 		log.V(4).Infof("Repository synced, shallow=%v", fetchLatestOnly)
 	}
