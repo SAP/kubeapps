@@ -379,6 +379,7 @@ type VACCatalog struct {
 
 type ociAPI interface {
 	TagList(appName, userAgent string) (*TagList, error)
+	ResolveDigest(ctx context.Context, appName, tag, userAgent string) (string, error)
 	IsHelmChart(appName, tag, userAgent string) (bool, error)
 	CatalogAvailable(ctx context.Context, userAgent string) (bool, error)
 	Catalog(ctx context.Context, userAgent string) ([]string, error)
@@ -448,6 +449,30 @@ func (o *OciAPIClient) TagList(appName string, userAgent string) (*TagList, erro
 		Name: orasRepoClient.Reference.Repository,
 		Tags: tags,
 	}, nil
+}
+
+// ResolveDigest returns the digest of the manifest currently referenced by a
+// tag. OCI tags are mutable, so comparing this digest with the one stored for a
+// chart version lets the syncer detect a chart republished under the same tag.
+func (o *OciAPIClient) ResolveDigest(ctx context.Context, appName, tag, userAgent string) (string, error) {
+	orasRepoClient, err := o.getOrasRepoClient(appName, userAgent)
+	if err != nil {
+		return "", err
+	}
+	descriptor, err := orasRepoClient.Resolve(ctx, tag)
+	if err == nil {
+		return descriptor.Digest.String(), nil
+	}
+
+	// Some OCI-compatible registries do not implement manifest HEAD requests.
+	// Fall back to fetching the small manifest document before failing the sync.
+	descriptor, manifest, err := orasRepoClient.FetchReference(ctx, tag)
+	if err != nil {
+		return "", err
+	}
+	defer manifest.Close()
+	_, _ = io.Copy(io.Discard, manifest)
+	return descriptor.Digest.String(), nil
 }
 
 func (o *OciAPIClient) IsHelmChart(appName, tag, userAgent string) (bool, error) {
@@ -701,21 +726,55 @@ func chartImportWorker(repoURL *url.URL, r *OCIRegistry, chartJobs <-chan pullCh
 				errors = append(errors, err)
 				continue
 			}
-			// The model is *weird*, but the first (latest) chart is used as the
-			// main chart, and has a single chart version of itself, so
-			// subsequent charts are just used for the extra chart versions.
-			if chart == nil {
-				chart = c
-			} else {
-				chart.ChartVersions = append(chart.ChartVersions, c.ChartVersions...)
-			}
+			chart = mergeOCIChart(chart, c)
 		}
 
-		// Re-sort the ChartVersions
-		orderedChartVersions(chart.ChartVersions)
-
-		resultChan <- pullChartResult{*chart, errors}
+		if chart == nil {
+			resultChan <- pullChartResult{Errors: errors}
+		} else {
+			resultChan <- pullChartResult{*chart, errors}
+		}
 	}
+}
+
+// mergeOCIChart merges chart versions pulled from an OCI registry with an
+// existing chart. Pulled versions replace stored versions with the same
+// Chart.yaml version, which is required when a mutable OCI tag points at a new
+// manifest. Other versions and the existing chart metadata are preserved, and
+// duplicate versions are removed.
+func mergeOCIChart(existing, pulled *models.Chart) *models.Chart {
+	if existing == nil && pulled == nil {
+		return nil
+	}
+
+	versionsByVersion := map[string]models.ChartVersion{}
+	if existing != nil {
+		for _, version := range existing.ChartVersions {
+			if _, ok := versionsByVersion[version.Version]; !ok {
+				versionsByVersion[version.Version] = version
+			}
+		}
+	}
+	if pulled != nil {
+		for _, version := range pulled.ChartVersions {
+			versionsByVersion[version.Version] = version
+		}
+	}
+
+	versions := make([]models.ChartVersion, 0, len(versionsByVersion))
+	for _, version := range versionsByVersion {
+		versions = append(versions, version)
+	}
+	orderedChartVersions(versions)
+
+	metadataSource := existing
+	if metadataSource == nil {
+		metadataSource = pulled
+	}
+
+	merged := *metadataSource
+	merged.ChartVersions = versions
+	return &merged
 }
 
 // orderedChartVersions orders the chart versions in descending semver
@@ -785,6 +844,85 @@ func chartsByOCIRepository(appRepositoryName string, charts map[string]*models.C
 	return chartsByRepository, nil
 }
 
+func (r *OCIRegistry) pullChartJobs(ctx context.Context, fetchLatestOnly bool, syncedChartsByRepository map[string]*models.Chart) ([]pullChartJob, error) {
+	jobs := []pullChartJob{}
+	userAgent := GetUserAgent("", "")
+
+	for _, appName := range r.repositories {
+		tagList, err := r.ociCli.TagList(appName, userAgent)
+		if err != nil {
+			return nil, fmt.Errorf("unable to list tags for OCI repository %q: %w", appName, err)
+		}
+		tags, err := orderVersions(tagList.Tags)
+		if err != nil {
+			return nil, fmt.Errorf("unable to order tags for OCI repository %q: %w", appName, err)
+		}
+
+		// Match using the complete OCI repository path recovered from Chart.ID,
+		// rather than the chart metadata name.
+		syncedChart := syncedChartsByRepository[appName]
+		syncedVersions := map[string]string{}
+		if syncedChart != nil {
+			for _, cv := range syncedChart.ChartVersions {
+				syncedVersions[cv.Version] = cv.Digest
+			}
+		}
+
+		// Sync tags that have not been seen before, as well as mutable tags
+		// whose manifest digest differs from the stored chart version.
+		versionsToSync := []string{}
+		for _, tag := range tags {
+			storedDigest, ok := syncedVersions[tag]
+			if !ok {
+				versionsToSync = append(versionsToSync, tag)
+				continue
+			}
+
+			remoteDigest, err := r.ociCli.ResolveDigest(ctx, appName, tag, userAgent)
+			if err != nil {
+				return nil, fmt.Errorf("unable to resolve OCI manifest digest for %q tag %q: %w", appName, tag, err)
+			}
+			if remoteDigest != storedDigest {
+				log.V(4).Infof("OCI chart digest changed, repository=%q, tag=%q, previous=%q, current=%q", appName, tag, storedDigest, remoteDigest)
+				versionsToSync = append(versionsToSync, tag)
+			}
+		}
+
+		if len(versionsToSync) == 0 {
+			log.V(4).Infof("No versions requiring sync for %q", appName)
+			continue
+		}
+
+		if fetchLatestOnly {
+			// TODO(minelson): There's a small but non-zero chance that the
+			// latest tag is for non-chart data. Worst case here is that the app
+			// won't appear in the UI until the non-shallow sync syncs its chart tags.
+			jobs = append(jobs, pullChartJob{
+				AppName:        appName,
+				VersionsToSync: []string{versionsToSync[0]},
+				Chart:          syncedChart,
+			})
+			log.V(4).Infof("Queued only the first tag for %q for shallow sync : %q", appName, versionsToSync[0])
+			continue
+		}
+
+		limitedVersionsToSync := versionsToSync
+		if len(limitedVersionsToSync) > maxOCIVersionsForOneSync {
+			limitedVersionsToSync = limitedVersionsToSync[:maxOCIVersionsForOneSync]
+			log.V(4).Infof("Queued only the next %d versions of %q during this sync: %v", maxOCIVersionsForOneSync, appName, limitedVersionsToSync)
+		} else {
+			log.V(4).Infof("Queued all remaining versions for %q: %v", appName, versionsToSync)
+		}
+		jobs = append(jobs, pullChartJob{
+			AppName:        appName,
+			VersionsToSync: limitedVersionsToSync,
+			Chart:          syncedChart,
+		})
+	}
+
+	return jobs, nil
+}
+
 // Charts retrieve the list of actual charts needing syncing in the repo.
 func (r *OCIRegistry) Charts(ctx context.Context, fetchLatestOnly bool, chartResults chan pullChartResult) ([]string, error) {
 	repoURL, err := parseRepoURL(r.URL)
@@ -808,6 +946,10 @@ func (r *OCIRegistry) Charts(ctx context.Context, fetchLatestOnly bool, chartRes
 	if err != nil {
 		return nil, err
 	}
+	plannedJobs, err := r.pullChartJobs(ctx, fetchLatestOnly, syncedChartsByRepository)
+	if err != nil {
+		return nil, err
+	}
 
 	chartJobs := make(chan pullChartJob, numWorkersOCI)
 	workerChartResults := make(chan pullChartResult, numWorkersOCI)
@@ -828,68 +970,8 @@ func (r *OCIRegistry) Charts(ctx context.Context, fetchLatestOnly bool, chartRes
 
 	log.V(4).Infof("Starting %d workers for importing OCI charts", numWorkersOCI)
 	go func() {
-		for _, appName := range r.repositories {
-			// Get the list of tags for the app
-			tagList, err := r.ociCli.TagList(appName, GetUserAgent("", ""))
-			if err != nil {
-				log.V(3).ErrorS(err, "unable to list tags")
-				log.Errorf("unable to list tags: %+v", err)
-				close(chartJobs)
-				return
-			}
-			tags, err := orderVersions(tagList.Tags)
-			if err != nil {
-				log.V(3).ErrorS(err, "Error parsing version")
-				close(chartJobs)
-				return
-			}
-			// Find the tags present in DB, in order verify the difference. Match
-			// using the complete OCI repository path recovered from Chart.ID,
-			// rather than the chart metadata name.
-			syncedChart := syncedChartsByRepository[appName]
-			syncedVersions := []string{}
-			if syncedChart != nil {
-				for _, cv := range syncedChart.ChartVersions {
-					syncedVersions = append(syncedVersions, cv.Version)
-				}
-			}
-			// We want to sync only those versions that we don't already have synced
-			versionsToSync := []string{}
-			for _, tag := range tags {
-				if !slice.ContainsString(syncedVersions, tag, func(s string) string { return s }) {
-					versionsToSync = append(versionsToSync, tag)
-				}
-			}
-
-			if len(versionsToSync) == 0 {
-				log.V(4).Infof("No versions requiring sync for %q", appName)
-				continue
-			}
-
-			if fetchLatestOnly {
-				// TODO(minelson): There's a small but non-zero chance that the
-				// latest tag is for non-chart data. Worst case here is that the app
-				// won't appear in the UI until the non-shallow sync syncs its chart tags.
-				chartJobs <- pullChartJob{
-					AppName:        appName,
-					VersionsToSync: []string{versionsToSync[0]},
-					Chart:          syncedChart,
-				}
-				log.V(4).Infof("Queued only the first tag for %q for shallow sync : %q", appName, versionsToSync[0])
-			} else {
-				limitedVersionsToSync := versionsToSync
-				if len(limitedVersionsToSync) > maxOCIVersionsForOneSync {
-					limitedVersionsToSync = limitedVersionsToSync[:maxOCIVersionsForOneSync]
-					log.V(4).Infof("Queued only the next %d versions of %q during this sync: %v", maxOCIVersionsForOneSync, appName, versionsToSync[:maxOCIVersionsForOneSync])
-				} else {
-					log.V(4).Infof("Queued all remaining  versions for %q: %v", appName, versionsToSync)
-				}
-				chartJobs <- pullChartJob{
-					AppName:        appName,
-					VersionsToSync: limitedVersionsToSync,
-					Chart:          syncedChart,
-				}
-			}
+		for _, job := range plannedJobs {
+			chartJobs <- job
 		}
 		close(chartJobs)
 	}()
@@ -919,13 +1001,17 @@ func (r *OCIRegistry) Charts(ctx context.Context, fetchLatestOnly bool, chartRes
 	return chartsForDeletion, nil
 }
 
-// FetchFiles do nothing for the OCI case since they have been already fetched in the Charts() method
+// FetchFiles returns files already fetched for OCI charts in the Charts method.
 func (r *OCIRegistry) FetchFiles(cv models.ChartVersion, userAgent string, passCredentials bool) (map[string]string, error) {
-	return map[string]string{
+	files := map[string]string{
 		models.DefaultValuesKey: cv.DefaultValues,
 		models.ReadmeKey:        cv.Readme,
 		models.SchemaKey:        cv.Schema,
-	}, nil
+	}
+	for name, contents := range cv.AdditionalDefaultValues {
+		files[name] = contents
+	}
+	return files, nil
 }
 
 func parseFilters(filters string) (*apprepov1alpha1.FilterRuleSpec, error) {
