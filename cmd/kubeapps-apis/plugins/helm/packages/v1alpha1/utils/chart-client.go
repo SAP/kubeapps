@@ -185,12 +185,21 @@ func (c *OCIRepoClient) GetChart(details *ChartDetails, repoURL string) (*chart.
 	if details == nil || details.TarballURL == "" {
 		return nil, fmt.Errorf("unable to retrieve chart, missing chart details")
 	}
-	chartURL, err := resolveChartURL(repoURL, details.TarballURL)
-	if err != nil {
-		return nil, err
-	}
 
-	ref := path.Join(chartURL.Host, chartURL.Path)
+	// For OCI references we must NOT use resolveChartURL / url.Parse because
+	// url.Parse decodes percent-encoded slashes (%2F → /), destroying the OCI
+	// repository name encoding that registries like GAR require.
+	// Instead we strip the "oci://" scheme prefix directly and pass the raw
+	// reference string to the puller.
+	ref := strings.TrimPrefix(strings.TrimSpace(details.TarballURL), "oci://")
+	if ref == "" {
+		// Fall back to URL-based resolution for non-oci:// tarball URLs
+		chartURL, err := resolveChartURL(repoURL, details.TarballURL)
+		if err != nil {
+			return nil, err
+		}
+		ref = path.Join(chartURL.Host, chartURL.Path)
+	}
 	chartBuffer, _, err := c.puller.PullOCIChart(ref)
 	if err != nil {
 		return nil, err

@@ -939,17 +939,41 @@ func (s *Server) fetchChartWithRegistrySecrets(ctx context.Context, headers http
 	chartID := fmt.Sprintf("%s/%s", appRepo.Name, chartDetails.ChartName)
 	log.InfoS("Fetching chart with user-agent", "chartID", chartID, "userAgentString", userAgentString)
 
-	// Look up the cachedChart cached in our DB to populate the tarball URL
-	cachedChart, err := s.manager.GetChartVersion(chartDetails.AppRepositoryResourceNamespace, chartID, chartDetails.Version)
-	if err != nil {
-		return nil, nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unable to fetch the chart %s (version %s) from the namespace %q: %w", chartID, chartDetails.Version, chartDetails.AppRepositoryResourceNamespace, err))
-	}
 	var tarballURL string
-	// If the chart is cached, we can use the tarball URL from the cache,
-	// we assume cachedChart.ChartVersions only contains 1 element
-	if len(cachedChart.ChartVersions) == 1 && cachedChart.ChartVersions[0].URLs != nil {
-		tarballURL = chartTarballURL(cachedChart.Repo, cachedChart.ChartVersions[0])
-		log.InfoS("Using chart tarball", "url", tarballURL)
+	if appRepo.Spec.Type == OCIRepoType {
+		// For OCI repositories the chart is referenced via an OCI reference
+		// (oci://registry/namespace/chartName:version). We build this directly
+		// from the AppRepository URL and chart details rather than relying on
+		// ChartVersions[0].URLs, which stores the chart's source-code URLs
+		// (e.g. GitHub links) and not the OCI pull reference.
+		//
+		// chartDetails.ChartName arrives double-encoded from the UI: the asset-syncer
+		// stores the OCI path with url.PathEscape() (e.g. "k8s-ec-pipeline-dev%2Fjenkins-ecpipeline"),
+		// then GetUnescapedPackageID re-escapes the part after the first slash
+		// (e.g. "k8s-ec-pipeline-dev%252Fjenkins-ecpipeline"). We must unescape
+		// twice to recover the raw OCI path ("k8s-ec-pipeline-dev/jenkins-ecpipeline").
+		decodedChartName := chartDetails.ChartName
+		for i := 0; i < 2; i++ {
+			if d, err := url.PathUnescape(decodedChartName); err == nil {
+				decodedChartName = d
+			}
+		}
+		// Strip any https:// or oci:// prefix from the repo URL before building the OCI ref.
+		repoURL := strings.TrimPrefix(strings.TrimPrefix(appRepo.Spec.URL, "oci://"), "https://")
+		tarballURL = fmt.Sprintf("oci://%s/%s:%s", strings.TrimSuffix(repoURL, "/"), decodedChartName, chartDetails.Version)
+		log.InfoS("Using OCI chart reference as tarball URL", "url", tarballURL)
+	} else {
+		// Look up the chart cached in our DB to populate the tarball URL
+		cachedChart, err := s.manager.GetChartVersion(chartDetails.AppRepositoryResourceNamespace, chartID, chartDetails.Version)
+		if err != nil {
+			return nil, nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unable to fetch the chart %s (version %s) from the namespace %q: %w", chartID, chartDetails.Version, chartDetails.AppRepositoryResourceNamespace, err))
+		}
+		// If the chart is cached, we can use the tarball URL from the cache,
+		// we assume cachedChart.ChartVersions only contains 1 element
+		if len(cachedChart.ChartVersions) == 1 && cachedChart.ChartVersions[0].URLs != nil {
+			tarballURL = chartTarballURL(cachedChart.Repo, cachedChart.ChartVersions[0])
+			log.InfoS("Using chart tarball", "url", tarballURL)
+		}
 	}
 
 	// Grab the chart itself
