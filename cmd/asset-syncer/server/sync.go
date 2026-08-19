@@ -112,7 +112,7 @@ func Sync(serveOpts Config, version string, args []string) error {
 		// gives us a way to pull results as they're generated (like an
 		// iterator).
 		chartResults := make(chan pullChartResult, 2)
-		chartsToDelete, err := repoIface.Charts(ctx, fetchLatestOnly, chartResults)
+		chartIDsToDelete, err := repoIface.Charts(ctx, fetchLatestOnly, chartResults)
 		if err != nil {
 			return fmt.Errorf("error: %v", err)
 		}
@@ -158,7 +158,7 @@ func Sync(serveOpts Config, version string, args []string) error {
 		err = manager.RemoveMissingCharts(models.AppRepository{
 			Namespace: repo.Namespace,
 			Name:      repo.Name,
-		}, chartsToDelete)
+		}, chartIDsToDelete)
 		if err != nil {
 			return fmt.Errorf("error while removing missing charts: %w", err)
 		}

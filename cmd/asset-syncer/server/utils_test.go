@@ -1450,8 +1450,7 @@ version: 1.0.0
 			pgManager, mockDB, cleanup := getMockManager(t)
 			defer cleanup()
 			mockDB.ExpectQuery("SELECT info FROM charts *").
-				WillReturnRows(sqlmock.NewRows([]string{"info"}).
-					AddRow(string("{}")))
+				WillReturnRows(sqlmock.NewRows([]string{"info"}))
 			chartsRepo := OCIRegistry{
 				repositories:          []string{tt.chartName},
 				AppRepositoryInternal: &models.AppRepositoryInternal{Name: tt.expected[0].Repo.Name, URL: tt.expected[0].Repo.URL},
@@ -1530,8 +1529,7 @@ version: 1.0.0
 		pgManager, mockDB, cleanup := getMockManager(t)
 		defer cleanup()
 		mockDB.ExpectQuery("SELECT info FROM charts *").
-			WillReturnRows(sqlmock.NewRows([]string{"info"}).
-				AddRow(string("{}")))
+			WillReturnRows(sqlmock.NewRows([]string{"info"}))
 
 		chartsRepo := OCIRegistry{
 			repositories:          []string{},
@@ -1574,6 +1572,222 @@ version: 1.0.0
 		assert.NoError(t, err)
 		assert.Equal(t, result, files, "expected files")
 	})
+}
+
+func TestOCIRegistryMatchesExistingChartByStoredRepositoryPath(t *testing.T) {
+	const (
+		appRepositoryName = "gar-modelt"
+		namespace         = "modelt"
+		repositoryPath    = "k8s-modelt-dev/jenkins-modelt"
+		chartID           = appRepositoryName + "/k8s-modelt-dev%2Fjenkins-modelt"
+	)
+
+	tagList := TagList{Name: repositoryPath, Tags: []string{"2.0.0", "1.0.0"}}
+	tagListJSON, err := json.Marshal(tagList)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tagServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if got, want := r.URL.Path, "/v2/"+repositoryPath+"/tags/list"; got != want {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write(tagListJSON)
+	}))
+	defer tagServer.Close()
+
+	chartYAML := `
+apiVersion: v2
+name: jenkins-modelt
+version: 2.0.0
+`
+	recorder := httptest.NewRecorder()
+	gzw := gzip.NewWriter(recorder)
+	tartest.CreateTestTarball(gzw, []tartest.TarballFile{{Name: "Chart.yaml", Body: chartYAML}})
+	if err := gzw.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	repo := &models.AppRepository{
+		Namespace: namespace,
+		Name:      appRepositoryName,
+		URL:       tagServer.URL,
+		Type:      "oci",
+	}
+	existingChart := models.Chart{
+		ID:   chartID,
+		Name: "jenkins-modelt",
+		Repo: repo,
+		ChartVersions: []models.ChartVersion{
+			{Version: "1.0.0", Digest: "persisted-digest"},
+		},
+	}
+
+	pgManager, mockDB, cleanup := getMockManager(t)
+	defer cleanup()
+	registryURL, err := parseRepoURL(tagServer.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	chartsRepo := OCIRegistry{
+		repositories:          []string{repositoryPath},
+		AppRepositoryInternal: &models.AppRepositoryInternal{Namespace: namespace, Name: appRepositoryName, URL: tagServer.URL, Type: "oci"},
+		puller: &helmfake.OCIPuller{
+			Content:  map[string]*bytes.Buffer{"2.0.0": recorder.Body},
+			Checksum: "new-digest",
+		},
+		ociCli: &OciAPIClient{
+			RegistryNamespaceUrl: registryURL,
+			HttpClient:           tagServer.Client(),
+		},
+		manager: pgManager,
+	}
+
+	existingJSON, err := json.Marshal(existingChart)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mockDB.ExpectQuery("SELECT info FROM charts *").
+		WithArgs(namespace, appRepositoryName).
+		WillReturnRows(sqlmock.NewRows([]string{"info"}).AddRow(existingJSON))
+
+	chartResults := make(chan pullChartResult, 2)
+	chartIDsToDelete, err := chartsRepo.Charts(context.Background(), false, chartResults)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Empty(t, chartIDsToDelete)
+
+	var syncedCharts []models.Chart
+	for result := range chartResults {
+		assert.Empty(t, result.Errors)
+		syncedCharts = append(syncedCharts, result.Chart)
+	}
+	if got, want := len(syncedCharts), 1; got != want {
+		t.Fatalf("got %d synced charts, want %d", got, want)
+	}
+	if got, want := syncedCharts[0].ID, chartID; got != want {
+		t.Errorf("got chart ID %q, want %q", got, want)
+	}
+	if got, want := syncedCharts[0].ChartVersions, []models.ChartVersion{
+		{Version: "2.0.0", Digest: "new-digest", AdditionalDefaultValues: map[string]string{}},
+		{Version: "1.0.0", Digest: "persisted-digest"},
+	}; !cmp.Equal(got, want) {
+		t.Errorf("versions mismatch (-got +want):\n%s", cmp.Diff(got, want))
+	}
+
+	// A subsequent run with the just-synced chart must neither pull existing
+	// versions again nor mark the chart as stale.
+	syncedJSON, err := json.Marshal(syncedCharts[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	mockDB.ExpectQuery("SELECT info FROM charts *").
+		WithArgs(namespace, appRepositoryName).
+		WillReturnRows(sqlmock.NewRows([]string{"info"}).AddRow(syncedJSON))
+
+	repeatedResults := make(chan pullChartResult, 2)
+	chartIDsToDelete, err = chartsRepo.Charts(context.Background(), false, repeatedResults)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Empty(t, chartIDsToDelete)
+	for result := range repeatedResults {
+		t.Errorf("unexpected chart on repeated sync: %+v", result.Chart)
+	}
+	if err := mockDB.ExpectationsWereMet(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestOCIRegistryReturnsExactStaleChartID(t *testing.T) {
+	const (
+		appRepositoryName    = "gar-pipelines"
+		namespace            = "pipelines"
+		configuredRepository = "project-a/jenkins"
+		configuredChartID    = appRepositoryName + "/project-a%2Fjenkins"
+		staleChartID         = appRepositoryName + "/project-b%2Fjenkins"
+		sharedChartMetadata  = "jenkins"
+	)
+
+	tagListJSON, err := json.Marshal(TagList{Name: configuredRepository, Tags: []string{"1.0.0"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	tagServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if got, want := r.URL.Path, "/v2/"+configuredRepository+"/tags/list"; got != want {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write(tagListJSON)
+	}))
+	defer tagServer.Close()
+	registryURL, err := parseRepoURL(tagServer.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	repo := &models.AppRepository{Namespace: namespace, Name: appRepositoryName, URL: tagServer.URL, Type: "oci"}
+	configuredChart := models.Chart{
+		ID:            configuredChartID,
+		Name:          sharedChartMetadata,
+		Repo:          repo,
+		ChartVersions: []models.ChartVersion{{Version: "1.0.0"}},
+	}
+	staleChart := models.Chart{
+		ID:            staleChartID,
+		Name:          sharedChartMetadata,
+		Repo:          repo,
+		ChartVersions: []models.ChartVersion{{Version: "1.0.0"}},
+	}
+	configuredJSON, err := json.Marshal(configuredChart)
+	if err != nil {
+		t.Fatal(err)
+	}
+	staleJSON, err := json.Marshal(staleChart)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	pgManager, mockDB, cleanup := getMockManager(t)
+	defer cleanup()
+	mockDB.ExpectQuery("SELECT info FROM charts *").
+		WithArgs(namespace, appRepositoryName).
+		WillReturnRows(sqlmock.NewRows([]string{"info"}).AddRow(configuredJSON).AddRow(staleJSON))
+
+	chartsRepo := OCIRegistry{
+		repositories:          []string{configuredRepository},
+		AppRepositoryInternal: &models.AppRepositoryInternal{Namespace: namespace, Name: appRepositoryName, URL: tagServer.URL, Type: "oci"},
+		puller:                &helmfake.OCIPuller{},
+		ociCli: &OciAPIClient{
+			RegistryNamespaceUrl: registryURL,
+			HttpClient:           tagServer.Client(),
+		},
+		manager: pgManager,
+	}
+
+	chartResults := make(chan pullChartResult, 2)
+	chartIDsToDelete, err := chartsRepo.Charts(context.Background(), false, chartResults)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := chartIDsToDelete, []string{staleChartID}; !cmp.Equal(got, want) {
+		t.Errorf("stale chart IDs mismatch (-got +want):\n%s", cmp.Diff(got, want))
+	}
+	for result := range chartResults {
+		t.Errorf("unexpected chart result: %+v", result.Chart)
+	}
+	if err := mockDB.ExpectationsWereMet(); err != nil {
+		t.Fatal(err)
+	}
+
+	// Both charts intentionally share the same Chart.yaml name. The stored IDs
+	// are what distinguish the configured nested OCI path from the stale one.
+	if configuredChart.Name != staleChart.Name {
+		t.Fatal("invalid test setup")
+	}
 }
 
 func Test_filterMatches(t *testing.T) {
@@ -1850,7 +2064,7 @@ func TestHelmRepoAppliesUnescape(t *testing.T) {
 	pgManager, mock, cleanup := getMockManager(t)
 	defer cleanup()
 	mock.ExpectQuery("SELECT info FROM charts").
-		WillReturnRows(sqlmock.NewRows([]string{"info"}).AddRow("{}"))
+		WillReturnRows(sqlmock.NewRows([]string{"info"}))
 	helmRepo := &HelmRepo{
 		content:               []byte(repoIndexYAML),
 		AppRepositoryInternal: repo,

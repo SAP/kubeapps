@@ -112,7 +112,7 @@ type assetManager interface {
 	Init() error
 	Close() error
 	InvalidateCache() error
-	RemoveMissingCharts(repo models.AppRepository, chartNames []string) error
+	RemoveMissingCharts(repo models.AppRepository, chartIDs []string) error
 	updateIcon(repo models.AppRepository, data []byte, contentType, ID string) error
 	filesExist(repo models.AppRepository, chartFilesID, digest string) bool
 	insertFiles(chartID string, files models.ChartFiles) error
@@ -289,9 +289,9 @@ func (r *HelmRepo) Charts(ctx context.Context, fetchLatestOnly bool, chartResult
 		return nil, err
 	}
 	chartsForDeletion := []string{}
-	for syncedChartName := range syncedChartsForRepo {
-		if !slice.ContainsString(newChartNames, syncedChartName, func(s string) string { return s }) {
-			chartsForDeletion = append(chartsForDeletion, syncedChartName)
+	for _, syncedChart := range syncedChartsForRepo {
+		if !slice.ContainsString(newChartNames, syncedChart.Name, func(s string) string { return s }) {
+			chartsForDeletion = append(chartsForDeletion, syncedChart.ID)
 		}
 	}
 	return chartsForDeletion, nil
@@ -751,6 +751,40 @@ func orderVersions(versions []string) ([]string, error) {
 	return orderedVersions, nil
 }
 
+// chartsByOCIRepository indexes previously synced charts by the full OCI
+// repository path from which they came. A chart's Name is metadata from its
+// Chart.yaml and is not necessarily the OCI repository path (nor is it unique
+// across repositories), so the encoded repository path stored in Chart.ID is
+// the canonical value for matching an OCI AppRepository configuration.
+func chartsByOCIRepository(appRepositoryName string, charts map[string]*models.Chart) (map[string]*models.Chart, error) {
+	chartsByRepository := make(map[string]*models.Chart, len(charts))
+	idPrefix := appRepositoryName + "/"
+
+	for _, chart := range charts {
+		if chart == nil {
+			return nil, fmt.Errorf("invalid nil chart stored for AppRepository %q", appRepositoryName)
+		}
+		if !strings.HasPrefix(chart.ID, idPrefix) {
+			return nil, fmt.Errorf("stored chart ID %q does not belong to AppRepository %q", chart.ID, appRepositoryName)
+		}
+
+		encodedRepository := strings.TrimPrefix(chart.ID, idPrefix)
+		if encodedRepository == "" {
+			return nil, fmt.Errorf("stored chart ID %q has no OCI repository path", chart.ID)
+		}
+		repository, err := url.PathUnescape(encodedRepository)
+		if err != nil {
+			return nil, fmt.Errorf("unable to decode OCI repository path from stored chart ID %q: %w", chart.ID, err)
+		}
+		if _, ok := chartsByRepository[repository]; ok {
+			return nil, fmt.Errorf("multiple stored charts resolve to OCI repository %q", repository)
+		}
+		chartsByRepository[repository] = chart
+	}
+
+	return chartsByRepository, nil
+}
+
 // Charts retrieve the list of actual charts needing syncing in the repo.
 func (r *OCIRegistry) Charts(ctx context.Context, fetchLatestOnly bool, chartResults chan pullChartResult) ([]string, error) {
 	repoURL, err := parseRepoURL(r.URL)
@@ -764,6 +798,17 @@ func (r *OCIRegistry) Charts(ctx context.Context, fetchLatestOnly bool, chartRes
 		}
 		r.repositories = repos
 	}
+	// Get the current versions that we're aware of from the DB
+	repo := models.AppRepository{Namespace: r.Namespace, Name: r.Name, URL: r.URL, Type: r.Type}
+	syncedChartsForRepo, err := r.manager.ChartsForRepo(repo)
+	if err != nil {
+		return nil, err
+	}
+	syncedChartsByRepository, err := chartsByOCIRepository(repo.Name, syncedChartsForRepo)
+	if err != nil {
+		return nil, err
+	}
+
 	chartJobs := make(chan pullChartJob, numWorkersOCI)
 	workerChartResults := make(chan pullChartResult, numWorkersOCI)
 	var wg sync.WaitGroup
@@ -780,13 +825,6 @@ func (r *OCIRegistry) Charts(ctx context.Context, fetchLatestOnly bool, chartRes
 		wg.Wait()
 		close(workerChartResults)
 	}()
-
-	// Get the current versions that we're aware of from the DB
-	repo := models.AppRepository{Namespace: r.Namespace, Name: r.Name, URL: r.URL, Type: r.Type}
-	syncedChartsForRepo, err := r.manager.ChartsForRepo(repo)
-	if err != nil {
-		return nil, err
-	}
 
 	log.V(4).Infof("Starting %d workers for importing OCI charts", numWorkersOCI)
 	go func() {
@@ -805,8 +843,10 @@ func (r *OCIRegistry) Charts(ctx context.Context, fetchLatestOnly bool, chartRes
 				close(chartJobs)
 				return
 			}
-			// Find the tags present in DB, in order verify the difference.
-			syncedChart := syncedChartsForRepo[appName]
+			// Find the tags present in DB, in order verify the difference. Match
+			// using the complete OCI repository path recovered from Chart.ID,
+			// rather than the chart metadata name.
+			syncedChart := syncedChartsByRepository[appName]
 			syncedVersions := []string{}
 			if syncedChart != nil {
 				for _, cv := range syncedChart.ChartVersions {
@@ -863,12 +903,18 @@ func (r *OCIRegistry) Charts(ctx context.Context, fetchLatestOnly bool, chartRes
 		close(chartResults)
 	}()
 
+	configuredRepositories := make(map[string]struct{}, len(r.repositories))
+	for _, repository := range r.repositories {
+		configuredRepositories[repository] = struct{}{}
+	}
+
 	chartsForDeletion := []string{}
-	for syncedChartName := range syncedChartsForRepo {
-		if !slice.ContainsString(r.repositories, syncedChartName, func(s string) string { return s }) {
-			chartsForDeletion = append(chartsForDeletion, syncedChartName)
+	for repository, syncedChart := range syncedChartsByRepository {
+		if _, ok := configuredRepositories[repository]; !ok {
+			chartsForDeletion = append(chartsForDeletion, syncedChart.ID)
 		}
 	}
+	slices.Sort(chartsForDeletion)
 
 	return chartsForDeletion, nil
 }
