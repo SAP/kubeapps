@@ -929,7 +929,7 @@ func (s *Server) getAppRepoAndRelatedSecrets(ctx context.Context, headers http.H
 // Mainly to DRY up similar code in the create and update methods.
 func (s *Server) fetchChartWithRegistrySecrets(ctx context.Context, headers http.Header, chartDetails *utils.ChartDetails, client kubernetes.Interface) (*chart.Chart, map[string]string, error) {
 	// Most of the existing code that we want to reuse is based on having a typed AppRepository.
-	appRepo, caCertSecret, authSecret, _, err := s.getAppRepoAndRelatedSecrets(ctx, headers, s.globalPackagingCluster, chartDetails.AppRepositoryResourceName, chartDetails.AppRepositoryResourceNamespace)
+	appRepo, caCertSecret, authSecret, imagesPullSecret, err := s.getAppRepoAndRelatedSecrets(ctx, headers, s.globalPackagingCluster, chartDetails.AppRepositoryResourceName, chartDetails.AppRepositoryResourceNamespace)
 	if err != nil {
 		return nil, nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unable to fetch app repo %q from namespace %q: %v", chartDetails.AppRepositoryResourceName, chartDetails.AppRepositoryResourceNamespace, err))
 	}
@@ -976,6 +976,13 @@ func (s *Server) fetchChartWithRegistrySecrets(ctx context.Context, headers http
 		}
 	}
 
+	// OCI repositories may keep registry credentials in the image pull secret
+	// rather than the AppRepository authorization secret.
+	effectiveAuthSecret := authSecret
+	if effectiveAuthSecret == nil && appRepo.Spec.Type == OCIRepoType {
+		effectiveAuthSecret = imagesPullSecret
+	}
+
 	// Grab the chart itself
 	ch, err := utils.GetChart(
 		&utils.ChartDetails{
@@ -986,7 +993,7 @@ func (s *Server) fetchChartWithRegistrySecrets(ctx context.Context, headers http
 			TarballURL:                     tarballURL,
 		},
 		appRepo,
-		caCertSecret, authSecret,
+		caCertSecret, effectiveAuthSecret,
 		s.chartClientFactory.New(tarballURL, userAgentString),
 	)
 	if err != nil {

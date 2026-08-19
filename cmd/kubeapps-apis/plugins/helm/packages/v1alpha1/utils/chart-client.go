@@ -164,13 +164,20 @@ func (c *OCIRepoClient) Init(appRepo *appRepov1.AppRepository, caCertSecret *cor
 	if err != nil {
 		return err
 	}
-	if authSecret != nil && appRepo.Spec.Auth.Header != nil {
+	if authSecret != nil {
 		var auth string
-		auth, err = kube.GetDataFromSecret(appRepo.Spec.Auth.Header.SecretKeyRef.Key, authSecret)
+		switch {
+		case appRepo.Spec.Auth.Header != nil:
+			auth, err = kube.GetDataFromSecret(appRepo.Spec.Auth.Header.SecretKeyRef.Key, authSecret)
+		case authSecret.Type == corev1.SecretTypeDockerConfigJson:
+			auth, err = kube.GetDataFromSecret(corev1.DockerConfigJsonKey, authSecret)
+		}
 		if err != nil {
 			return err
 		}
-		headers.Set("Authorization", string(auth))
+		if auth != "" {
+			headers.Set("Authorization", auth)
+		}
 	}
 
 	c.puller = &helm.OCIPuller{Resolver: docker.NewResolver(docker.ResolverOptions{Headers: headers, Hosts: docker.ConfigureDefaultRegistries(docker.WithClient(netClient))})}

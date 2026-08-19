@@ -208,6 +208,30 @@ func TestOCIClient(t *testing.T) {
 		helmtest.CheckHeader(t, cli.(*OCIRepoClient).puller, "Authorization", "Basic Zm9vOmJhcg==")
 	})
 
+	t.Run("InitClient - Uses image pull secret without header auth", func(t *testing.T) {
+		cli := NewOCIClient("")
+		appRepo := &appRepov1.AppRepository{}
+		authSecret := &corev1.Secret{
+			Type: corev1.SecretTypeDockerConfigJson,
+			Data: map[string][]byte{
+				corev1.DockerConfigJsonKey: []byte(
+					`{"auths":{"foo":{"username":"foo","password":"bar"}}}`,
+				),
+			},
+		}
+
+		err := cli.Init(appRepo, &corev1.Secret{}, authSecret)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		helmtest.CheckHeader(
+			t,
+			cli.(*OCIRepoClient).puller,
+			"Authorization",
+			"Basic Zm9vOmJhcg==",
+		)
+	})
+
 	t.Run("GetChart - Fails if the puller has not been instantiated", func(t *testing.T) {
 		cli := NewOCIClient("foo")
 		_, err := cli.GetChart(nil, "")
