@@ -1115,7 +1115,7 @@ maintainers:
     name: Bitnami
 name: kubeapps
 sources:
-  - https://github.com/SAP/kubeapps
+  - https://github.com/vmware-tanzu/kubeapps
 version: 1.0.0
 `
 	tests := []struct {
@@ -1142,7 +1142,7 @@ version: 1.0.0
 					Home:        "https://kubeapps.com",
 					Keywords:    []string{"helm"},
 					Maintainers: []chart.Maintainer{{Name: "Bitnami", Email: "containers@bitnami.com"}},
-					Sources:     []string{"https://github.com/SAP/kubeapps"},
+					Sources:     []string{"https://github.com/vmware-tanzu/kubeapps"},
 					Icon:        "https://logo.png",
 					Category:    "Infrastructure",
 					ChartVersions: []models.ChartVersion{
@@ -1150,7 +1150,7 @@ version: 1.0.0
 							Version:                 "1.0.0",
 							AppVersion:              "2.0.0",
 							Digest:                  "123",
-							URLs:                    []string{"https://github.com/SAP/kubeapps"},
+							URLs:                    []string{"https://github.com/vmware-tanzu/kubeapps"},
 							AdditionalDefaultValues: map[string]string{},
 						},
 					},
@@ -1177,14 +1177,14 @@ version: 1.0.0
 					Home:        "https://kubeapps.com",
 					Keywords:    []string{"helm"},
 					Maintainers: []chart.Maintainer{{Name: "Bitnami", Email: "containers@bitnami.com"}},
-					Sources:     []string{"https://github.com/SAP/kubeapps"},
+					Sources:     []string{"https://github.com/vmware-tanzu/kubeapps"},
 					Icon:        "https://logo.png",
 					Category:    "Infrastructure",
 					ChartVersions: []models.ChartVersion{
 						{
 							Version:                 "1.0.0",
 							AppVersion:              "2.0.0",
-							URLs:                    []string{"https://github.com/SAP/kubeapps"},
+							URLs:                    []string{"https://github.com/vmware-tanzu/kubeapps"},
 							Digest:                  "123",
 							Readme:                  "chart readme",
 							DefaultValues:           "chart values",
@@ -1217,14 +1217,14 @@ version: 1.0.0
 					Home:        "https://kubeapps.com",
 					Keywords:    []string{"helm"},
 					Maintainers: []chart.Maintainer{{Name: "Bitnami", Email: "containers@bitnami.com"}},
-					Sources:     []string{"https://github.com/SAP/kubeapps"},
+					Sources:     []string{"https://github.com/vmware-tanzu/kubeapps"},
 					Icon:        "https://logo.png",
 					Category:    "Infrastructure",
 					ChartVersions: []models.ChartVersion{
 						{
 							Version:       "1.0.0",
 							AppVersion:    "2.0.0",
-							URLs:          []string{"https://github.com/SAP/kubeapps"},
+							URLs:          []string{"https://github.com/vmware-tanzu/kubeapps"},
 							Digest:        "123",
 							Readme:        "chart readme",
 							DefaultValues: "chart values",
@@ -1260,14 +1260,14 @@ version: 1.0.0
 					Home:        "https://kubeapps.com",
 					Keywords:    []string{"helm"},
 					Maintainers: []chart.Maintainer{{Name: "Bitnami", Email: "containers@bitnami.com"}},
-					Sources:     []string{"https://github.com/SAP/kubeapps"},
+					Sources:     []string{"https://github.com/vmware-tanzu/kubeapps"},
 					Icon:        "https://logo.png",
 					Category:    "Infrastructure",
 					ChartVersions: []models.ChartVersion{
 						{
 							Version:       "1.0.0",
 							AppVersion:    "2.0.0",
-							URLs:          []string{"https://github.com/SAP/kubeapps"},
+							URLs:          []string{"https://github.com/vmware-tanzu/kubeapps"},
 							Digest:        "123",
 							Readme:        "chart readme",
 							DefaultValues: "chart values",
@@ -1301,14 +1301,14 @@ version: 1.0.0
 					Home:        "https://kubeapps.com",
 					Keywords:    []string{"helm"},
 					Maintainers: []chart.Maintainer{{Name: "Bitnami", Email: "containers@bitnami.com"}},
-					Sources:     []string{"https://github.com/SAP/kubeapps"},
+					Sources:     []string{"https://github.com/vmware-tanzu/kubeapps"},
 					Icon:        "https://logo.png",
 					Category:    "Infrastructure",
 					ChartVersions: []models.ChartVersion{
 						{
 							Version:                 "1.0.0",
 							AppVersion:              "2.0.0",
-							URLs:                    []string{"https://github.com/SAP/kubeapps"},
+							URLs:                    []string{"https://github.com/vmware-tanzu/kubeapps"},
 							Digest:                  "123",
 							Readme:                  "chart readme",
 							DefaultValues:           "chart values",
@@ -1339,14 +1339,14 @@ version: 1.0.0
 					Home:        "https://kubeapps.com",
 					Keywords:    []string{"helm"},
 					Maintainers: []chart.Maintainer{{Name: "Bitnami", Email: "containers@bitnami.com"}},
-					Sources:     []string{"https://github.com/SAP/kubeapps"},
+					Sources:     []string{"https://github.com/vmware-tanzu/kubeapps"},
 					Icon:        "https://logo.png",
 					Category:    "Infrastructure",
 					ChartVersions: []models.ChartVersion{
 						{
 							Version:                 "1.0.0",
 							AppVersion:              "2.0.0",
-							URLs:                    []string{"https://github.com/SAP/kubeapps"},
+							URLs:                    []string{"https://github.com/vmware-tanzu/kubeapps"},
 							Digest:                  "123",
 							Readme:                  "chart readme",
 							DefaultValues:           "chart values",
@@ -1358,7 +1358,7 @@ version: 1.0.0
 							// hence the same version number here.
 							Version:                 "1.0.0",
 							AppVersion:              "2.0.0",
-							URLs:                    []string{"https://github.com/SAP/kubeapps"},
+							URLs:                    []string{"https://github.com/vmware-tanzu/kubeapps"},
 							Digest:                  "123",
 							Readme:                  "chart readme",
 							DefaultValues:           "chart values",
@@ -1389,14 +1389,14 @@ version: 1.0.0
 					Home:        "https://kubeapps.com",
 					Keywords:    []string{"helm"},
 					Maintainers: []chart.Maintainer{{Name: "Bitnami", Email: "containers@bitnami.com"}},
-					Sources:     []string{"https://github.com/SAP/kubeapps"},
+					Sources:     []string{"https://github.com/vmware-tanzu/kubeapps"},
 					Icon:        "https://logo.png",
 					Category:    "Infrastructure",
 					ChartVersions: []models.ChartVersion{
 						{
 							Version:                 "1.0.0",
 							AppVersion:              "2.0.0",
-							URLs:                    []string{"https://github.com/SAP/kubeapps"},
+							URLs:                    []string{"https://github.com/vmware-tanzu/kubeapps"},
 							Digest:                  "123",
 							Readme:                  "chart readme",
 							DefaultValues:           "chart values",

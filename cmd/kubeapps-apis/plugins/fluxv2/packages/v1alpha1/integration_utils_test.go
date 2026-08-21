@@ -571,7 +571,7 @@ func kubeCreateServiceAccountWithClusterRole(t *testing.T, name types.Namespaced
 
 	// https://itnext.io/big-change-in-k8s-1-24-about-serviceaccounts-and-their-secrets-4b909a4af4e0
 	// and
-	// https://github.com/SAP/kubeapps/pull/4772
+	// https://github.com/vmware-tanzu/kubeapps/pull/4772
 	// it used to be the case that creating service account would automatically create an
 	// associated secret service account token
 	// (per https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/)

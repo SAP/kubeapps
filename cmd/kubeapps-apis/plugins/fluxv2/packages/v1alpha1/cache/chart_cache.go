@@ -151,7 +151,7 @@ func (c *ChartCache) SyncCharts(charts []models.Chart, downloadFn DownloadChartF
 		}
 
 		// If the URL is relative (no scheme), prepend the chart repo's base URL
-		// ref https://github.com/SAP/kubeapps/issues/4381
+		// ref https://github.com/vmware-tanzu/kubeapps/issues/4381
 		// ref https://github.com/helm/helm/blob/65d8e72504652e624948f74acbba71c51ac2e342/pkg/downloader/chart_downloader.go#L303
 		if !u.IsAbs() {
 			repoURL, err := url.Parse(chart.Repo.URL)

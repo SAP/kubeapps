@@ -159,7 +159,7 @@ func newHelmRepoCrd(repo *HelmRepository, secret *k8scorev1.Secret, imagePullSec
 			PassCredentials:       repo.auth != nil && repo.auth.PassCredentials,
 			Interval:              repo.interval,
 			// TODO(agamez): add more fields here if they're requested
-			// https://github.com/SAP/kubeapps/issues/5128
+			// https://github.com/vmware-tanzu/kubeapps/issues/5128
 			SyncJobPodTemplate: k8scorev1.PodTemplateSpec{
 				Spec: k8scorev1.PodSpec{},
 			},
@@ -269,7 +269,7 @@ func (s *Server) mapToPackageRepositoryDetail(source *apprepov1alpha1.AppReposit
 		Interval:        source.Spec.Interval,
 		TlsConfig:       tlsConfig,
 		// TODO(agamez): check if we can get the status from the repo somehow
-		// https://github.com/SAP/kubeapps/issues/153
+		// https://github.com/vmware-tanzu/kubeapps/issues/153
 		Status: &corev1.PackageRepositoryStatus{
 			Ready: true,
 		},
@@ -303,7 +303,7 @@ func (s *Server) mapToPackageRepositoryDetail(source *apprepov1alpha1.AppReposit
 //	via kubectl before running kubeapps, it won't get deleted just
 //	because Kubeapps is deleting it)?
 //
-// See https://github.com/SAP/kubeapps/pull/4630#discussion_r861446394 for details
+// See https://github.com/vmware-tanzu/kubeapps/pull/4630#discussion_r861446394 for details
 func (s *Server) setOwnerReferencesForRepoSecret(
 	ctx context.Context,
 	headers http.Header,
@@ -552,7 +552,7 @@ func (s *Server) repoSummaries(ctx context.Context, headers http.Header, cluster
 			Url:             repo.Spec.URL,
 			RequiresAuth:    repo.Spec.Auth.Header != nil,
 			// TODO(agamez): check if we can get the status from the repo somehow
-			// https://github.com/SAP/kubeapps/issues/153
+			// https://github.com/vmware-tanzu/kubeapps/issues/153
 			Status: &corev1.PackageRepositoryStatus{
 				Ready: true,
 			},

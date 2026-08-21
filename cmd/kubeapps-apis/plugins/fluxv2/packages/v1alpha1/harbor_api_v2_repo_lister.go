@@ -27,7 +27,7 @@ import (
 // Why is this needed? Or why doesn't dockerRegistryApiV2RepositoryLister just
 // take care of this? The answer is harbor robot accounts are not able to list
 // repositories using the generic API. But it works using harbor-specific REST API
-// ref https://github.com/SAP/kubeapps/issues/5219
+// ref https://github.com/vmware-tanzu/kubeapps/issues/5219
 
 func NewHarborRegistryApiV2RepositoryLister() OCIChartRepositoryLister {
 	return &harborRegistryApiV2RepositoryLister{}

@@ -246,7 +246,7 @@ func (s *Server) installedPackageDetail(ctx context.Context, headers http.Header
 	if err != nil {
 		return nil, err
 	}
-	// per https://github.com/SAP/kubeapps/pull/3686#issue-1038093832
+	// per https://github.com/vmware-tanzu/kubeapps/pull/3686#issue-1038093832
 	availablePackageRef.Context.Cluster = s.kubeappsCluster
 
 	appVersion, postInstallNotes := "", ""
@@ -347,7 +347,7 @@ func (s *Server) newRelease(ctx context.Context, headers http.Header, packageRef
 		return nil, err
 	}
 
-	// per https://github.com/SAP/kubeapps/pull/3640#issuecomment-949315105
+	// per https://github.com/vmware-tanzu/kubeapps/pull/3640#issuecomment-949315105
 	// the helm release CR to also be created in the target namespace (where the helm
 	// release itself is currently created)
 	client, err := s.getClient(headers, targetName.Namespace)
@@ -505,7 +505,7 @@ func (s *Server) deleteRelease(ctx context.Context, headers http.Header, package
 // Potentially, there are 3 different namespaces that can be specified here
 //  1. spec.chart.spec.sourceRef.namespace, where HelmRepository CRD object referenced exists
 //  2. metadata.namespace, where this HelmRelease CRD will exist, same as (3) below
-//     per https://github.com/SAP/kubeapps/pull/3640#issuecomment-949315105
+//     per https://github.com/vmware-tanzu/kubeapps/pull/3640#issuecomment-949315105
 //  3. spec.targetNamespace, where flux will install any artifacts from the release
 func (s *Server) newFluxHelmRelease(chart *models.Chart, targetName types.NamespacedName, versionExpr string, reconcile *corev1.ReconciliationOptions, values map[string]interface{}) (*helmv2beta2.HelmRelease, error) {
 	fluxRelease := &helmv2beta2.HelmRelease{

@@ -466,7 +466,7 @@ func (s *repoEventSink) onModifyOciRepo(key string, oldValue interface{}, repo s
 		return nil, false, err
 	}
 
-	// https://github.com/SAP/kubeapps/issues/5523
+	// https://github.com/vmware-tanzu/kubeapps/issues/5523
 	// Optimize OCI repository lister lookups in flux plugin
 	if cacheEntry.OCIRepoLister != "" {
 		for _, lister := range builtInRepoListers {
@@ -764,7 +764,7 @@ func getOciChartModel(appName string, tags TagList, ociChartRepo *OCIChartReposi
 	// to be consistent with how we support helm http repos
 	// the chart fields like Description, home, sources come from the
 	// most recent chart version
-	// ref https://github.com/SAP/kubeapps/blob/11c87926d6cd798af72875d01437d15ae8d85b9a/pkg/helm/index.go#L30
+	// ref https://github.com/vmware-tanzu/kubeapps/blob/11c87926d6cd798af72875d01437d15ae8d85b9a/pkg/helm/index.go#L30
 	latestChartVersion, err := ociChartRepo.pickChartVersionFrom(appName, "", tags.Tags)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
