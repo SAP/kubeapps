@@ -57,7 +57,7 @@ func NewOCIResolver(headers http.Header, netClient *http.Client) remotes.Resolve
 // use the Helm code a library instead
 // More information:
 // // https://github.com/helm/helm/issues/10623
-// // https://github.com/vmware-tanzu/kubeapps/pull/4154
+// // https://github.com/SAP/kubeapps/pull/4154
 //
 // This function has been slightly adapted from:
 // https://github.com/helm/helm/blob/v3.8.0/pkg/registry/client.go#L249
@@ -132,7 +132,7 @@ func (p *OCIPuller) PullOCIChart(ref string) (*bytes.Buffer, string, error) {
 // use the Helm code a library instead
 // More information:
 // // https://github.com/helm/helm/issues/10623
-// // https://github.com/vmware-tanzu/kubeapps/pull/4154
+// // https://github.com/SAP/kubeapps/pull/4154
 //
 // https://github.com/helm/helm/blob/v3.8.0/pkg/registry/util.go#L112
 func parseReference(raw string) (registry.Reference, error) {

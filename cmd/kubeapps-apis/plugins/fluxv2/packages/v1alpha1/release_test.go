@@ -88,7 +88,7 @@ func TestGetInstalledPackageSummariesWithoutPagination(t *testing.T) {
 		},
 		{
 			// when metadata.generation != status.observedGeneration
-			// https://github.com/vmware-tanzu/kubeapps/issues/5577
+			// https://github.com/SAP/kubeapps/issues/5577
 			name: "returns installed packages when install fails (3)",
 			request: &corev1.GetInstalledPackageSummariesRequest{
 				Context: &corev1.Context{Namespace: "test"},
@@ -196,7 +196,7 @@ func TestGetInstalledPackageSummariesWithoutPagination(t *testing.T) {
 			},
 		},
 		{
-			// see https://github.com/vmware-tanzu/kubeapps/issues/4189 for discussion
+			// see https://github.com/SAP/kubeapps/issues/4189 for discussion
 			// this is testing a configuration where a customer has manually set a
 			// .targetNamespace field of Flux HelmRelease CR
 			name: "returns installed packages when HelmRelease targetNamespace is set",
@@ -444,7 +444,7 @@ func TestGetInstalledPackageDetail(t *testing.T) {
 			expectedDetail:   redis_detail_completed_with_values_and_reconciliation_options,
 		},
 		{
-			// see https://github.com/vmware-tanzu/kubeapps/issues/4189 for discussion
+			// see https://github.com/SAP/kubeapps/issues/4189 for discussion
 			// this is testing a configuration where a customer has manually set a
 			// .targetNamespace field of Flux HelmRelease CR
 			name: "returns installed package detail when targetNamespace is set",
@@ -739,7 +739,7 @@ func TestUpdateInstalledPackage(t *testing.T) {
 			expectedErrorCode: connect.CodeNotFound,
 		},
 		{
-			// see https://github.com/vmware-tanzu/kubeapps/issues/4189 for discussion
+			// see https://github.com/SAP/kubeapps/issues/4189 for discussion
 			// this is testing a configuration where a customer has manually set a
 			// .targetNamespace field of Flux HelmRelease CR
 			name: "updates a package when targetNamespace is set",
@@ -1054,14 +1054,14 @@ func TestGetInstalledPackageResourceRefs(t *testing.T) {
 		newTestCase(3, true, 0, false),
 		newTestCase(4, false, connect.CodeNotFound, false),
 		newTestCase(5, false, connect.CodeInternal, false),
-		// See https://github.com/vmware-tanzu/kubeapps/issues/632
+		// See https://github.com/SAP/kubeapps/issues/632
 		newTestCase(6, true, 0, false),
 		newTestCase(7, true, 0, false),
 		newTestCase(8, true, 0, false),
 		// See https://kubernetes.io/docs/reference/kubernetes-api/authorization-resources/role-v1/#RoleList
 		newTestCase(9, true, 0, false),
 		newTestCase(10, true, 0, false),
-		// see https://github.com/vmware-tanzu/kubeapps/issues/4189 for discussion
+		// see https://github.com/SAP/kubeapps/issues/4189 for discussion
 		// this is testing a configuration where a customer has manually set a
 		// .targetNamespace field of Flux HelmRelease CR
 		newTestCase(11, true, 0, true),

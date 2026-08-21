@@ -208,9 +208,9 @@ func unescapeOrDefaultValue(value string) string {
 	// Ensure any escaped `/` (%2F) in a chart name will remain escaped.
 	// Kubeapps splits the chart ID, such as "repo-name/harbor-project%2Fchart-name", on the slash.
 	// See PR comment at
-	// https://github.com/vmware-tanzu/kubeapps/pull/3863#pullrequestreview-819141298
+	// https://github.com/SAP/kubeapps/pull/3863#pullrequestreview-819141298
 	// and instance of the issue cropping up via Harbor at
-	// https://github.com/vmware-tanzu/kubeapps/issues/5897
+	// https://github.com/SAP/kubeapps/issues/5897
 	value = strings.ReplaceAll(value, "%2F", "%252F")
 	unescapedValue, err := url.PathUnescape(value)
 	if err != nil {
@@ -1294,7 +1294,7 @@ func isURLDomainEqual(url1Str, url2Str string) bool {
 // asset-syncer/devel
 // asset-syncer/1.0
 // asset-syncer/1.0 (foo v1.0-beta4)
-// More info here https://github.com/vmware-tanzu/kubeapps/issues/767#issuecomment-436835938
+// More info here https://github.com/SAP/kubeapps/issues/767#issuecomment-436835938
 func GetUserAgent(version, userAgentComment string) string {
 	if version == "" && userAgentComment == "" {
 		return "asset-syncer/devel"

@@ -179,7 +179,7 @@ func NewNamespacedResourceWatcherCache(name string, config NamespacedResourceWat
 		}
 	}
 
-	// per https://github.com/vmware-tanzu/kubeapps/issues/4329
+	// per https://github.com/SAP/kubeapps/issues/4329
 	// we want to do this asynchronously, so that having to parse existing large repos in the cluster
 	// doesn't block the kubeapps apis pod start-up
 	go c.syncAndStartWatchLoop(stopCh)
@@ -440,7 +440,7 @@ func (c *NamespacedResourceWatcherCache) resync(bootstrap bool) (string, error) 
 
 	// This code runs in the background, i.e. not in a context of any specific user request.
 	// As such, it requires RBAC to be set up properly during install to be able to list specified GVR
-	// (e.g. flux CRDs). For further details, see https://github.com/vmware-tanzu/kubeapps/pull/3551 and
+	// (e.g. flux CRDs). For further details, see https://github.com/SAP/kubeapps/pull/3551 and
 	// see helm chart templates/kubeappsapis/rbac_fluxv2.yaml
 
 	// Notice, we are not setting resourceVersion in ListOptions, which means
