@@ -15,6 +15,7 @@ export const initialState: IConfigState = {
   kubeappsCluster: "",
   kubeappsNamespace: "",
   helmGlobalNamespace: "",
+  carvelGlobalNamespace: "",
   appVersion: "",
   authProxyEnabled: false,
   oauthLoginURI: "",

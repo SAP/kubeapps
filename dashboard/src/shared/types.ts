@@ -24,6 +24,7 @@ import {
 import { Plugin } from "gen/kubeappsapis/core/plugins/v1alpha1/plugins_pb";
 import { FluxPackageRepositoryCustomDetail } from "gen/kubeappsapis/plugins/fluxv2/packages/v1alpha1/fluxv2_pb";
 import { HelmPackageRepositoryCustomDetail } from "gen/kubeappsapis/plugins/helm/packages/v1alpha1/helm_pb";
+import { KappControllerPackageRepositoryCustomDetail } from "gen/kubeappsapis/plugins/kapp_controller/packages/v1alpha1/kapp_controller_pb";
 import { IOperatorsState } from "reducers/operators";
 import { IAuthState } from "../reducers/auth";
 import { IClustersState } from "../reducers/cluster";
@@ -435,12 +436,18 @@ export class CustomInstalledPackageDetail extends InstalledPackageDetail {
 export enum RepositoryStorageTypes {
   PACKAGE_REPOSITORY_STORAGE_HELM = "helm",
   PACKAGE_REPOSITORY_STORAGE_OCI = "oci",
+  PACKAGE_REPOSITORY_STORAGE_CARVEL_INLINE = "inline",
+  PACKAGE_REPOSITORY_STORAGE_CARVEL_IMAGE = "image",
+  PACKAGE_REPOSITORY_STORAGE_CARVEL_IMGPKGBUNDLE = "imgpkgBundle",
+  PACKAGE_REPOSITORY_STORAGE_CARVEL_HTTP = "http",
+  PACKAGE_REPOSITORY_STORAGE_CARVEL_GIT = "git",
 }
 
 // enum for the current plugin names
 export enum PluginNames {
   PACKAGES_HELM = "helm.packages",
   PACKAGES_FLUX = "fluxv2.packages",
+  PACKAGES_KAPP = "kapp_controller.packages",
 }
 
 // type holding the data used in the package repository form
@@ -468,7 +475,11 @@ export interface IPkgRepoFormData {
   type: string;
   url: string;
   // add more types if necessary
-  customDetail?: Partial<HelmPackageRepositoryCustomDetail | FluxPackageRepositoryCustomDetail>;
+  customDetail?: Partial<
+    | HelmPackageRepositoryCustomDetail
+    | KappControllerPackageRepositoryCustomDetail
+    | FluxPackageRepositoryCustomDetail
+  >;
   namespace: string;
   isNamespaceScoped: boolean;
 }

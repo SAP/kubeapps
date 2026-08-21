@@ -65,6 +65,10 @@ func (w *withWatchWrapper) Create(ctx context.Context, obj client.Object, opts .
 	return w.delegate.Create(ctx, obj, opts...)
 }
 
+func (w *withWatchWrapper) Apply(ctx context.Context, obj runtime.ApplyConfiguration, opts ...client.ApplyOption) error {
+	return w.delegate.Apply(ctx, obj, opts...)
+}
+
 func (w *withWatchWrapper) Get(ctx context.Context, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
 	return w.delegate.Get(ctx, key, obj)
 }
@@ -366,6 +370,11 @@ func newCtrlClient(repos []sourcev1beta2.HelmRepository, charts []sourcev1beta2.
 	}
 
 	rm := apimeta.NewDefaultRESTMapper([]schema.GroupVersion{sourcev1beta2.GroupVersion, helmv2beta2.GroupVersion})
+	// Register both singular and List kinds. controller-runtime's namespaced
+	// client (used in production via ctrlclient.NewNamespacedClient) resolves the
+	// scope of the object being listed, and since v0.23 that lookup uses the List
+	// kind's GroupKind (e.g. "HelmRepositoryList"), so the List kinds must be
+	// present in the RESTMapper too.
 	rm.Add(schema.GroupVersionKind{
 		Group:   sourcev1beta2.GroupVersion.Group,
 		Version: sourcev1beta2.GroupVersion.Version,
@@ -374,12 +383,27 @@ func newCtrlClient(repos []sourcev1beta2.HelmRepository, charts []sourcev1beta2.
 	rm.Add(schema.GroupVersionKind{
 		Group:   sourcev1beta2.GroupVersion.Group,
 		Version: sourcev1beta2.GroupVersion.Version,
+		Kind:    sourcev1beta2.HelmRepositoryKind + "List"},
+		apimeta.RESTScopeNamespace)
+	rm.Add(schema.GroupVersionKind{
+		Group:   sourcev1beta2.GroupVersion.Group,
+		Version: sourcev1beta2.GroupVersion.Version,
 		Kind:    sourcev1beta2.HelmChartKind},
+		apimeta.RESTScopeNamespace)
+	rm.Add(schema.GroupVersionKind{
+		Group:   sourcev1beta2.GroupVersion.Group,
+		Version: sourcev1beta2.GroupVersion.Version,
+		Kind:    sourcev1beta2.HelmChartKind + "List"},
 		apimeta.RESTScopeNamespace)
 	rm.Add(schema.GroupVersionKind{
 		Group:   helmv2beta2.GroupVersion.Group,
 		Version: helmv2beta2.GroupVersion.Version,
 		Kind:    helmv2beta2.HelmReleaseKind},
+		apimeta.RESTScopeNamespace)
+	rm.Add(schema.GroupVersionKind{
+		Group:   helmv2beta2.GroupVersion.Group,
+		Version: helmv2beta2.GroupVersion.Version,
+		Kind:    helmv2beta2.HelmReleaseKind + "List"},
 		apimeta.RESTScopeNamespace)
 
 	ctrlClientBuilder := ctrlfake.NewClientBuilder().WithScheme(scheme).WithRESTMapper(rm)

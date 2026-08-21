@@ -17,6 +17,10 @@ import {
   HelmPackagesService,
   HelmRepositoriesService,
 } from "gen/kubeappsapis/plugins/helm/packages/v1alpha1/helm_connect";
+import {
+  KappControllerPackagesService,
+  KappControllerRepositoriesService,
+} from "gen/kubeappsapis/plugins/kapp_controller/packages/v1alpha1/kapp_controller_connect";
 import { ResourcesService } from "gen/kubeappsapis/plugins/resources/v1alpha1/resources_connect";
 
 import { Auth } from "./Auth";
@@ -85,6 +89,13 @@ export class KubeappsGrpcClient {
     return this.getGrpcClient(HelmRepositoriesService);
   }
 
+  // KappController
+  public getKappControllerPackagesServiceClientImpl() {
+    return this.getGrpcClient(KappControllerPackagesService);
+  }
+  public getKappControllerRepositoriesServiceClientImpl() {
+    return this.getGrpcClient(KappControllerRepositoriesService);
+  }
   // Fluxv2
   public getFluxv2PackagesServiceClientImpl() {
     return this.getGrpcClient(FluxV2PackagesService);

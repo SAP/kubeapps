@@ -63,6 +63,7 @@ env:
   # Currently, we only build the images for linux/amd64 because building cross-platform images is extremely slow...
   IMG_PLATFORMS: "linux/amd64"
   K8S_KIND_VERSION: "v1.33.4@sha256:25a6018e48dfcaee478f4a59af81157a437f15e6e140bf103f85a2e7cd0cbbf2"
+  KAPP_CONTROLLER_VERSION: "v0.50.6"
   KIND_VERSION: "v0.30.0"
   KUBEAPPS_REPO: "SAP/kubeapps"
   KUBECTL_VERSION: "v1.33.4"
@@ -462,6 +463,7 @@ jobs:
       fail-fast: false
       matrix:
         tests_group:
+          - carvel
           - flux
           - main-group-1
           - main-group-2
@@ -574,7 +576,7 @@ jobs:
 
   # We need this job to aggregate the result of the local_e2e_tests matrix and summarize it. We don't need it because of
   # GHA itself, but because in GH branch protection rules, we cannot check the status for a job matrix, and would have
-  # require the status for each job in the matrix (eg. local_e2e_tests(flux)).
+  # require the status for each job in the matrix (eg. local_e2e_tests(carvel)).
   # See https://github.com/orgs/community/discussions/26822
   local_e2e_tests_result:
     needs:

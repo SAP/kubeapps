@@ -19,10 +19,16 @@ import "./PkgRepoControl.css";
 export interface IPkgRepoListItemProps {
   repo: PackageRepositorySummary;
   helmGlobalNamespace: string;
+  carvelGlobalNamespace: string;
   refetchRepos: () => void;
 }
 
-export function PkgRepoControl({ repo, helmGlobalNamespace, refetchRepos }: IPkgRepoListItemProps) {
+export function PkgRepoControl({
+  repo,
+  helmGlobalNamespace,
+  carvelGlobalNamespace,
+  refetchRepos,
+}: IPkgRepoListItemProps) {
   const [modalIsOpen, setModalOpen] = useState(false);
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
@@ -53,6 +59,7 @@ export function PkgRepoControl({ repo, helmGlobalNamespace, refetchRepos }: IPkg
         title={`Edit the '${repo.name}' Package Repository`}
         namespace={repo.packageRepoRef?.context?.namespace || ""}
         helmGlobalNamespace={helmGlobalNamespace}
+        carvelGlobalNamespace={carvelGlobalNamespace}
         text="Edit"
         packageRepoRef={repo.packageRepoRef}
         primary={false}
