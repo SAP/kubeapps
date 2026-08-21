@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/bufbuild/connect-go"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/clientgetter"
-	"github.com/vmware-tanzu/kubeapps/pkg/kube"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/clientgetter"
+	"github.com/SAP/kubeapps/pkg/kube"
 	"k8s.io/client-go/rest"
 
 	"github.com/google/go-cmp/cmp"
@@ -18,8 +18,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	typfake "k8s.io/client-go/kubernetes/fake"
 
-	pkgsGRPCv1alpha1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/plugins/resources/v1alpha1"
+	pkgsGRPCv1alpha1 "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/plugins/resources/v1alpha1"
 )
 
 // const bufSize = 1024 * 1024

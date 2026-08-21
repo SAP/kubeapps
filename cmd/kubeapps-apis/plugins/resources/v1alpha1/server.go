@@ -11,10 +11,10 @@ import (
 	"sync"
 
 	"github.com/bufbuild/connect-go"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/clientgetter"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/connecterror"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/resources/v1alpha1/common"
-	"github.com/vmware-tanzu/kubeapps/pkg/kube"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/clientgetter"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/connecterror"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/resources/v1alpha1/common"
+	"github.com/SAP/kubeapps/pkg/kube"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,11 +26,11 @@ import (
 	"k8s.io/client-go/restmapper"
 	log "k8s.io/klog/v2"
 
-	"github.com/vmware-tanzu/kubeapps/cmd/apprepository-controller/pkg/client/clientset/versioned/scheme"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/core"
-	pkgsGRPCv1alpha1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
-	pkgsConnectV1alpha1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1/v1alpha1connect"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/plugins/resources/v1alpha1"
+	"github.com/SAP/kubeapps/cmd/apprepository-controller/pkg/client/clientset/versioned/scheme"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/core"
+	pkgsGRPCv1alpha1 "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
+	pkgsConnectV1alpha1 "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1/v1alpha1connect"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/plugins/resources/v1alpha1"
 )
 
 type Server struct {

@@ -8,10 +8,10 @@ import (
 	"os"
 	"strings"
 
+	"github.com/SAP/kubeapps/cmd/apprepository-controller/server"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"github.com/vmware-tanzu/kubeapps/cmd/apprepository-controller/server"
 	corev1 "k8s.io/api/core/v1"
 	log "k8s.io/klog/v2"
 )

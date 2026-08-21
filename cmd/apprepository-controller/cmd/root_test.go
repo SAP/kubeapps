@@ -9,8 +9,8 @@ import (
 
 	"testing"
 
+	"github.com/SAP/kubeapps/cmd/apprepository-controller/server"
 	"github.com/google/go-cmp/cmp"
-	"github.com/vmware-tanzu/kubeapps/cmd/apprepository-controller/server"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -41,7 +41,7 @@ func TestParseFlagsCorrect(t *testing.T) {
 				UserAgentComment:           "",
 				Crontab:                    "*/10 * * * *",
 				TTLSecondsAfterFinished:    "3600",
-				ActiveDeadlineSeconds:	    "",
+				ActiveDeadlineSeconds:      "",
 				CustomAnnotations:          []string{""},
 				CustomLabels:               []string{""},
 				ParsedCustomAnnotations:    map[string]string{},
@@ -78,7 +78,7 @@ func TestParseFlagsCorrect(t *testing.T) {
 				UserAgentComment:           "",
 				Crontab:                    "*/10 * * * *",
 				TTLSecondsAfterFinished:    "3600",
-				ActiveDeadlineSeconds:	    "",
+				ActiveDeadlineSeconds:      "",
 				CustomAnnotations:          []string{""},
 				CustomLabels:               []string{""},
 				ParsedCustomAnnotations:    map[string]string{},
@@ -137,7 +137,7 @@ func TestParseFlagsCorrect(t *testing.T) {
 				UserAgentComment:           "foo11",
 				Crontab:                    "foo12",
 				TTLSecondsAfterFinished:    "1200",
-				ActiveDeadlineSeconds:	    "300",
+				ActiveDeadlineSeconds:      "300",
 				CustomAnnotations:          []string{"foo13=bar13", "foo13x=bar13x", "extra13=extra13"},
 				CustomLabels:               []string{"foo14=bar14", "foo14x=bar14x"},
 				ParsedCustomAnnotations:    map[string]string{"foo13": "bar13", "foo13x": "bar13x", "extra13": "extra13"},

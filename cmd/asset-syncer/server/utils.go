@@ -27,14 +27,14 @@ import (
 	"github.com/itchyny/gojq"
 	"github.com/srwiley/oksvg"
 	"github.com/srwiley/rasterx"
-	apprepov1alpha1 "github.com/vmware-tanzu/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
-	ocicatalog "github.com/vmware-tanzu/kubeapps/cmd/oci-catalog/gen/catalog/v1alpha1"
-	"github.com/vmware-tanzu/kubeapps/pkg/chart/models"
-	"github.com/vmware-tanzu/kubeapps/pkg/dbutils"
-	"github.com/vmware-tanzu/kubeapps/pkg/helm"
-	httpclient "github.com/vmware-tanzu/kubeapps/pkg/http-client"
-	"github.com/vmware-tanzu/kubeapps/pkg/ocicatalog_client"
-	"github.com/vmware-tanzu/kubeapps/pkg/tarutil"
+	apprepov1alpha1 "github.com/SAP/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
+	ocicatalog "github.com/SAP/kubeapps/cmd/oci-catalog/gen/catalog/v1alpha1"
+	"github.com/SAP/kubeapps/pkg/chart/models"
+	"github.com/SAP/kubeapps/pkg/dbutils"
+	"github.com/SAP/kubeapps/pkg/helm"
+	httpclient "github.com/SAP/kubeapps/pkg/http-client"
+	"github.com/SAP/kubeapps/pkg/ocicatalog_client"
+	"github.com/SAP/kubeapps/pkg/tarutil"
 	"helm.sh/helm/v3/pkg/chart"
 	helmregistry "helm.sh/helm/v3/pkg/registry"
 	log "k8s.io/klog/v2"
@@ -209,9 +209,9 @@ func unescapeOrDefaultValue(value string) string {
 	// Ensure any escaped `/` (%2F) in a chart name will remain escaped.
 	// Kubeapps splits the chart ID, such as "repo-name/harbor-project%2Fchart-name", on the slash.
 	// See PR comment at
-	// https://github.com/vmware-tanzu/kubeapps/pull/3863#pullrequestreview-819141298
+	// https://github.com/SAP/kubeapps/pull/3863#pullrequestreview-819141298
 	// and instance of the issue cropping up via Harbor at
-	// https://github.com/vmware-tanzu/kubeapps/issues/5897
+	// https://github.com/SAP/kubeapps/issues/5897
 	value = strings.ReplaceAll(value, "%2F", "%252F")
 	unescapedValue, err := url.PathUnescape(value)
 	if err != nil {
@@ -1163,7 +1163,7 @@ func isURLDomainEqual(url1Str, url2Str string) bool {
 // asset-syncer/devel
 // asset-syncer/1.0
 // asset-syncer/1.0 (foo v1.0-beta4)
-// More info here https://github.com/vmware-tanzu/kubeapps/issues/767#issuecomment-436835938
+// More info here https://github.com/SAP/kubeapps/issues/767#issuecomment-436835938
 func GetUserAgent(version, userAgentComment string) string {
 	if version == "" && userAgentComment == "" {
 		return "asset-syncer/devel"

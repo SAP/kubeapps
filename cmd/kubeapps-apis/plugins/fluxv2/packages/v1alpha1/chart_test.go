@@ -13,15 +13,15 @@ import (
 	"testing"
 	"time"
 
+	corev1 "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/fluxv2/packages/v1alpha1/cache"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/fluxv2/packages/v1alpha1/common"
+	httpclient "github.com/SAP/kubeapps/pkg/http-client"
 	"github.com/bufbuild/connect-go"
 	fluxmeta "github.com/fluxcd/pkg/apis/meta"
 	sourcev1 "github.com/fluxcd/source-controller/api/v1"
 	sourcev1beta2 "github.com/fluxcd/source-controller/api/v1beta2"
 	"github.com/go-redis/redismock/v8"
-	corev1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/fluxv2/packages/v1alpha1/cache"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/fluxv2/packages/v1alpha1/common"
-	httpclient "github.com/vmware-tanzu/kubeapps/pkg/http-client"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -949,7 +949,7 @@ func TestChartCacheResyncNotIdle(t *testing.T) {
 	})
 }
 
-// ref https://github.com/vmware-tanzu/kubeapps/issues/4381
+// ref https://github.com/SAP/kubeapps/issues/4381
 // [fluxv2] non-FQDN chart url fails on chart view #4381
 func TestChartWithRelativeURL(t *testing.T) {
 	repoName := "testRepo"

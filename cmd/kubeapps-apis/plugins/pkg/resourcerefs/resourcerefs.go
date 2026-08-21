@@ -11,9 +11,9 @@ import (
 	"strings"
 
 	"github.com/bufbuild/connect-go"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/helm"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/helm"
 
-	corev1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
+	corev1 "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/storage/driver"
 	"k8s.io/apimachinery/pkg/types"
@@ -107,7 +107,7 @@ func GetInstalledPackageResourceRefs(
 	// certain assumptions about the RBAC of the Kubeapps user, we may be able
 	// to instead query for labelled resources. See the discussion following for
 	// more details:
-	// https://github.com/vmware-tanzu/kubeapps/pull/3811#issuecomment-977689570
+	// https://github.com/SAP/kubeapps/pull/3811#issuecomment-977689570
 	getcmd := action.NewGet(actionConfig)
 	release, err := getcmd.Run(helmReleaseName.Name)
 	if err != nil {

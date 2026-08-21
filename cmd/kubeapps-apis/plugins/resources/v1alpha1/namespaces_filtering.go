@@ -8,8 +8,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/resources"
-	"github.com/vmware-tanzu/kubeapps/pkg/kube"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/resources"
+	"github.com/SAP/kubeapps/pkg/kube"
 	"google.golang.org/grpc/metadata"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

@@ -15,9 +15,9 @@ import (
 
 	"github.com/bufbuild/connect-go"
 	"github.com/go-redis/redis/v8"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/fluxv2/packages/v1alpha1/common"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/pkgutils"
-	"github.com/vmware-tanzu/kubeapps/pkg/chart/models"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/fluxv2/packages/v1alpha1/common"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/pkgutils"
+	"github.com/SAP/kubeapps/pkg/chart/models"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -151,7 +151,7 @@ func (c *ChartCache) SyncCharts(charts []models.Chart, downloadFn DownloadChartF
 		}
 
 		// If the URL is relative (no scheme), prepend the chart repo's base URL
-		// ref https://github.com/vmware-tanzu/kubeapps/issues/4381
+		// ref https://github.com/SAP/kubeapps/issues/4381
 		// ref https://github.com/helm/helm/blob/65d8e72504652e624948f74acbba71c51ac2e342/pkg/downloader/chart_downloader.go#L303
 		if !u.IsAbs() {
 			repoURL, err := url.Parse(chart.Repo.URL)

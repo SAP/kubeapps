@@ -3,7 +3,7 @@
 
 syntax = "proto3";
 package kubeappsapis.apidocs.v1alpha1;
-option go_package = "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen";
+option go_package = "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen";
 
 import "protoc-gen-openapiv2/options/annotations.proto";
 

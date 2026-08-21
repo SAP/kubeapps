@@ -13,14 +13,14 @@ import (
 
 	"github.com/bufbuild/connect-go"
 	sourcev1beta2 "github.com/fluxcd/source-controller/api/v1beta2"
-	corev1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/fluxv2/packages/v1alpha1/cache"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/fluxv2/packages/v1alpha1/common"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/connecterror"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/pkgutils"
-	"github.com/vmware-tanzu/kubeapps/pkg/chart/models"
-	httpclient "github.com/vmware-tanzu/kubeapps/pkg/http-client"
-	"github.com/vmware-tanzu/kubeapps/pkg/tarutil"
+	corev1 "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/fluxv2/packages/v1alpha1/cache"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/fluxv2/packages/v1alpha1/common"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/connecterror"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/pkgutils"
+	"github.com/SAP/kubeapps/pkg/chart/models"
+	httpclient "github.com/SAP/kubeapps/pkg/http-client"
+	"github.com/SAP/kubeapps/pkg/tarutil"
 	"helm.sh/helm/v3/pkg/chart"
 	"k8s.io/apimachinery/pkg/types"
 	log "k8s.io/klog/v2"
@@ -130,7 +130,7 @@ func (s *Server) availableChartDetail(ctx context.Context, headers http.Header, 
 
 	pkgDetail.RepoUrl = repoUrl
 	pkgDetail.AvailablePackageRef.Context.Namespace = packageRef.Context.Namespace
-	// per https://github.com/vmware-tanzu/kubeapps/pull/3686#issue-1038093832
+	// per https://github.com/SAP/kubeapps/pull/3686#issue-1038093832
 	pkgDetail.AvailablePackageRef.Context.Cluster = s.kubeappsCluster
 	return pkgDetail, nil
 }
@@ -224,7 +224,7 @@ func filterAndPaginateCharts(filters *corev1.FilterOptions, pageSize int32, item
 	// 1) to convert from []interface{} which is what the generic cache implementation
 	// returns for cache hits to a typed array object.
 	// 2) perform any filtering of the results as needed, pending redis support for
-	// querying values stored in cache (see discussion in https://github.com/vmware-tanzu/kubeapps/issues/3032)
+	// querying values stored in cache (see discussion in https://github.com/SAP/kubeapps/issues/3032)
 	// 3) if pagination was requested, only return up to one page size of results
 	summaries := make([]*corev1.AvailablePackageSummary, 0)
 	i := 0

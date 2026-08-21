@@ -9,9 +9,9 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	pluginsv1alpha1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/core/plugins/v1alpha1"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/plugins/fluxv2/packages/v1alpha1"
-	packagesConnect "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/plugins/fluxv2/packages/v1alpha1/v1alpha1connect"
+	pluginsv1alpha1 "github.com/SAP/kubeapps/cmd/kubeapps-apis/core/plugins/v1alpha1"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/plugins/fluxv2/packages/v1alpha1"
+	packagesConnect "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/plugins/fluxv2/packages/v1alpha1/v1alpha1connect"
 	log "k8s.io/klog/v2"
 )
 

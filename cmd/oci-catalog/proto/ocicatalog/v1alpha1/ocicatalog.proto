@@ -3,7 +3,7 @@
 
 syntax = "proto3";
 package ocicatalog.v1alpha1;
-option go_package = "github.com/vmware-tanzu/kubeapps/cmd/oci-catalog/gen/catalog/v1alpha1";
+option go_package = "github.com/SAP/kubeapps/cmd/oci-catalog/gen/catalog/v1alpha1";
 
 // The OCICatalogService defines the two RPCs for listing repositories and listing tags
 // for a repository.

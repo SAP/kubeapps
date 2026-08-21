@@ -9,8 +9,8 @@ import (
 
 	"github.com/bufbuild/connect-go"
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/clientgetter"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/resources/v1alpha1/common"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/clientgetter"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/resources/v1alpha1/common"
 	"google.golang.org/grpc/metadata"
 
 	authorizationv1 "k8s.io/api/authorization/v1"
@@ -21,8 +21,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	pkgsGRPCv1alpha1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/plugins/resources/v1alpha1"
+	pkgsGRPCv1alpha1 "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/plugins/resources/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

@@ -16,10 +16,10 @@ import (
 	sourcev1beta2 "github.com/fluxcd/source-controller/api/v1beta2"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	corev1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
-	plugins "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/plugins/v1alpha1"
-	fluxplugin "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/plugins/fluxv2/packages/v1alpha1"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/fluxv2/packages/v1alpha1/common"
+	corev1 "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
+	plugins "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/plugins/v1alpha1"
+	fluxplugin "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/plugins/fluxv2/packages/v1alpha1"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/fluxv2/packages/v1alpha1/common"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	apiv1 "k8s.io/api/core/v1"
@@ -631,7 +631,7 @@ func TestKindClusterDeleteInstalledPackage(t *testing.T) {
 				noCleanup:            true,
 			},
 		},
-		// this is the scenario from https://github.com/vmware-tanzu/kubeapps/issues/5577
+		// this is the scenario from https://github.com/SAP/kubeapps/issues/5577
 		// currently fails due to https://github.com/fluxcd/helm-controller/issues/554
 		// TODO (gfichtenholt) uncomment this if/when issue is resolved by flux
 		/*
@@ -772,7 +772,7 @@ func TestKindClusterDeleteInstalledPackage(t *testing.T) {
 //     b) as 4b) returns PermissionDenied error
 //     c) as 4c) returns all refs
 //
-// ref https://github.com/vmware-tanzu/kubeapps/issues/4390
+// ref https://github.com/SAP/kubeapps/issues/4390
 func TestKindClusterRBAC_ReadRelease(t *testing.T) {
 	fluxPluginPackagesClient, fluxPluginReposClient, rnd, err := checkEnv(t)
 	if err != nil {
@@ -1562,7 +1562,7 @@ func createAndWaitForHelmRelease(
 		tc.request.TargetContext.Namespace += "-" + randSeq(rnd, 4)
 
 		if !tc.dontCreateNs {
-			// per https://github.com/vmware-tanzu/kubeapps/pull/3640#issuecomment-950383123
+			// per https://github.com/SAP/kubeapps/pull/3640#issuecomment-950383123
 			if err := kubeCreateNamespaceAndCleanup(t, tc.request.TargetContext.Namespace); err != nil {
 				t.Fatal(err)
 			}

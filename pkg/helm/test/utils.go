@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/vmware-tanzu/kubeapps/pkg/helm"
+	"github.com/SAP/kubeapps/pkg/helm"
 )
 
 // CheckHeader verifies that the given puller contains the given header

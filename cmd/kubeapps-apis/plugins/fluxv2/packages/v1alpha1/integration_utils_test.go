@@ -22,13 +22,13 @@ import (
 	fluxmeta "github.com/fluxcd/pkg/apis/meta"
 	sourcev1beta2 "github.com/fluxcd/source-controller/api/v1beta2"
 	"github.com/go-redis/redis/v8"
-	"github.com/vmware-tanzu/kubeapps/cmd/apprepository-controller/pkg/client/clientset/versioned/scheme"
-	plugins "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/plugins/v1alpha1"
-	fluxplugin "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/plugins/fluxv2/packages/v1alpha1"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/fluxv2/packages/v1alpha1/common"
-	"github.com/vmware-tanzu/kubeapps/pkg/chart/models"
-	"github.com/vmware-tanzu/kubeapps/pkg/helm"
-	httpclient "github.com/vmware-tanzu/kubeapps/pkg/http-client"
+	"github.com/SAP/kubeapps/cmd/apprepository-controller/pkg/client/clientset/versioned/scheme"
+	plugins "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/plugins/v1alpha1"
+	fluxplugin "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/plugins/fluxv2/packages/v1alpha1"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/fluxv2/packages/v1alpha1/common"
+	"github.com/SAP/kubeapps/pkg/chart/models"
+	"github.com/SAP/kubeapps/pkg/helm"
+	httpclient "github.com/SAP/kubeapps/pkg/http-client"
 	"golang.org/x/sync/semaphore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -571,7 +571,7 @@ func kubeCreateServiceAccountWithClusterRole(t *testing.T, name types.Namespaced
 
 	// https://itnext.io/big-change-in-k8s-1-24-about-serviceaccounts-and-their-secrets-4b909a4af4e0
 	// and
-	// https://github.com/vmware-tanzu/kubeapps/pull/4772
+	// https://github.com/SAP/kubeapps/pull/4772
 	// it used to be the case that creating service account would automatically create an
 	// associated secret service account token
 	// (per https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/)

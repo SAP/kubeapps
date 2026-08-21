@@ -12,8 +12,8 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/go-cmp/cmp"
-	"github.com/vmware-tanzu/kubeapps/pkg/chart/models"
-	"github.com/vmware-tanzu/kubeapps/pkg/dbutils"
+	"github.com/SAP/kubeapps/pkg/chart/models"
+	"github.com/SAP/kubeapps/pkg/dbutils"
 )
 
 func getMockManager(t *testing.T) (*PostgresAssetManager, sqlmock.Sqlmock, func()) {

@@ -27,9 +27,9 @@ import (
 	sourcev1beta2 "github.com/fluxcd/source-controller/api/v1beta2"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/go-containerregistry/pkg/authn"
-	plugins "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/plugins/v1alpha1"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/pkgutils"
-	httpclient "github.com/vmware-tanzu/kubeapps/pkg/http-client"
+	plugins "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/plugins/v1alpha1"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/pkgutils"
+	httpclient "github.com/SAP/kubeapps/pkg/http-client"
 	"golang.org/x/net/http/httpproxy"
 	"helm.sh/helm/v3/pkg/getter"
 	apiv1 "k8s.io/api/core/v1"
@@ -174,7 +174,7 @@ func RWMutexReadLocked(rw *sync.RWMutex) bool {
 	return true // TryLock failed, must be read locked
 }
 
-// https://github.com/vmware-tanzu/kubeapps/pull/3044#discussion_r662733334
+// https://github.com/SAP/kubeapps/pull/3044#discussion_r662733334
 // small preference for reading all config in the main.go
 // (whether from env vars or cmd-line options) only in the one spot and passing
 // explicitly to functions (so functions are less dependent on env state).
@@ -197,7 +197,7 @@ func NewRedisClientFromEnv(stopCh <-chan struct{}) (*redis.Client, error) {
 		return nil, err
 	}
 
-	// ref https://github.com/vmware-tanzu/kubeapps/pull/4382#discussion_r820386531
+	// ref https://github.com/SAP/kubeapps/pull/4382#discussion_r820386531
 	var redisCli *redis.Client
 	err = wait.PollUntilContextTimeout(context.Background(), redisInitClientRetryWait, redisInitClientTimeout, true, func(ctx context.Context) (bool, error) {
 		redisCli = redis.NewClient(&redis.Options{
@@ -447,7 +447,7 @@ type FluxPluginConfig struct {
 	VersionsInSummary    pkgutils.VersionsInSummary
 	TimeoutSeconds       int32
 	DefaultUpgradePolicy pkgutils.UpgradePolicy
-	// ref https://github.com/vmware-tanzu/kubeapps/issues/5541
+	// ref https://github.com/SAP/kubeapps/issues/5541
 	NoCrossNamespaceRefs bool
 }
 

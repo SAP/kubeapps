@@ -14,9 +14,9 @@ import (
 
 	sourcev1beta2 "github.com/fluxcd/source-controller/api/v1beta2"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	corev1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
-	fluxplugin "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/plugins/fluxv2/packages/v1alpha1"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/fluxv2/packages/v1alpha1/common"
+	corev1 "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
+	fluxplugin "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/plugins/fluxv2/packages/v1alpha1"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/fluxv2/packages/v1alpha1/common"
 	"golang.org/x/sync/semaphore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -270,7 +270,7 @@ func TestKindClusterGetAvailablePackageSummariesForLargeReposAndTinyRedis(t *tes
 //     b) with 3b) => should fail 2 times with PermissionDenied error
 //     c) with 3c) => should fail once and work once
 //
-// ref https://github.com/vmware-tanzu/kubeapps/issues/4390
+// ref https://github.com/SAP/kubeapps/issues/4390
 func TestKindClusterRepoAndChartRBAC(t *testing.T) {
 	fluxPluginClient, _, rnd, err := checkEnv(t)
 	if err != nil {

@@ -1,7 +1,7 @@
 // Copyright 2019-2024 the Kubeapps contributors.
 // SPDX-License-Identifier: Apache-2.0
 
-module github.com/vmware-tanzu/kubeapps
+module github.com/SAP/kubeapps
 
 go 1.25.4
 

@@ -6,7 +6,7 @@ package ocicatalog_client
 import (
 	"fmt"
 
-	ocicatalog "github.com/vmware-tanzu/kubeapps/cmd/oci-catalog/gen/catalog/v1alpha1"
+	ocicatalog "github.com/SAP/kubeapps/cmd/oci-catalog/gen/catalog/v1alpha1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

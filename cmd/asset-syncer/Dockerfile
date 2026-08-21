@@ -4,7 +4,7 @@
 # syntax = docker/dockerfile:1
 
 FROM golang:1.25.4-alpine3.22 AS builder
-WORKDIR /go/src/github.com/vmware-tanzu/kubeapps
+WORKDIR /go/src/github.com/SAP/kubeapps
 COPY go.mod go.sum ./
 COPY pkg pkg
 COPY cmd cmd
@@ -27,10 +27,10 @@ RUN if [ ! -z ${lint:-} ]; then \
 # https://github.com/golang/go/issues/27719#issuecomment-514747274
 RUN --mount=type=cache,target=/go/pkg/mod \
   --mount=type=cache,target=/root/.cache/go-build \
-  GOPROXY="https://proxy.golang.org,direct" CGO_ENABLED=0 go build -installsuffix cgo -ldflags "-X github.com/vmware-tanzu/kubeapps/cmd/asset-syncer/cmd.version=${VERSION:-}" ./cmd/asset-syncer
+  GOPROXY="https://proxy.golang.org,direct" CGO_ENABLED=0 go build -installsuffix cgo -ldflags "-X github.com/SAP/kubeapps/cmd/asset-syncer/cmd.version=${VERSION:-}" ./cmd/asset-syncer
 
 FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /go/src/github.com/vmware-tanzu/kubeapps/asset-syncer /asset-syncer
+COPY --from=builder /go/src/github.com/SAP/kubeapps/asset-syncer /asset-syncer
 USER 1001
 CMD ["/asset-syncer"]

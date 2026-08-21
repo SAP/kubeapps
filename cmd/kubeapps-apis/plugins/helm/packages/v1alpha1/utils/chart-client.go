@@ -12,9 +12,9 @@ import (
 	"strings"
 
 	"github.com/containerd/containerd/remotes/docker"
-	appRepov1 "github.com/vmware-tanzu/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
-	"github.com/vmware-tanzu/kubeapps/pkg/helm"
-	"github.com/vmware-tanzu/kubeapps/pkg/kube"
+	appRepov1 "github.com/SAP/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
+	"github.com/SAP/kubeapps/pkg/helm"
+	"github.com/SAP/kubeapps/pkg/kube"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	corev1 "k8s.io/api/core/v1"

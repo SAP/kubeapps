@@ -11,9 +11,9 @@ import (
 
 	"github.com/bufbuild/connect-go"
 	sourcev1beta2 "github.com/fluxcd/source-controller/api/v1beta2"
-	corev1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/connecterror"
-	"github.com/vmware-tanzu/kubeapps/pkg/kube"
+	corev1 "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/connecterror"
+	"github.com/SAP/kubeapps/pkg/kube"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -231,7 +231,7 @@ func (s *Server) validateUserManagedRepoSecret(
 			}
 		}
 
-		// ref https://github.com/vmware-tanzu/kubeapps/pull/4353#discussion_r816332595
+		// ref https://github.com/SAP/kubeapps/pull/4353#discussion_r816332595
 		// check whether flux supports typed secrets in addition to opaque secrets
 		// https://kubernetes.io/docs/concepts/configuration/secret/#secret-types
 		// update: flux currently does not care about secret type, just what is in the data map.
@@ -246,7 +246,7 @@ func (s *Server) validateUserManagedRepoSecret(
 //	via kubectl before running kubeapps, it won't get deleted just
 //
 // because Kubeapps is deleting it)?
-// see https://github.com/vmware-tanzu/kubeapps/pull/4630#discussion_r861446394 for details
+// see https://github.com/SAP/kubeapps/pull/4630#discussion_r861446394 for details
 func (s *Server) setOwnerReferencesForRepoSecret(
 	ctx context.Context,
 	headers http.Header,

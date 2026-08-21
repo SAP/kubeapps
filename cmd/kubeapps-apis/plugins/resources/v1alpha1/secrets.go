@@ -8,8 +8,8 @@ import (
 	"fmt"
 
 	"github.com/bufbuild/connect-go"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/plugins/resources/v1alpha1"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/connecterror"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/plugins/resources/v1alpha1"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/connecterror"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	log "k8s.io/klog/v2"

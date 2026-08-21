@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"github.com/bufbuild/connect-go"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/core"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/core"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	apiext "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -258,7 +258,7 @@ func NewClientProvider(configGetter core.KubernetesConfigGetter, options Options
 // NewBackgroundClientProvider returns an "out-of-band" or "in-cluster" client getter that returns various client interfaces
 // with the context of the current cluster it is executing on and the service account
 // configured for "kubeapps-apis" deployment
-// https://github.com/vmware-tanzu/kubeapps/issues/3560
+// https://github.com/SAP/kubeapps/issues/3560
 // flux plug-in runs out-of-request interactions with the Kubernetes API server.
 // Although we've already ensured that if the flux plugin is selected, that the service account
 // will be granted additional read privileges, we also need to ensure that the plugin can get a

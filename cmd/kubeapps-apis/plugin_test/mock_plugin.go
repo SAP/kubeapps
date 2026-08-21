@@ -8,9 +8,9 @@ import (
 	"fmt"
 
 	"github.com/bufbuild/connect-go"
-	corev1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
-	plugins "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/plugins/v1alpha1"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/paginate"
+	corev1 "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
+	plugins "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/plugins/v1alpha1"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/paginate"
 )
 
 type TestPackagingPluginServer struct {

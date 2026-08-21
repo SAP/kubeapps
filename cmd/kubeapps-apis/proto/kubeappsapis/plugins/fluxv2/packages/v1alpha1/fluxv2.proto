@@ -3,7 +3,7 @@
 
 syntax = "proto3";
 package kubeappsapis.plugins.fluxv2.packages.v1alpha1;
-option go_package = "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/plugins/fluxv2/packages/v1alpha1";
+option go_package = "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/plugins/fluxv2/packages/v1alpha1";
 
 import "google/api/annotations.proto";
 import "google/protobuf/wrappers.proto";

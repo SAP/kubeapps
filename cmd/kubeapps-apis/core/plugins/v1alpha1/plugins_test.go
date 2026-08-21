@@ -13,12 +13,12 @@ import (
 	"testing"
 	"testing/fstest"
 
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/core"
+	plugins "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/plugins/v1alpha1"
+	"github.com/SAP/kubeapps/pkg/kube"
 	"github.com/bufbuild/connect-go"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/core"
-	plugins "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/plugins/v1alpha1"
-	"github.com/vmware-tanzu/kubeapps/pkg/kube"
 	"k8s.io/client-go/rest"
 )
 

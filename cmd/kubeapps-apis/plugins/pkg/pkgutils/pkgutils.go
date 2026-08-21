@@ -17,10 +17,10 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/bufbuild/connect-go"
-	corev1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
-	plugins "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/plugins/v1alpha1"
-	"github.com/vmware-tanzu/kubeapps/pkg/chart/models"
-	"gopkg.in/yaml.v3" // The usual "sigs.k8s.io/yaml" doesn't work: https://github.com/vmware-tanzu/kubeapps/pull/4050
+	corev1 "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
+	plugins "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/plugins/v1alpha1"
+	"github.com/SAP/kubeapps/pkg/chart/models"
+	"gopkg.in/yaml.v3" // The usual "sigs.k8s.io/yaml" doesn't work: https://github.com/SAP/kubeapps/pull/4050
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
 	structuralschema "k8s.io/apiextensions-apiserver/pkg/apiserver/schema"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -231,7 +231,7 @@ func AvailablePackageSummaryFromChart(chart *models.Chart, plugin *plugins.Plugi
 // I did consider using flux's implementation of AvailablePackageDetailFromChart but did not feel comfortable
 // chaning helm plugin to use it before talking to @minelson
 // Update Michael replied he is okay with my proposal:
-// https://github.com/vmware-tanzu/kubeapps/pull/4094#discussion_r790349962.
+// https://github.com/SAP/kubeapps/pull/4094#discussion_r790349962.
 // Will come back to this
 
 // GetUnescapedPackageID takes a package id with URI-encoded characters and decode them. Ex: 'repoName/foo/bar' becomes 'repoName/foo%2Fbar'

@@ -13,8 +13,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	chart "github.com/vmware-tanzu/kubeapps/pkg/chart/models"
-	"github.com/vmware-tanzu/kubeapps/pkg/tarutil/test"
+	chart "github.com/SAP/kubeapps/pkg/chart/models"
+	"github.com/SAP/kubeapps/pkg/tarutil/test"
 )
 
 func Test_extractFilesFromTarball(t *testing.T) {

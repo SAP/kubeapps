@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware-tanzu/kubeapps/pkg/chart/models"
+	"github.com/SAP/kubeapps/pkg/chart/models"
 )
 
 var validRepoIndexYAMLBytes, _ = os.ReadFile("testdata/valid-index.yaml")

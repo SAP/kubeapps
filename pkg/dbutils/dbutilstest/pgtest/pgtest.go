@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/vmware-tanzu/kubeapps/pkg/chart/models"
-	"github.com/vmware-tanzu/kubeapps/pkg/dbutils"
-	"github.com/vmware-tanzu/kubeapps/pkg/dbutils/dbutilstest"
+	"github.com/SAP/kubeapps/pkg/chart/models"
+	"github.com/SAP/kubeapps/pkg/dbutils"
+	"github.com/SAP/kubeapps/pkg/dbutils/dbutilstest"
 )
 
 const (

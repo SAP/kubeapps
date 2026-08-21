@@ -13,8 +13,8 @@ import (
 	"regexp"
 	"strings"
 
-	chart "github.com/vmware-tanzu/kubeapps/pkg/chart/models"
-	httpclient "github.com/vmware-tanzu/kubeapps/pkg/http-client"
+	chart "github.com/SAP/kubeapps/pkg/chart/models"
+	httpclient "github.com/SAP/kubeapps/pkg/http-client"
 )
 
 // Fetches helm chart details from a gzipped tarball

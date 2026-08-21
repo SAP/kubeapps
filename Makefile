@@ -1,7 +1,7 @@
 # Copyright 2017-2023 the Kubeapps contributors.
 # SPDX-License-Identifier: Apache-2.0
 
-IMPORT_PATH:= github.com/vmware-tanzu/kubeapps
+IMPORT_PATH:= github.com/SAP/kubeapps
 GO = /usr/bin/env go
 GOFMT = /usr/bin/env gofmt
 IMAGE_TAG ?= dev-$(shell date +%FT%H-%M-%S-%Z)

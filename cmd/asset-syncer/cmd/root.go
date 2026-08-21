@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"github.com/vmware-tanzu/kubeapps/cmd/asset-syncer/server"
+	"github.com/SAP/kubeapps/cmd/asset-syncer/server"
 	log "k8s.io/klog/v2"
 )
 

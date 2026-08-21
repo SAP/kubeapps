@@ -5,7 +5,7 @@ package common
 import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/pkgutils"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/pkgutils"
 	log "k8s.io/klog/v2"
 	"os"
 	"runtime"

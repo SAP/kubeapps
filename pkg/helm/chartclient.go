@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/vmware-tanzu/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
-	httpclient "github.com/vmware-tanzu/kubeapps/pkg/http-client"
-	"github.com/vmware-tanzu/kubeapps/pkg/kube"
+	"github.com/SAP/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
+	httpclient "github.com/SAP/kubeapps/pkg/http-client"
+	"github.com/SAP/kubeapps/pkg/kube"
 	"golang.org/x/net/http/httpproxy"
 	corev1 "k8s.io/api/core/v1"
 )

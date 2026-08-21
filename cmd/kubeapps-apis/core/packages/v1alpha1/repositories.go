@@ -12,10 +12,10 @@ import (
 	linq "github.com/ahmetb/go-linq/v3"
 	"github.com/bufbuild/connect-go"
 
-	pluginsv1alpha1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/core/plugins/v1alpha1"
-	packages "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
-	packagesconnect "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1/v1alpha1connect"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/plugins/v1alpha1"
+	pluginsv1alpha1 "github.com/SAP/kubeapps/cmd/kubeapps-apis/core/plugins/v1alpha1"
+	packages "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
+	packagesconnect "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1/v1alpha1connect"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/plugins/v1alpha1"
 
 	log "k8s.io/klog/v2"
 )

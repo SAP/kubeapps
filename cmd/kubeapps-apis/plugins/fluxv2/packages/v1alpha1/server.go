@@ -9,9 +9,9 @@ import (
 	"net/http"
 
 	"github.com/bufbuild/connect-go"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/resources"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/resources"
 
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/helm"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/helm"
 
 	helmv2beta2 "github.com/fluxcd/helm-controller/api/v2beta2"
 	sourcev1beta2 "github.com/fluxcd/source-controller/api/v1beta2"
@@ -21,17 +21,17 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/core"
-	corev1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
-	corev1connect "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1/v1alpha1connect"
-	plugins "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/plugins/v1alpha1"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/plugins/fluxv2/packages/v1alpha1"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/fluxv2/packages/v1alpha1/cache"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/fluxv2/packages/v1alpha1/common"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/clientgetter"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/paginate"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/pkgutils"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/resourcerefs"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/core"
+	corev1 "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
+	corev1connect "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1/v1alpha1connect"
+	plugins "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/plugins/v1alpha1"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/plugins/fluxv2/packages/v1alpha1"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/fluxv2/packages/v1alpha1/cache"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/fluxv2/packages/v1alpha1/common"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/clientgetter"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/paginate"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/pkgutils"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/resourcerefs"
 	log "k8s.io/klog/v2"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -166,7 +166,7 @@ func NewServer(configGetter core.KubernetesConfigGetter, kubeappsCluster string,
 // state. For the fluxv2 plugin:
 //   - if flux helm-controller flag "-no-cross-namespace-refs=true" is
 //     enabled only the request target namespace is relevant
-//     ref https://github.com/vmware-tanzu/kubeapps/issues/5541
+//     ref https://github.com/SAP/kubeapps/issues/5541
 //   - otherwise the request context namespace (the target
 //     namespace) is not relevant since charts from a repository in any namespace
 //     accessible to the user are available to be installed in the target namespace.
@@ -206,7 +206,7 @@ func (s *Server) GetAvailablePackageSummaries(ctx context.Context, request *conn
 		return nil, err
 	}
 
-	// per https://github.com/vmware-tanzu/kubeapps/pull/3686#issue-1038093832
+	// per https://github.com/SAP/kubeapps/pull/3686#issue-1038093832
 	for _, summary := range packageSummaries {
 		summary.AvailablePackageRef.Context.Cluster = s.kubeappsCluster
 	}
