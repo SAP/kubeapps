@@ -8,8 +8,8 @@ import (
 	"net/http"
 
 	"github.com/bufbuild/connect-go"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/core"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/helm/agent"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/core"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/helm/agent"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/kube"
 	"k8s.io/client-go/kubernetes"

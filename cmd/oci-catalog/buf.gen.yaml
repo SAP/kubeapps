@@ -7,8 +7,8 @@ plugins:
   - name: go
     out: gen
     opt:
-      - module=github.com/vmware-tanzu/kubeapps/cmd/oci-catalog/gen
+      - module=github.com/SAP/kubeapps/cmd/oci-catalog/gen
   - name: go-grpc
     out: gen
     opt:
-      - module=github.com/vmware-tanzu/kubeapps/cmd/oci-catalog/gen
+      - module=github.com/SAP/kubeapps/cmd/oci-catalog/gen

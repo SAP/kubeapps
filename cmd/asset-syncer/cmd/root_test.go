@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/vmware-tanzu/kubeapps/cmd/asset-syncer/server"
+	"github.com/SAP/kubeapps/cmd/asset-syncer/server"
 )
 
 func TestParseFlagsCorrect(t *testing.T) {

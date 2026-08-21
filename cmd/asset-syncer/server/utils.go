@@ -27,14 +27,14 @@ import (
 	"github.com/itchyny/gojq"
 	"github.com/srwiley/oksvg"
 	"github.com/srwiley/rasterx"
-	apprepov1alpha1 "github.com/vmware-tanzu/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
-	ocicatalog "github.com/vmware-tanzu/kubeapps/cmd/oci-catalog/gen/catalog/v1alpha1"
-	"github.com/vmware-tanzu/kubeapps/pkg/chart/models"
-	"github.com/vmware-tanzu/kubeapps/pkg/dbutils"
-	"github.com/vmware-tanzu/kubeapps/pkg/helm"
-	httpclient "github.com/vmware-tanzu/kubeapps/pkg/http-client"
-	"github.com/vmware-tanzu/kubeapps/pkg/ocicatalog_client"
-	"github.com/vmware-tanzu/kubeapps/pkg/tarutil"
+	apprepov1alpha1 "github.com/SAP/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
+	ocicatalog "github.com/SAP/kubeapps/cmd/oci-catalog/gen/catalog/v1alpha1"
+	"github.com/SAP/kubeapps/pkg/chart/models"
+	"github.com/SAP/kubeapps/pkg/dbutils"
+	"github.com/SAP/kubeapps/pkg/helm"
+	httpclient "github.com/SAP/kubeapps/pkg/http-client"
+	"github.com/SAP/kubeapps/pkg/ocicatalog_client"
+	"github.com/SAP/kubeapps/pkg/tarutil"
 	"helm.sh/helm/v3/pkg/chart"
 	helmregistry "helm.sh/helm/v3/pkg/registry"
 	log "k8s.io/klog/v2"
@@ -324,7 +324,7 @@ func FetchChartDetailFromOciUrl(chartTarballURL string, userAgent string, authz 
 		headers.Add("Authorization", authz)
 	}
 
-	puller := &helm.OCIPuller{Resolver: docker.NewResolver(docker.ResolverOptions{Headers: headers, Client: netClient})}
+	puller := &helm.OCIPuller{Resolver: docker.NewResolver(docker.ResolverOptions{Headers: headers, Hosts: docker.ConfigureDefaultRegistries(docker.WithClient(netClient))})}
 
 	ref := strings.TrimPrefix(strings.TrimSpace(chartTarballURL), "oci://")
 	chartBuffer, _, err := puller.PullOCIChart(ref)
@@ -936,7 +936,7 @@ func getOCIRepo(namespace, name, repoURL, authorizationHeader string, filter *ap
 	if authorizationHeader != "" {
 		headers["Authorization"] = []string{authorizationHeader}
 	}
-	ociResolver := docker.NewResolver(docker.ResolverOptions{Headers: headers, Client: netClient})
+	ociResolver := docker.NewResolver(docker.ResolverOptions{Headers: headers, Hosts: docker.ConfigureDefaultRegistries(docker.WithClient(netClient))})
 
 	return &OCIRegistry{
 		repositories:          ociRepos,

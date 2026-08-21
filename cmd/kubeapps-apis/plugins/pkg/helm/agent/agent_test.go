@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	kubechart "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/helm/packages/v1alpha1/utils"
-	chartFake "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/helm/packages/v1alpha1/utils/fake"
+	kubechart "github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/helm/packages/v1alpha1/utils"
+	chartFake "github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/helm/packages/v1alpha1/utils/fake"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chartutil"

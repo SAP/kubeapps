@@ -13,9 +13,9 @@ import (
 	"strings"
 	"testing"
 
-	appRepov1 "github.com/vmware-tanzu/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
-	helmfake "github.com/vmware-tanzu/kubeapps/pkg/helm/fake"
-	helmtest "github.com/vmware-tanzu/kubeapps/pkg/helm/test"
+	appRepov1 "github.com/SAP/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
+	helmfake "github.com/SAP/kubeapps/pkg/helm/fake"
+	helmtest "github.com/SAP/kubeapps/pkg/helm/test"
 	corev1 "k8s.io/api/core/v1"
 
 	"github.com/stretchr/testify/assert"

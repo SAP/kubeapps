@@ -7,7 +7,7 @@ import (
 	"net"
 	"testing"
 
-	ocicatalog "github.com/vmware-tanzu/kubeapps/cmd/oci-catalog/gen/catalog/v1alpha1"
+	ocicatalog "github.com/SAP/kubeapps/cmd/oci-catalog/gen/catalog/v1alpha1"
 	"google.golang.org/grpc"
 )
 

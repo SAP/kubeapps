@@ -15,9 +15,9 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
-	"github.com/vmware-tanzu/kubeapps/pkg/chart/models"
-	"github.com/vmware-tanzu/kubeapps/pkg/dbutils"
-	"github.com/vmware-tanzu/kubeapps/pkg/dbutils/dbutilstest/pgtest"
+	"github.com/SAP/kubeapps/pkg/chart/models"
+	"github.com/SAP/kubeapps/pkg/dbutils"
+	"github.com/SAP/kubeapps/pkg/dbutils/dbutilstest/pgtest"
 )
 
 func getInitializedManager(t *testing.T) (*postgresAssetManager, func()) {

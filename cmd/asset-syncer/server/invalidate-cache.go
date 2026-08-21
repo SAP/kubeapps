@@ -6,7 +6,7 @@ package server
 import (
 	"fmt"
 
-	"github.com/vmware-tanzu/kubeapps/pkg/dbutils"
+	"github.com/SAP/kubeapps/pkg/dbutils"
 	log "k8s.io/klog/v2"
 )
 

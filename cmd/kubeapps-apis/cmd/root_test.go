@@ -8,8 +8,8 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/core"
 	"github.com/google/go-cmp/cmp"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/core"
 )
 
 func TestParseFlagsCorrect(t *testing.T) {

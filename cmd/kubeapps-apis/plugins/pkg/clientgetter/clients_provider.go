@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"github.com/bufbuild/connect-go"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/core"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/core"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	apiext "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"

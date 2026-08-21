@@ -7,9 +7,9 @@ import (
 	"encoding/json"
 	"fmt"
 
+	packages "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/paginate"
 	"github.com/bufbuild/connect-go"
-	packages "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
-	"github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/plugins/pkg/paginate"
 )
 
 const CompleteToken = -1

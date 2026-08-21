@@ -5,7 +5,7 @@ package resourcerefstest
 
 import (
 	"github.com/bufbuild/connect-go"
-	corev1 "github.com/vmware-tanzu/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
+	corev1 "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
 )
 
 // this is done so that test scenarios can be re-used in another package (helm and flux plug-ins)

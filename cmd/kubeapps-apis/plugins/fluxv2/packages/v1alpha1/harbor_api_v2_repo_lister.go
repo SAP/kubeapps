@@ -12,7 +12,7 @@ import (
 	"strings"
 	"unicode"
 
-	httpclient "github.com/vmware-tanzu/kubeapps/pkg/http-client"
+	httpclient "github.com/SAP/kubeapps/pkg/http-client"
 	"helm.sh/helm/v3/pkg/registry"
 	log "k8s.io/klog/v2"
 	"oras.land/oras-go/v2/errdef"
