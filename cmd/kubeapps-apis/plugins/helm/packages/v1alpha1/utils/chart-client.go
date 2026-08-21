@@ -173,7 +173,7 @@ func (c *OCIRepoClient) Init(appRepo *appRepov1.AppRepository, caCertSecret *cor
 		headers.Set("Authorization", string(auth))
 	}
 
-	c.puller = &helm.OCIPuller{Resolver: docker.NewResolver(docker.ResolverOptions{Headers: headers, Client: netClient})}
+	c.puller = &helm.OCIPuller{Resolver: docker.NewResolver(docker.ResolverOptions{Headers: headers, Hosts: docker.ConfigureDefaultRegistries(docker.WithClient(netClient))})}
 	return err
 }
 

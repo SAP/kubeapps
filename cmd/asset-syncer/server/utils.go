@@ -324,7 +324,7 @@ func FetchChartDetailFromOciUrl(chartTarballURL string, userAgent string, authz 
 		headers.Add("Authorization", authz)
 	}
 
-	puller := &helm.OCIPuller{Resolver: docker.NewResolver(docker.ResolverOptions{Headers: headers, Client: netClient})}
+	puller := &helm.OCIPuller{Resolver: docker.NewResolver(docker.ResolverOptions{Headers: headers, Hosts: docker.ConfigureDefaultRegistries(docker.WithClient(netClient))})}
 
 	ref := strings.TrimPrefix(strings.TrimSpace(chartTarballURL), "oci://")
 	chartBuffer, _, err := puller.PullOCIChart(ref)
@@ -936,7 +936,7 @@ func getOCIRepo(namespace, name, repoURL, authorizationHeader string, filter *ap
 	if authorizationHeader != "" {
 		headers["Authorization"] = []string{authorizationHeader}
 	}
-	ociResolver := docker.NewResolver(docker.ResolverOptions{Headers: headers, Client: netClient})
+	ociResolver := docker.NewResolver(docker.ResolverOptions{Headers: headers, Hosts: docker.ConfigureDefaultRegistries(docker.WithClient(netClient))})
 
 	return &OCIRegistry{
 		repositories:          ociRepos,
