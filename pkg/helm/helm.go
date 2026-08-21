@@ -7,10 +7,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 
 	"github.com/containerd/containerd/remotes"
+	"github.com/containerd/containerd/remotes/docker"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	helmregistry "helm.sh/helm/v3/pkg/registry"
 	log "k8s.io/klog/v2"
@@ -31,6 +33,24 @@ type (
 		Resolver remotes.Resolver
 	}
 )
+
+// NewOCIResolver creates a Docker registry resolver for OCI Helm charts using
+// containerd's non-deprecated Hosts configuration path.
+func NewOCIResolver(headers http.Header, netClient *http.Client) remotes.Resolver {
+	authorizer := docker.NewDockerAuthorizer(
+		docker.WithAuthClient(netClient),
+		docker.WithAuthHeader(headers),
+	)
+
+	return docker.NewResolver(docker.ResolverOptions{
+		Headers: headers,
+		Hosts: docker.ConfigureDefaultRegistries(
+			docker.WithAuthorizer(authorizer),
+			docker.WithClient(netClient),
+			docker.WithPlainHTTP(docker.MatchLocalhost),
+		),
+	})
+}
 
 // Code from Helm Registry Client. Copied here since it belonged to a internal package.
 // TODO(agamez): Some adaptations on the Kubeapps/Helm side are still required to be fully able to

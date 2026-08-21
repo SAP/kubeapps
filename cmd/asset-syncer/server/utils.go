@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver/v3"
-	"github.com/containerd/containerd/remotes/docker"
 	"github.com/disintegration/imaging"
 	"github.com/itchyny/gojq"
 	"github.com/srwiley/oksvg"
