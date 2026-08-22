@@ -11,7 +11,6 @@ import (
 	"path"
 	"strings"
 
-	"github.com/containerd/containerd/remotes/docker"
 	appRepov1 "github.com/SAP/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
 	"github.com/SAP/kubeapps/pkg/helm"
 	"github.com/SAP/kubeapps/pkg/kube"
@@ -180,7 +179,7 @@ func (c *OCIRepoClient) Init(appRepo *appRepov1.AppRepository, caCertSecret *cor
 		}
 	}
 
-	c.puller = &helm.OCIPuller{Resolver: docker.NewResolver(docker.ResolverOptions{Headers: headers, Hosts: docker.ConfigureDefaultRegistries(docker.WithClient(netClient))})}
+	c.puller = &helm.OCIPuller{Resolver: helm.NewOCIResolver(headers, netClient)}
 	return err
 }
 

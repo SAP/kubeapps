@@ -8,14 +8,15 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/bufbuild/connect-go"
 	"github.com/SAP/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository"
+	"github.com/bufbuild/connect-go"
 
 	apprepov1alpha1 "github.com/SAP/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
 	corev1 "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
 	"github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/plugins/helm/packages/v1alpha1"
 	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/connecterror"
 	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/resources"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/safelog"
 	"github.com/SAP/kubeapps/pkg/helm"
 	"google.golang.org/protobuf/types/known/anypb"
 	k8scorev1 "k8s.io/api/core/v1"

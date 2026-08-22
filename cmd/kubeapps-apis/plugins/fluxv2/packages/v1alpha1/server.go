@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/bufbuild/connect-go"
 	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/resources"
+	"github.com/bufbuild/connect-go"
 
 	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/helm"
 
@@ -32,6 +32,7 @@ import (
 	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/paginate"
 	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/pkgutils"
 	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/resourcerefs"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/safelog"
 	log "k8s.io/klog/v2"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 )

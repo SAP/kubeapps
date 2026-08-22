@@ -22,10 +22,6 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver/v3"
-	"github.com/disintegration/imaging"
-	"github.com/itchyny/gojq"
-	"github.com/srwiley/oksvg"
-	"github.com/srwiley/rasterx"
 	apprepov1alpha1 "github.com/SAP/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
 	ocicatalog "github.com/SAP/kubeapps/cmd/oci-catalog/gen/catalog/v1alpha1"
 	"github.com/SAP/kubeapps/pkg/chart/models"
@@ -34,6 +30,10 @@ import (
 	httpclient "github.com/SAP/kubeapps/pkg/http-client"
 	"github.com/SAP/kubeapps/pkg/ocicatalog_client"
 	"github.com/SAP/kubeapps/pkg/tarutil"
+	"github.com/disintegration/imaging"
+	"github.com/itchyny/gojq"
+	"github.com/srwiley/oksvg"
+	"github.com/srwiley/rasterx"
 	"helm.sh/helm/v3/pkg/chart"
 	helmregistry "helm.sh/helm/v3/pkg/registry"
 	log "k8s.io/klog/v2"
@@ -323,7 +323,7 @@ func FetchChartDetailFromOciUrl(chartTarballURL string, userAgent string, authz 
 		headers.Add("Authorization", authz)
 	}
 
-	puller := &helm.OCIPuller{Resolver: docker.NewResolver(docker.ResolverOptions{Headers: headers, Hosts: docker.ConfigureDefaultRegistries(docker.WithClient(netClient))})}
+	puller := &helm.OCIPuller{Resolver: helm.NewOCIResolver(headers, netClient)}
 
 	ref := strings.TrimPrefix(strings.TrimSpace(chartTarballURL), "oci://")
 	chartBuffer, _, err := puller.PullOCIChart(ref)
@@ -1067,7 +1067,7 @@ func getOCIRepo(namespace, name, repoURL, authorizationHeader string, filter *ap
 	if authorizationHeader != "" {
 		headers["Authorization"] = []string{authorizationHeader}
 	}
-	ociResolver := docker.NewResolver(docker.ResolverOptions{Headers: headers, Hosts: docker.ConfigureDefaultRegistries(docker.WithClient(netClient))})
+	ociResolver := helm.NewOCIResolver(headers, netClient)
 
 	return &OCIRegistry{
 		repositories:          ociRepos,

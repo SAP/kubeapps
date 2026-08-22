@@ -23,9 +23,6 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/disintegration/imaging"
-	"github.com/google/go-cmp/cmp"
-	"github.com/stretchr/testify/assert"
 	apprepov1alpha1 "github.com/SAP/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
 	ocicatalog "github.com/SAP/kubeapps/cmd/oci-catalog/gen/catalog/v1alpha1"
 	"github.com/SAP/kubeapps/pkg/chart/models"
@@ -37,6 +34,9 @@ import (
 	"github.com/SAP/kubeapps/pkg/ocicatalog_client"
 	"github.com/SAP/kubeapps/pkg/ocicatalog_client/ocicatalog_clienttest"
 	tartest "github.com/SAP/kubeapps/pkg/tarutil/test"
+	"github.com/disintegration/imaging"
+	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/assert"
 	"helm.sh/helm/v3/pkg/chart"
 	log "k8s.io/klog/v2"
 	"oras.land/oras-go/v2/registry/remote/errcode"
@@ -1571,18 +1571,6 @@ version: 1.0.0
 					Category:    "Infrastructure",
 					ChartVersions: []models.ChartVersion{
 						{
-							Version:                 "1.0.0",
-							AppVersion:              "2.0.0",
-							URLs:                    []string{"https://github.com/SAP/kubeapps"},
-							Digest:                  "123",
-							Readme:                  "chart readme",
-							DefaultValues:           "chart values",
-							AdditionalDefaultValues: map[string]string{},
-							Schema:                  "chart schema",
-						},
-						{
-							// The test passes the one yaml file for both tags,
-							// hence the same version number here.
 							Version:                 "1.0.0",
 							AppVersion:              "2.0.0",
 							URLs:                    []string{"https://github.com/SAP/kubeapps"},
