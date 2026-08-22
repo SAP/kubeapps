@@ -11,7 +11,6 @@ import (
 	"path"
 	"strings"
 
-	"github.com/containerd/containerd/remotes/docker"
 	appRepov1 "github.com/SAP/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
 	"github.com/SAP/kubeapps/pkg/helm"
 	"github.com/SAP/kubeapps/pkg/kube"
@@ -164,16 +163,23 @@ func (c *OCIRepoClient) Init(appRepo *appRepov1.AppRepository, caCertSecret *cor
 	if err != nil {
 		return err
 	}
-	if authSecret != nil && appRepo.Spec.Auth.Header != nil {
+	if authSecret != nil {
 		var auth string
-		auth, err = kube.GetDataFromSecret(appRepo.Spec.Auth.Header.SecretKeyRef.Key, authSecret)
+		switch {
+		case appRepo.Spec.Auth.Header != nil:
+			auth, err = kube.GetDataFromSecret(appRepo.Spec.Auth.Header.SecretKeyRef.Key, authSecret)
+		case authSecret.Type == corev1.SecretTypeDockerConfigJson:
+			auth, err = kube.GetDataFromSecret(corev1.DockerConfigJsonKey, authSecret)
+		}
 		if err != nil {
 			return err
 		}
-		headers.Set("Authorization", string(auth))
+		if auth != "" {
+			headers.Set("Authorization", auth)
+		}
 	}
 
-	c.puller = &helm.OCIPuller{Resolver: docker.NewResolver(docker.ResolverOptions{Headers: headers, Hosts: docker.ConfigureDefaultRegistries(docker.WithClient(netClient))})}
+	c.puller = &helm.OCIPuller{Resolver: helm.NewOCIResolver(headers, netClient)}
 	return err
 }
 
@@ -185,12 +191,21 @@ func (c *OCIRepoClient) GetChart(details *ChartDetails, repoURL string) (*chart.
 	if details == nil || details.TarballURL == "" {
 		return nil, fmt.Errorf("unable to retrieve chart, missing chart details")
 	}
-	chartURL, err := resolveChartURL(repoURL, details.TarballURL)
-	if err != nil {
-		return nil, err
-	}
 
-	ref := path.Join(chartURL.Host, chartURL.Path)
+	// For OCI references we must NOT use resolveChartURL / url.Parse because
+	// url.Parse decodes percent-encoded slashes (%2F → /), destroying the OCI
+	// repository name encoding that registries like GAR require.
+	// Instead we strip the "oci://" scheme prefix directly and pass the raw
+	// reference string to the puller.
+	ref := strings.TrimPrefix(strings.TrimSpace(details.TarballURL), "oci://")
+	if ref == "" {
+		// Fall back to URL-based resolution for non-oci:// tarball URLs
+		chartURL, err := resolveChartURL(repoURL, details.TarballURL)
+		if err != nil {
+			return nil, err
+		}
+		ref = path.Join(chartURL.Host, chartURL.Path)
+	}
 	chartBuffer, _, err := c.puller.PullOCIChart(ref)
 	if err != nil {
 		return nil, err

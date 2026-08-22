@@ -14,8 +14,6 @@ import (
 	"path"
 	"strings"
 
-	"github.com/bufbuild/connect-go"
-	imageSpecv1 "github.com/opencontainers/image-spec/specs-go/v1"
 	appRepov1 "github.com/SAP/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
 	"github.com/SAP/kubeapps/cmd/kubeapps-apis/core"
 	corev1 "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
@@ -29,9 +27,12 @@ import (
 	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/paginate"
 	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/pkgutils"
 	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/resourcerefs"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/safelog"
 	"github.com/SAP/kubeapps/pkg/chart/models"
 	"github.com/SAP/kubeapps/pkg/dbutils"
 	"github.com/SAP/kubeapps/pkg/kube"
+	"github.com/bufbuild/connect-go"
+	imageSpecv1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"google.golang.org/protobuf/types/known/anypb"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
@@ -929,7 +930,7 @@ func (s *Server) getAppRepoAndRelatedSecrets(ctx context.Context, headers http.H
 // Mainly to DRY up similar code in the create and update methods.
 func (s *Server) fetchChartWithRegistrySecrets(ctx context.Context, headers http.Header, chartDetails *utils.ChartDetails, client kubernetes.Interface) (*chart.Chart, map[string]string, error) {
 	// Most of the existing code that we want to reuse is based on having a typed AppRepository.
-	appRepo, caCertSecret, authSecret, _, err := s.getAppRepoAndRelatedSecrets(ctx, headers, s.globalPackagingCluster, chartDetails.AppRepositoryResourceName, chartDetails.AppRepositoryResourceNamespace)
+	appRepo, caCertSecret, authSecret, imagesPullSecret, err := s.getAppRepoAndRelatedSecrets(ctx, headers, s.globalPackagingCluster, chartDetails.AppRepositoryResourceName, chartDetails.AppRepositoryResourceNamespace)
 	if err != nil {
 		return nil, nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unable to fetch app repo %q from namespace %q: %v", chartDetails.AppRepositoryResourceName, chartDetails.AppRepositoryResourceNamespace, err))
 	}
@@ -939,17 +940,48 @@ func (s *Server) fetchChartWithRegistrySecrets(ctx context.Context, headers http
 	chartID := fmt.Sprintf("%s/%s", appRepo.Name, chartDetails.ChartName)
 	log.InfoS("Fetching chart with user-agent", "chartID", chartID, "userAgentString", userAgentString)
 
-	// Look up the cachedChart cached in our DB to populate the tarball URL
-	cachedChart, err := s.manager.GetChartVersion(chartDetails.AppRepositoryResourceNamespace, chartID, chartDetails.Version)
-	if err != nil {
-		return nil, nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unable to fetch the chart %s (version %s) from the namespace %q: %w", chartID, chartDetails.Version, chartDetails.AppRepositoryResourceNamespace, err))
-	}
 	var tarballURL string
-	// If the chart is cached, we can use the tarball URL from the cache,
-	// we assume cachedChart.ChartVersions only contains 1 element
-	if len(cachedChart.ChartVersions) == 1 && cachedChart.ChartVersions[0].URLs != nil {
-		tarballURL = chartTarballURL(cachedChart.Repo, cachedChart.ChartVersions[0])
-		log.InfoS("Using chart tarball", "url", tarballURL)
+	if appRepo.Spec.Type == OCIRepoType {
+		// For OCI repositories the chart is referenced via an OCI reference
+		// (oci://registry/namespace/chartName:version). We build this directly
+		// from the AppRepository URL and chart details rather than relying on
+		// ChartVersions[0].URLs, which stores the chart's source-code URLs
+		// (e.g. GitHub links) and not the OCI pull reference.
+		//
+		// chartDetails.ChartName arrives double-encoded from the UI: the asset-syncer
+		// stores the OCI path with url.PathEscape() (e.g. "k8s-ec-pipeline-dev%2Fjenkins-ecpipeline"),
+		// then GetUnescapedPackageID re-escapes the part after the first slash
+		// (e.g. "k8s-ec-pipeline-dev%252Fjenkins-ecpipeline"). We must unescape
+		// twice to recover the raw OCI path ("k8s-ec-pipeline-dev/jenkins-ecpipeline").
+		decodedChartName := chartDetails.ChartName
+		for i := 0; i < 2; i++ {
+			if d, err := url.PathUnescape(decodedChartName); err == nil {
+				decodedChartName = d
+			}
+		}
+		// Strip any https:// or oci:// prefix from the repo URL before building the OCI ref.
+		repoURL := strings.TrimPrefix(strings.TrimPrefix(appRepo.Spec.URL, "oci://"), "https://")
+		tarballURL = fmt.Sprintf("oci://%s/%s:%s", strings.TrimSuffix(repoURL, "/"), decodedChartName, chartDetails.Version)
+		log.InfoS("Using OCI chart reference as tarball URL", "url", tarballURL)
+	} else {
+		// Look up the chart cached in our DB to populate the tarball URL
+		cachedChart, err := s.manager.GetChartVersion(chartDetails.AppRepositoryResourceNamespace, chartID, chartDetails.Version)
+		if err != nil {
+			return nil, nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unable to fetch the chart %s (version %s) from the namespace %q: %w", chartID, chartDetails.Version, chartDetails.AppRepositoryResourceNamespace, err))
+		}
+		// If the chart is cached, we can use the tarball URL from the cache,
+		// we assume cachedChart.ChartVersions only contains 1 element
+		if len(cachedChart.ChartVersions) == 1 && cachedChart.ChartVersions[0].URLs != nil {
+			tarballURL = chartTarballURL(cachedChart.Repo, cachedChart.ChartVersions[0])
+			log.InfoS("Using chart tarball", "url", tarballURL)
+		}
+	}
+
+	// OCI repositories may keep registry credentials in the image pull secret
+	// rather than the AppRepository authorization secret.
+	effectiveAuthSecret := authSecret
+	if effectiveAuthSecret == nil && appRepo.Spec.Type == OCIRepoType {
+		effectiveAuthSecret = imagesPullSecret
 	}
 
 	// Grab the chart itself
@@ -962,7 +994,7 @@ func (s *Server) fetchChartWithRegistrySecrets(ctx context.Context, headers http
 			TarballURL:                     tarballURL,
 		},
 		appRepo,
-		caCertSecret, authSecret,
+		caCertSecret, effectiveAuthSecret,
 		s.chartClientFactory.New(tarballURL, userAgentString),
 	)
 	if err != nil {
@@ -1251,7 +1283,7 @@ func (s *Server) UpdatePackageRepository(ctx context.Context, request *connect.R
 }
 
 func (s *Server) DeletePackageRepository(ctx context.Context, request *connect.Request[corev1.DeletePackageRepositoryRequest]) (*connect.Response[corev1.DeletePackageRepositoryResponse], error) {
-	log.Infof("+helm DeletePackageRepository [%v]", request)
+	safelog.Request("+helm DeletePackageRepository", request)
 
 	if request == nil || request.Msg.PackageRepoRef == nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("no request PackageRepoRef provided"))

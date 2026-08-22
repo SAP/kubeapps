@@ -208,6 +208,30 @@ func TestOCIClient(t *testing.T) {
 		helmtest.CheckHeader(t, cli.(*OCIRepoClient).puller, "Authorization", "Basic Zm9vOmJhcg==")
 	})
 
+	t.Run("InitClient - Uses image pull secret without header auth", func(t *testing.T) {
+		cli := NewOCIClient("")
+		appRepo := &appRepov1.AppRepository{}
+		authSecret := &corev1.Secret{
+			Type: corev1.SecretTypeDockerConfigJson,
+			Data: map[string][]byte{
+				corev1.DockerConfigJsonKey: []byte(
+					`{"auths":{"foo":{"username":"foo","password":"bar"}}}`,
+				),
+			},
+		}
+
+		err := cli.Init(appRepo, &corev1.Secret{}, authSecret)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		helmtest.CheckHeader(
+			t,
+			cli.(*OCIRepoClient).puller,
+			"Authorization",
+			"Basic Zm9vOmJhcg==",
+		)
+	})
+
 	t.Run("GetChart - Fails if the puller has not been instantiated", func(t *testing.T) {
 		cli := NewOCIClient("foo")
 		_, err := cli.GetChart(nil, "")
@@ -244,8 +268,11 @@ func TestOCIClient(t *testing.T) {
 		cli := NewOCIClient("foo")
 		data, err := os.ReadFile("./testdata/nginx-5.1.1-apiVersionV2.tgz")
 		assert.NoError(t, err)
+		// The %2F in the TarballURL must be preserved as-is in the OCI reference
+		// passed to the puller. Using url.Parse would decode it to '/', which
+		// breaks registries (e.g. GAR) that encode sub-paths as %2F.
 		cli.(*OCIRepoClient).puller = &helmfake.OCIPuller{
-			ExpectedName: "foo/bar/bar/nginx:5.1.1",
+			ExpectedName: "foo/bar%2Fbar/nginx:5.1.1",
 			Content:      map[string]*bytes.Buffer{"5.1.1": bytes.NewBuffer(data)},
 		}
 		ch, err := cli.GetChart(&ChartDetails{ChartName: "nginx", Version: "5.1.1", TarballURL: "oci://foo/bar%2Fbar/nginx:5.1.1"}, "http://foo/bar%2Fbar")

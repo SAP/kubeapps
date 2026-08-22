@@ -231,7 +231,7 @@ func (s *Server) validateUserManagedRepoSecret(
 			}
 		}
 
-		// ref https://github.com/vmware-tanzu/kubeapps/pull/4353#discussion_r816332595
+		// ref https://github.com/SAP/kubeapps/pull/4353#discussion_r816332595
 		// check whether flux supports typed secrets in addition to opaque secrets
 		// https://kubernetes.io/docs/concepts/configuration/secret/#secret-types
 		// update: flux currently does not care about secret type, just what is in the data map.
@@ -246,7 +246,7 @@ func (s *Server) validateUserManagedRepoSecret(
 //	via kubectl before running kubeapps, it won't get deleted just
 //
 // because Kubeapps is deleting it)?
-// see https://github.com/vmware-tanzu/kubeapps/pull/4630#discussion_r861446394 for details
+// see https://github.com/SAP/kubeapps/pull/4630#discussion_r861446394 for details
 func (s *Server) setOwnerReferencesForRepoSecret(
 	ctx context.Context,
 	headers http.Header,

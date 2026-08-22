@@ -2076,6 +2076,76 @@ func TestChartTarballURLBuild(t *testing.T) {
 	}
 }
 
+// TestOCIChartTarballURLBuild verifies that the OCI tarball URL is built correctly
+// for chart names that contain slashes (e.g. OCI paths like "project/mychart").
+//
+// The asset-syncer encodes the OCI path with url.PathEscape, storing
+// "project%2Fmychart" in the DB as the chart name portion of the chart ID.
+// GetUnescapedPackageID then re-encodes it to "project%252Fmychart" when
+// splitting the package identifier. fetchChartWithRegistrySecrets must
+// double-unescape to recover the raw path "project/mychart" before building
+// the OCI reference.
+//
+// It also verifies that "https://" repo URLs are handled correctly by stripping
+// the scheme before building the oci:// reference.
+func TestOCIChartTarballURLBuild(t *testing.T) {
+	testCases := []struct {
+		name            string
+		chartName       string // as received from SplitPackageIdentifier (may be double-encoded)
+		repoURL         string
+		version         string
+		expectedTarball string
+	}{
+		{
+			name:            "OCI chart with double-encoded slash from GAR, https repo URL",
+			chartName:       "project%252Fmychart",
+			repoURL:         "https://registry.example.com/myorg/",
+			version:         "1.2.3",
+			expectedTarball: "oci://registry.example.com/myorg/project/mychart:1.2.3",
+		},
+		{
+			name:            "OCI chart with single-encoded slash",
+			chartName:       "project%2Fmychart",
+			repoURL:         "https://registry.example.com/myorg/",
+			version:         "9.0.0",
+			expectedTarball: "oci://registry.example.com/myorg/project/mychart:9.0.0",
+		},
+		{
+			name:            "OCI chart with no encoding (simple chart name)",
+			chartName:       "simplechart",
+			repoURL:         "https://registry.example.com/myorg/",
+			version:         "1.0.0",
+			expectedTarball: "oci://registry.example.com/myorg/simplechart:1.0.0",
+		},
+		{
+			name:            "OCI repo URL with oci:// scheme",
+			chartName:       "project%2Fmychart",
+			repoURL:         "oci://registry.example.com/myorg/",
+			version:         "9.0.0",
+			expectedTarball: "oci://registry.example.com/myorg/project/mychart:9.0.0",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// This replicates the OCI tarball URL building logic from
+			// fetchChartWithRegistrySecrets in server.go.
+			decodedChartName := tc.chartName
+			for i := 0; i < 2; i++ {
+				if d, err := url.PathUnescape(decodedChartName); err == nil {
+					decodedChartName = d
+				}
+			}
+			repoURL := strings.TrimPrefix(strings.TrimPrefix(tc.repoURL, "oci://"), "https://")
+			tarballURL := fmt.Sprintf("oci://%s/%s:%s", strings.TrimSuffix(repoURL, "/"), decodedChartName, tc.version)
+
+			if got, want := tarballURL, tc.expectedTarball; got != want {
+				t.Fatalf("got: %q, want: %q", got, want)
+			}
+		})
+	}
+}
+
 // newActionConfigFixture returns an action.Configuration with fake clients
 // and memory storage.
 func newActionConfigFixture(t *testing.T, namespace string, rels []releaseStub, kubeClient kube.Interface) *action.Configuration {

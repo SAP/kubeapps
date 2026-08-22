@@ -8,14 +8,15 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/bufbuild/connect-go"
 	"github.com/SAP/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository"
+	"github.com/bufbuild/connect-go"
 
 	apprepov1alpha1 "github.com/SAP/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
 	corev1 "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
 	"github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/plugins/helm/packages/v1alpha1"
 	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/connecterror"
 	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/resources"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/safelog"
 	"github.com/SAP/kubeapps/pkg/helm"
 	"google.golang.org/protobuf/types/known/anypb"
 	k8scorev1 "k8s.io/api/core/v1"
@@ -159,7 +160,7 @@ func newHelmRepoCrd(repo *HelmRepository, secret *k8scorev1.Secret, imagePullSec
 			PassCredentials:       repo.auth != nil && repo.auth.PassCredentials,
 			Interval:              repo.interval,
 			// TODO(agamez): add more fields here if they're requested
-			// https://github.com/vmware-tanzu/kubeapps/issues/5128
+			// https://github.com/SAP/kubeapps/issues/5128
 			SyncJobPodTemplate: k8scorev1.PodTemplateSpec{
 				Spec: k8scorev1.PodSpec{},
 			},
@@ -269,7 +270,7 @@ func (s *Server) mapToPackageRepositoryDetail(source *apprepov1alpha1.AppReposit
 		Interval:        source.Spec.Interval,
 		TlsConfig:       tlsConfig,
 		// TODO(agamez): check if we can get the status from the repo somehow
-		// https://github.com/vmware-tanzu/kubeapps/issues/153
+		// https://github.com/SAP/kubeapps/issues/153
 		Status: &corev1.PackageRepositoryStatus{
 			Ready: true,
 		},
@@ -303,7 +304,7 @@ func (s *Server) mapToPackageRepositoryDetail(source *apprepov1alpha1.AppReposit
 //	via kubectl before running kubeapps, it won't get deleted just
 //	because Kubeapps is deleting it)?
 //
-// See https://github.com/vmware-tanzu/kubeapps/pull/4630#discussion_r861446394 for details
+// See https://github.com/SAP/kubeapps/pull/4630#discussion_r861446394 for details
 func (s *Server) setOwnerReferencesForRepoSecret(
 	ctx context.Context,
 	headers http.Header,
@@ -552,7 +553,7 @@ func (s *Server) repoSummaries(ctx context.Context, headers http.Header, cluster
 			Url:             repo.Spec.URL,
 			RequiresAuth:    repo.Spec.Auth.Header != nil,
 			// TODO(agamez): check if we can get the status from the repo somehow
-			// https://github.com/vmware-tanzu/kubeapps/issues/153
+			// https://github.com/SAP/kubeapps/issues/153
 			Status: &corev1.PackageRepositoryStatus{
 				Ready: true,
 			},
@@ -646,7 +647,7 @@ func (s *Server) deleteRepo(ctx context.Context, headers http.Header, cluster st
 }
 
 func (s *Server) GetPackageRepositoryPermissions(ctx context.Context, request *connect.Request[corev1.GetPackageRepositoryPermissionsRequest]) (*connect.Response[corev1.GetPackageRepositoryPermissionsResponse], error) {
-	log.Infof("+helm GetPackageRepositoryPermissions [%v]", request)
+	safelog.Request("+helm GetPackageRepositoryPermissions", request)
 
 	cluster := request.Msg.GetContext().GetCluster()
 	namespace := request.Msg.GetContext().GetNamespace()

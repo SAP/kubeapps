@@ -949,7 +949,7 @@ func TestChartCacheResyncNotIdle(t *testing.T) {
 	})
 }
 
-// ref https://github.com/vmware-tanzu/kubeapps/issues/4381
+// ref https://github.com/SAP/kubeapps/issues/4381
 // [fluxv2] non-FQDN chart url fails on chart view #4381
 func TestChartWithRelativeURL(t *testing.T) {
 	repoName := "testRepo"
