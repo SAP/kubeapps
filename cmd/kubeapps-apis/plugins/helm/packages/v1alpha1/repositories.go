@@ -646,7 +646,7 @@ func (s *Server) deleteRepo(ctx context.Context, headers http.Header, cluster st
 }
 
 func (s *Server) GetPackageRepositoryPermissions(ctx context.Context, request *connect.Request[corev1.GetPackageRepositoryPermissionsRequest]) (*connect.Response[corev1.GetPackageRepositoryPermissionsResponse], error) {
-	log.Infof("+helm GetPackageRepositoryPermissions [%v]", request)
+	log.Infof("+helm GetPackageRepositoryPermissions [%v]", request.Msg)
 
 	cluster := request.Msg.GetContext().GetCluster()
 	namespace := request.Msg.GetContext().GetNamespace()
