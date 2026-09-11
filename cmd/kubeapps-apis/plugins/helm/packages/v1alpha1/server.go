@@ -1251,7 +1251,7 @@ func (s *Server) UpdatePackageRepository(ctx context.Context, request *connect.R
 }
 
 func (s *Server) DeletePackageRepository(ctx context.Context, request *connect.Request[corev1.DeletePackageRepositoryRequest]) (*connect.Response[corev1.DeletePackageRepositoryResponse], error) {
-	log.Infof("+helm DeletePackageRepository [%v]", request)
+	log.Infof("+helm DeletePackageRepository [%v]", request.Msg)
 
 	if request == nil || request.Msg.PackageRepoRef == nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("no request PackageRepoRef provided"))
