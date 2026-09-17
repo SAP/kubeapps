@@ -1111,15 +1111,24 @@ type fileImporter struct {
 	netClient *http.Client
 }
 
-func (f *fileImporter) fetchFiles(inputCharts chan models.Chart, repo ChartCatalog, userAgent string, passCredentials bool, done chan bool) {
+// fileImportResult tracks errors from file import operations
+type fileImportResult struct {
+	errors []error
+}
+
+func (f *fileImporter) fetchFiles(inputCharts chan models.Chart, repo ChartCatalog, userAgent string, passCredentials bool, done chan fileImportResult) {
 	iconJobs := make(chan models.Chart, numWorkersFiles)
 	chartFilesJobs := make(chan importChartFilesJob, numWorkersFiles)
 	var wg sync.WaitGroup
 
+	// Channel to collect errors from workers
+	errorChan := make(chan error, numWorkersFiles*10)
+	var errors []error
+
 	log.V(4).Infof("Starting %d file importer workers", numWorkersFiles)
 	for i := 0; i < numWorkersFiles; i++ {
 		wg.Add(1)
-		go f.importWorker(&wg, iconJobs, chartFilesJobs, repo, userAgent, passCredentials)
+		go f.importWorker(&wg, iconJobs, chartFilesJobs, repo, userAgent, passCredentials, errorChan)
 	}
 
 	// Enqueue jobs to process chart icons and record the charts for further
@@ -1158,23 +1167,31 @@ func (f *fileImporter) fetchFiles(inputCharts chan models.Chart, repo ChartCatal
 	// Wait for the worker pools to finish processing
 	log.V(4).Infof("Waiting for file import workers to complete.")
 	wg.Wait()
+	close(errorChan)
+
+	// Collect all errors
+	for err := range errorChan {
+		errors = append(errors, err)
+	}
 
 	log.V(4).Infof("File importing complete")
-	done <- true
+	done <- fileImportResult{errors: errors}
 }
 
-func (f *fileImporter) importWorker(wg *sync.WaitGroup, icons <-chan models.Chart, chartFiles <-chan importChartFilesJob, repo ChartCatalog, userAgent string, passCredentials bool) {
+func (f *fileImporter) importWorker(wg *sync.WaitGroup, icons <-chan models.Chart, chartFiles <-chan importChartFilesJob, repo ChartCatalog, userAgent string, passCredentials bool, errorChan chan<- error) {
 	defer wg.Done()
 	for c := range icons {
 		log.V(4).Infof("Importing icon, name=%s", c.Name)
 		if err := f.fetchAndImportIcon(c, repo.AppRepository(), userAgent, passCredentials); err != nil {
 			log.Errorf("Failed to import icon, name=%s: %v", c.Name, err)
+			errorChan <- fmt.Errorf("icon import failed for %s: %w", c.Name, err)
 		}
 	}
 	for j := range chartFiles {
 		log.V(4).Infof("Importing readme and values, ID=%s, version=%s", j.ID, j.ChartVersion.Version)
 		if err := f.fetchAndImportFiles(j.ID, repo, j.ChartVersion, userAgent, passCredentials); err != nil {
 			log.Errorf("Failed to import files, ID=%s, version=%s: %v", j.ID, j.ChartVersion.Version, err)
+			errorChan <- fmt.Errorf("file import failed for %s version %s: %w", j.ID, j.ChartVersion.Version, err)
 		}
 	}
 }
