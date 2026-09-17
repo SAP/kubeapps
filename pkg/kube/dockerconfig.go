@@ -143,3 +143,44 @@ func encodeDockerConfigFieldAuth(username, password string) string {
 
 	return base64.StdEncoding.EncodeToString([]byte(fieldValue))
 }
+
+// NormalizeRegistryHost normalizes a registry hostname for comparison.
+// It handles common variations like docker.io vs index.docker.io.
+func NormalizeRegistryHost(host string) string {
+	host = strings.ToLower(strings.TrimSpace(host))
+	// Docker Hub special case: docker.io and index.docker.io are equivalent
+	if host == "docker.io" || host == "registry-1.docker.io" {
+		return "index.docker.io"
+	}
+	// Remove default HTTPS port if present
+	host = strings.TrimSuffix(host, ":443")
+	return host
+}
+
+// GetAuthForRegistry extracts credentials for a specific registry host from a DockerConfigJSON.
+// Returns the auth header (Basic base64(username:password)) if found, empty string if not found.
+// The registryHost should be the hostname (and optional port) from the OCI reference.
+func GetAuthForRegistry(dockerConfig *DockerConfigJSON, registryHost string) (string, error) {
+	if dockerConfig == nil || len(dockerConfig.Auths) == 0 {
+		return "", nil
+	}
+
+	normalizedTarget := NormalizeRegistryHost(registryHost)
+
+	// Try exact match first
+	if entry, ok := dockerConfig.Auths[normalizedTarget]; ok {
+		auth := fmt.Sprintf("%s:%s", entry.Username, entry.Password)
+		return fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte(auth))), nil
+	}
+
+	// Try matching with normalization
+	for configHost, entry := range dockerConfig.Auths {
+		if NormalizeRegistryHost(configHost) == normalizedTarget {
+			auth := fmt.Sprintf("%s:%s", entry.Username, entry.Password)
+			return fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte(auth))), nil
+		}
+	}
+
+	// No match found - return empty string (no auth header)
+	return "", nil
+}

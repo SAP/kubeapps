@@ -4,6 +4,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -62,8 +63,12 @@ func NewChartClient(userAgent string) ChartClient {
 
 // OCIRepoClient struct contains the clients required to retrieve charts info from an OCI registry
 type OCIRepoClient struct {
-	userAgent string
-	puller    helm.ChartPuller
+	userAgent   string
+	puller      helm.ChartPuller
+	netClient   *http.Client
+	authSecret  *corev1.Secret
+	caCertSecret *corev1.Secret
+	appRepo     *appRepov1.AppRepository
 }
 
 // NewOCIClient returns a new OCIClient
@@ -159,17 +164,33 @@ func (c *OCIRepoClient) Init(appRepo *appRepov1.AppRepository, caCertSecret *cor
 	headers := http.Header{
 		"User-Agent": []string{c.userAgent},
 	}
-	netClient, err := helm.InitHTTPClient(appRepo, caCertSecret)
+	c.netClient, err = helm.InitHTTPClient(appRepo, caCertSecret)
 	if err != nil {
 		return err
 	}
+
+	// Store for potential re-initialization in GetChart when using dockerconfigjson
+	c.appRepo = appRepo
+	c.authSecret = authSecret
+	c.caCertSecret = caCertSecret
+
+	// Initialize with non-registry-specific auth if available
 	if authSecret != nil {
 		var auth string
 		switch {
 		case appRepo.Spec.Auth.Header != nil:
 			auth, err = kube.GetDataFromSecret(appRepo.Spec.Auth.Header.SecretKeyRef.Key, authSecret)
 		case authSecret.Type == corev1.SecretTypeDockerConfigJson:
-			auth, err = kube.GetDataFromSecret(corev1.DockerConfigJsonKey, authSecret)
+			// For dockerconfigjson, we can't select credentials without knowing the target registry.
+			// The puller will be re-initialized in GetChart() with the correct credentials.
+			// For now, use the first entry for backward compatibility with existing tests.
+			dockerConfigJson, ok := authSecret.Data[corev1.DockerConfigJsonKey]
+			if ok {
+				dockerConfig := &kube.DockerConfigJSON{}
+				if err := json.Unmarshal(dockerConfigJson, dockerConfig); err == nil {
+					auth, _ = kube.GetAuthHeaderFromDockerConfig(dockerConfig)
+				}
+			}
 		}
 		if err != nil {
 			return err
@@ -179,8 +200,8 @@ func (c *OCIRepoClient) Init(appRepo *appRepov1.AppRepository, caCertSecret *cor
 		}
 	}
 
-	c.puller = &helm.OCIPuller{Resolver: helm.NewOCIResolver(headers, netClient)}
-	return err
+	c.puller = &helm.OCIPuller{Resolver: helm.NewOCIResolver(headers, c.netClient)}
+	return nil
 }
 
 // GetChart retrieves and loads a Chart from a OCI registry
@@ -206,6 +227,37 @@ func (c *OCIRepoClient) GetChart(details *ChartDetails, repoURL string) (*chart.
 		}
 		ref = path.Join(chartURL.Host, chartURL.Path)
 	}
+
+	// Re-initialize the puller with registry-specific credentials when using dockerconfigjson.
+	// This ensures we select the correct credentials for the target registry when the secret
+	// contains multiple auth entries.
+	if c.authSecret != nil && c.authSecret.Type == corev1.SecretTypeDockerConfigJson {
+		registryHost := strings.SplitN(ref, "/", 2)[0]
+
+		dockerConfigJson, ok := c.authSecret.Data[corev1.DockerConfigJsonKey]
+		if ok {
+			dockerConfig := &kube.DockerConfigJSON{}
+			if err := json.Unmarshal(dockerConfigJson, dockerConfig); err != nil {
+				return nil, fmt.Errorf("unable to parse dockerconfigjson: %w", err)
+			}
+
+			// Select credentials by registry host
+			auth, err := kube.GetAuthForRegistry(dockerConfig, registryHost)
+			if err != nil {
+				return nil, fmt.Errorf("unable to get auth for registry %s: %w", registryHost, err)
+			}
+
+			// Re-create the puller with registry-specific auth if different from the default
+			if auth != "" {
+				headers := http.Header{
+					"User-Agent":    []string{c.userAgent},
+					"Authorization": []string{auth},
+				}
+				c.puller = &helm.OCIPuller{Resolver: helm.NewOCIResolver(headers, c.netClient)}
+			}
+		}
+	}
+
 	chartBuffer, _, err := c.puller.PullOCIChart(ref)
 	if err != nil {
 		return nil, err
