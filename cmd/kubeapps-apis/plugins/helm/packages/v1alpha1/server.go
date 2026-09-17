@@ -959,10 +959,47 @@ func (s *Server) fetchChartWithRegistrySecrets(ctx context.Context, headers http
 				decodedChartName = d
 			}
 		}
-		// Strip any https:// or oci:// prefix from the repo URL before building the OCI ref.
-		repoURL := strings.TrimPrefix(strings.TrimPrefix(appRepo.Spec.URL, "oci://"), "https://")
-		tarballURL = fmt.Sprintf("oci://%s/%s:%s", strings.TrimSuffix(repoURL, "/"), decodedChartName, chartDetails.Version)
-		log.InfoS("Using OCI chart reference as tarball URL", "url", tarballURL)
+
+		// Look up the chart version in the cache to verify it exists and get the digest.
+		// This ensures the installed artifact matches what was synced and displayed,
+		// since OCI tags are mutable.
+		cachedChart, err := s.manager.GetChartVersion(chartDetails.AppRepositoryResourceNamespace, chartID, chartDetails.Version)
+		if err != nil {
+			return nil, nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unable to fetch the chart %s (version %s) from the namespace %q: %w", chartID, chartDetails.Version, chartDetails.AppRepositoryResourceNamespace, err))
+		}
+		if len(cachedChart.ChartVersions) != 1 {
+			return nil, nil, connect.NewError(connect.CodeInternal, fmt.Errorf("expected exactly one chart version for %s:%s, got %d", chartID, chartDetails.Version, len(cachedChart.ChartVersions)))
+		}
+
+		// Parse and normalize the repository URL to extract the host and path.
+		// The appRepo.Spec.URL may have various formats:
+		// - oci://registry.example.com/repo
+		// - https://registry.example.com/repo
+		// - http://registry.example.com/repo
+		// - registry.example.com/repo (no scheme)
+		// We need to extract the host+path and build an oci:// reference.
+		repoURL := appRepo.Spec.URL
+		var registryHostPath string
+
+		// Try parsing as a URL first
+		if parsedURL, err := url.Parse(repoURL); err == nil && parsedURL.Scheme != "" {
+			// URL has a scheme - extract host and path
+			registryHostPath = parsedURL.Host + parsedURL.Path
+		} else {
+			// No scheme or parse failed - use as-is after removing oci:// prefix if present
+			registryHostPath = strings.TrimPrefix(repoURL, "oci://")
+		}
+
+		// Prefer pulling by digest if available to ensure we get the exact artifact that was synced.
+		// OCI tags are mutable, but digests are immutable content hashes.
+		chartVersion := cachedChart.ChartVersions[0]
+		if chartVersion.Digest != "" {
+			tarballURL = fmt.Sprintf("oci://%s/%s@%s", strings.TrimSuffix(registryHostPath, "/"), decodedChartName, chartVersion.Digest)
+			log.InfoS("Using OCI chart reference with digest", "url", tarballURL, "version", chartDetails.Version)
+		} else {
+			tarballURL = fmt.Sprintf("oci://%s/%s:%s", strings.TrimSuffix(registryHostPath, "/"), decodedChartName, chartDetails.Version)
+			log.InfoS("Using OCI chart reference with tag (no digest available)", "url", tarballURL)
+		}
 	} else {
 		// Look up the chart cached in our DB to populate the tarball URL
 		cachedChart, err := s.manager.GetChartVersion(chartDetails.AppRepositoryResourceNamespace, chartID, chartDetails.Version)
