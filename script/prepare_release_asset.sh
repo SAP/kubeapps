@@ -36,15 +36,22 @@ rm -f "${WORKDIR}/kubeapps/Chart.yaml.bk"
 echo "Set version to: ${VERSION}" >&2
 
 # Replace DEVEL tags in Chart.yaml annotations images section
-# Format: image: ghcr.io/sap/kubeapps-<service>:DEVEL
+# Format: image: ghcr.io/sap/kubeapps/<service>:DEVEL
 CHART_YAML="${WORKDIR}/kubeapps/Chart.yaml"
-sed -i.bk "s|kubeapps-apis:DEVEL|kubeapps-apis:${TAG}|g" "${CHART_YAML}"
-sed -i.bk "s|kubeapps-apprepository-controller:DEVEL|kubeapps-apprepository-controller:${TAG}|g" "${CHART_YAML}"
-sed -i.bk "s|kubeapps-asset-syncer:DEVEL|kubeapps-asset-syncer:${TAG}|g" "${CHART_YAML}"
-sed -i.bk "s|kubeapps-dashboard:DEVEL|kubeapps-dashboard:${TAG}|g" "${CHART_YAML}"
-sed -i.bk "s|kubeapps-oci-catalog:DEVEL|kubeapps-oci-catalog:${TAG}|g" "${CHART_YAML}"
-sed -i.bk "s|kubeapps-pinniped-proxy:DEVEL|sap/kubeapps-pinniped-proxy:${TAG}|g" "${CHART_YAML}"
+sed -i.bk "s|kubeapps/kubeapps-apis:DEVEL|kubeapps/kubeapps-apis:${TAG}|g" "${CHART_YAML}"
+sed -i.bk "s|kubeapps/apprepository-controller:DEVEL|kubeapps/apprepository-controller:${TAG}|g" "${CHART_YAML}"
+sed -i.bk "s|kubeapps/asset-syncer:DEVEL|kubeapps/asset-syncer:${TAG}|g" "${CHART_YAML}"
+sed -i.bk "s|kubeapps/dashboard:DEVEL|kubeapps/dashboard:${TAG}|g" "${CHART_YAML}"
+sed -i.bk "s|kubeapps/oci-catalog:DEVEL|kubeapps/oci-catalog:${TAG}|g" "${CHART_YAML}"
+sed -i.bk "s|kubeapps/pinniped-proxy:DEVEL|kubeapps/pinniped-proxy:${TAG}|g" "${CHART_YAML}"
 rm -f "${CHART_YAML}.bk"
+
+# Verify no DEVEL tags remain in the annotations
+if grep -q ":DEVEL" "${CHART_YAML}"; then
+	echo "ERROR: DEVEL tags still present in Chart.yaml after replacement:" >&2
+	grep ":DEVEL" "${CHART_YAML}" >&2
+	exit 1
+fi
 echo "Replaced DEVEL image tags in Chart.yaml annotations to: ${TAG}" >&2
 
 # Retag images in values.yaml to use the release tag
