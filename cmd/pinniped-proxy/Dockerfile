@@ -3,6 +3,9 @@
 
 # syntax = docker/dockerfile:1
 
+# Pinned to Rust 1.81.0 to avoid glibc 2.39 runtime mismatch with bookworm base image.
+# Rust 1.82.0+ uses glibc 2.39, but bitnami/minideb:bookworm provides glibc 2.36.
+# See: https://github.com/SAP/kubeapps/commit/8bfbaa7ff
 FROM rust:1.81.0 AS builder
 
 WORKDIR /pinniped-proxy
