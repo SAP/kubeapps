@@ -324,10 +324,7 @@ func FetchChartDetailFromOciUrl(chartTarballURL string, userAgent string, authz 
 	}
 
 	// For the asset-syncer, we default to HTTPS unless the URL explicitly uses http://
-	usePlainHTTP := false
-	if strings.HasPrefix(chartTarballURL, "oci://http://") || strings.HasPrefix(chartTarballURL, "http://") {
-		usePlainHTTP = true
-	}
+	usePlainHTTP := strings.HasPrefix(chartTarballURL, "oci://http://") || strings.HasPrefix(chartTarballURL, "http://")
 
 	puller := &helm.OCIPuller{Resolver: helm.NewOCIResolver(headers, netClient, usePlainHTTP)}
 
@@ -1067,9 +1064,10 @@ func getOCIRepo(namespace, name, repoURL, authorizationHeader string, filter *ap
 	// https for talking with the API. If people are using non-https OCI
 	// registries (?!) then they can specify the URL with http.
 	usePlainHTTP := false
-	if url.Scheme == "oci" {
+	switch url.Scheme {
+	case "oci":
 		url.Scheme = "https"
-	} else if url.Scheme == "http" {
+	case "http":
 		usePlainHTTP = true
 	}
 	headers := http.Header{}

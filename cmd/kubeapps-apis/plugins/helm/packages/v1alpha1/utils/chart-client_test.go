@@ -210,12 +210,16 @@ func TestOCIClient(t *testing.T) {
 
 	t.Run("InitClient - Uses image pull secret without header auth", func(t *testing.T) {
 		cli := NewOCIClient("")
-		appRepo := &appRepov1.AppRepository{}
+		appRepo := &appRepov1.AppRepository{
+			Spec: appRepov1.AppRepositorySpec{
+				URL: "https://example.com",
+			},
+		}
 		authSecret := &corev1.Secret{
 			Type: corev1.SecretTypeDockerConfigJson,
 			Data: map[string][]byte{
 				corev1.DockerConfigJsonKey: []byte(
-					`{"auths":{"foo":{"username":"foo","password":"bar"}}}`,
+					`{"auths":{"example.com":{"username":"foo","password":"bar"}}}`,
 				),
 			},
 		}
@@ -224,12 +228,12 @@ func TestOCIClient(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		helmtest.CheckHeader(
-			t,
-			cli.(*OCIRepoClient).puller,
-			"Authorization",
-			"Basic Zm9vOmJhcg==",
-		)
+		// Init() should NOT set Authorization for dockerconfigjson secrets.
+		// Authorization is set per-registry in GetChart() to prevent credential reuse.
+		// Just verify the puller was created successfully.
+		if cli.(*OCIRepoClient).puller == nil {
+			t.Error("Expected puller to be initialized")
+		}
 	})
 
 	t.Run("GetChart - Fails if the puller has not been instantiated", func(t *testing.T) {
