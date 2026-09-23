@@ -937,9 +937,6 @@ func (s *Server) fetchChartWithRegistrySecrets(ctx context.Context, headers http
 
 	userAgentString := fmt.Sprintf("%s/%s/%s/%s", UserAgentPrefix, pluginDetail.Name, pluginDetail.Version, version)
 
-	chartID := fmt.Sprintf("%s/%s", appRepo.Name, chartDetails.ChartName)
-	log.InfoS("Fetching chart with user-agent", "chartID", chartID, "userAgentString", userAgentString)
-
 	var tarballURL string
 	if appRepo.Spec.Type == OCIRepoType {
 		// For OCI repositories the chart is referenced via an OCI reference
@@ -952,13 +949,15 @@ func (s *Server) fetchChartWithRegistrySecrets(ctx context.Context, headers http
 		// stores the OCI path with url.PathEscape() (e.g. "k8s-ec-pipeline-dev%2Fjenkins-ecpipeline"),
 		// then GetUnescapedPackageID re-escapes the part after the first slash
 		// (e.g. "k8s-ec-pipeline-dev%252Fjenkins-ecpipeline"). We must unescape
-		// twice to recover the raw OCI path ("k8s-ec-pipeline-dev/jenkins-ecpipeline").
+		// once to get the single-encoded form that matches the database.
 		decodedChartName := chartDetails.ChartName
-		for i := 0; i < 2; i++ {
-			if d, err := url.PathUnescape(decodedChartName); err == nil {
-				decodedChartName = d
-			}
+		if d, err := url.PathUnescape(decodedChartName); err == nil {
+			decodedChartName = d
 		}
+
+		// Build chartID using the single-encoded chart name to match what the asset-syncer stored.
+		chartID := fmt.Sprintf("%s/%s", appRepo.Name, decodedChartName)
+		log.InfoS("Fetching chart with user-agent", "chartID", chartID, "userAgentString", userAgentString)
 
 		// Look up the chart version in the cache to verify it exists and get the digest.
 		// This ensures the installed artifact matches what was synced and displayed,
@@ -993,14 +992,26 @@ func (s *Server) fetchChartWithRegistrySecrets(ctx context.Context, headers http
 		// Prefer pulling by digest if available to ensure we get the exact artifact that was synced.
 		// OCI tags are mutable, but digests are immutable content hashes.
 		chartVersion := cachedChart.ChartVersions[0]
+
+		// For the OCI reference itself, we need the fully decoded chart name (all %2F become /).
+		// Decode one more time from the single-encoded database form.
+		fullyDecodedChartName := decodedChartName
+		if d, err := url.PathUnescape(fullyDecodedChartName); err == nil {
+			fullyDecodedChartName = d
+		}
+
 		if chartVersion.Digest != "" {
-			tarballURL = fmt.Sprintf("oci://%s/%s@%s", strings.TrimSuffix(registryHostPath, "/"), decodedChartName, chartVersion.Digest)
+			tarballURL = fmt.Sprintf("oci://%s/%s@%s", strings.TrimSuffix(registryHostPath, "/"), fullyDecodedChartName, chartVersion.Digest)
 			log.InfoS("Using OCI chart reference with digest", "url", tarballURL, "version", chartDetails.Version)
 		} else {
-			tarballURL = fmt.Sprintf("oci://%s/%s:%s", strings.TrimSuffix(registryHostPath, "/"), decodedChartName, chartDetails.Version)
+			tarballURL = fmt.Sprintf("oci://%s/%s:%s", strings.TrimSuffix(registryHostPath, "/"), fullyDecodedChartName, chartDetails.Version)
 			log.InfoS("Using OCI chart reference with tag (no digest available)", "url", tarballURL)
 		}
 	} else {
+		// For non-OCI repositories, build chartID from the raw chart name
+		chartID := fmt.Sprintf("%s/%s", appRepo.Name, chartDetails.ChartName)
+		log.InfoS("Fetching chart with user-agent", "chartID", chartID, "userAgentString", userAgentString)
+
 		// Look up the chart cached in our DB to populate the tarball URL
 		cachedChart, err := s.manager.GetChartVersion(chartDetails.AppRepositoryResourceNamespace, chartID, chartDetails.Version)
 		if err != nil {

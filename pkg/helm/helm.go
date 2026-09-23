@@ -36,18 +36,28 @@ type (
 
 // NewOCIResolver creates a Docker registry resolver for OCI Helm charts using
 // containerd's non-deprecated Hosts configuration path.
-func NewOCIResolver(headers http.Header, netClient *http.Client) remotes.Resolver {
+// If usePlainHTTP is true, the resolver will use plain HTTP instead of HTTPS.
+func NewOCIResolver(headers http.Header, netClient *http.Client, usePlainHTTP bool) remotes.Resolver {
 	authorizer := docker.NewDockerAuthorizer(
 		docker.WithAuthClient(netClient),
 		docker.WithAuthHeader(headers),
 	)
+
+	var plainHTTPMatcher func(string) (bool, error)
+	if usePlainHTTP {
+		// Allow plain HTTP for all registries when explicitly configured
+		plainHTTPMatcher = func(host string) (bool, error) { return true, nil }
+	} else {
+		// Default: only allow plain HTTP for localhost
+		plainHTTPMatcher = docker.MatchLocalhost
+	}
 
 	return docker.NewResolver(docker.ResolverOptions{
 		Headers: headers,
 		Hosts: docker.ConfigureDefaultRegistries(
 			docker.WithAuthorizer(authorizer),
 			docker.WithClient(netClient),
-			docker.WithPlainHTTP(docker.MatchLocalhost),
+			docker.WithPlainHTTP(plainHTTPMatcher),
 		),
 	})
 }

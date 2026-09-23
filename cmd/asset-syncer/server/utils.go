@@ -323,7 +323,13 @@ func FetchChartDetailFromOciUrl(chartTarballURL string, userAgent string, authz 
 		headers.Add("Authorization", authz)
 	}
 
-	puller := &helm.OCIPuller{Resolver: helm.NewOCIResolver(headers, netClient)}
+	// For the asset-syncer, we default to HTTPS unless the URL explicitly uses http://
+	usePlainHTTP := false
+	if strings.HasPrefix(chartTarballURL, "oci://http://") || strings.HasPrefix(chartTarballURL, "http://") {
+		usePlainHTTP = true
+	}
+
+	puller := &helm.OCIPuller{Resolver: helm.NewOCIResolver(headers, netClient, usePlainHTTP)}
 
 	ref := strings.TrimPrefix(strings.TrimSpace(chartTarballURL), "oci://")
 	chartBuffer, _, err := puller.PullOCIChart(ref)
@@ -1060,14 +1066,17 @@ func getOCIRepo(namespace, name, repoURL, authorizationHeader string, filter *ap
 	// If the AppRepo has the URL specified as `oci://` then replace it with
 	// https for talking with the API. If people are using non-https OCI
 	// registries (?!) then they can specify the URL with http.
+	usePlainHTTP := false
 	if url.Scheme == "oci" {
 		url.Scheme = "https"
+	} else if url.Scheme == "http" {
+		usePlainHTTP = true
 	}
 	headers := http.Header{}
 	if authorizationHeader != "" {
 		headers["Authorization"] = []string{authorizationHeader}
 	}
-	ociResolver := helm.NewOCIResolver(headers, netClient)
+	ociResolver := helm.NewOCIResolver(headers, netClient, usePlainHTTP)
 
 	return &OCIRegistry{
 		repositories:          ociRepos,
@@ -1124,6 +1133,19 @@ func (f *fileImporter) fetchFiles(inputCharts chan models.Chart, repo ChartCatal
 	// Channel to collect errors from workers
 	errorChan := make(chan error, numWorkersFiles*10)
 	var errors []error
+	var errorMu sync.Mutex
+
+	// Start goroutine to drain errors concurrently to prevent deadlock
+	// when more than 100 errors are sent.
+	errorDone := make(chan bool)
+	go func() {
+		for err := range errorChan {
+			errorMu.Lock()
+			errors = append(errors, err)
+			errorMu.Unlock()
+		}
+		errorDone <- true
+	}()
 
 	log.V(4).Infof("Starting %d file importer workers", numWorkersFiles)
 	for i := 0; i < numWorkersFiles; i++ {
@@ -1169,10 +1191,8 @@ func (f *fileImporter) fetchFiles(inputCharts chan models.Chart, repo ChartCatal
 	wg.Wait()
 	close(errorChan)
 
-	// Collect all errors
-	for err := range errorChan {
-		errors = append(errors, err)
-	}
+	// Wait for error collection to complete
+	<-errorDone
 
 	log.V(4).Infof("File importing complete")
 	done <- fileImportResult{errors: errors}

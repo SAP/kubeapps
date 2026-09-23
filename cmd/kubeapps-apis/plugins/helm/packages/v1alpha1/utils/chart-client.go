@@ -174,23 +174,14 @@ func (c *OCIRepoClient) Init(appRepo *appRepov1.AppRepository, caCertSecret *cor
 	c.authSecret = authSecret
 	c.caCertSecret = caCertSecret
 
-	// Initialize with non-registry-specific auth if available
-	if authSecret != nil {
+	// Initialize with non-registry-specific auth if available.
+	// For dockerconfigjson secrets, we must NOT initialize with a fallback credential
+	// because the puller would retain it when GetChart() finds no matching registry.
+	// Instead, we initialize without Authorization and always rebuild in GetChart().
+	if authSecret != nil && authSecret.Type != corev1.SecretTypeDockerConfigJson {
 		var auth string
-		switch {
-		case appRepo.Spec.Auth.Header != nil:
+		if appRepo.Spec.Auth.Header != nil {
 			auth, err = kube.GetDataFromSecret(appRepo.Spec.Auth.Header.SecretKeyRef.Key, authSecret)
-		case authSecret.Type == corev1.SecretTypeDockerConfigJson:
-			// For dockerconfigjson, we can't select credentials without knowing the target registry.
-			// The puller will be re-initialized in GetChart() with the correct credentials.
-			// For now, use the first entry for backward compatibility with existing tests.
-			dockerConfigJson, ok := authSecret.Data[corev1.DockerConfigJsonKey]
-			if ok {
-				dockerConfig := &kube.DockerConfigJSON{}
-				if err := json.Unmarshal(dockerConfigJson, dockerConfig); err == nil {
-					auth, _ = kube.GetAuthHeaderFromDockerConfig(dockerConfig)
-				}
-			}
 		}
 		if err != nil {
 			return err
@@ -200,7 +191,13 @@ func (c *OCIRepoClient) Init(appRepo *appRepov1.AppRepository, caCertSecret *cor
 		}
 	}
 
-	c.puller = &helm.OCIPuller{Resolver: helm.NewOCIResolver(headers, c.netClient)}
+	// Determine if plain HTTP should be used based on the repository URL scheme
+	usePlainHTTP := false
+	if parsedURL, err := url.Parse(appRepo.Spec.URL); err == nil && parsedURL.Scheme == "http" {
+		usePlainHTTP = true
+	}
+
+	c.puller = &helm.OCIPuller{Resolver: helm.NewOCIResolver(headers, c.netClient, usePlainHTTP)}
 	return nil
 }
 
@@ -230,7 +227,7 @@ func (c *OCIRepoClient) GetChart(details *ChartDetails, repoURL string) (*chart.
 
 	// Re-initialize the puller with registry-specific credentials when using dockerconfigjson.
 	// This ensures we select the correct credentials for the target registry when the secret
-	// contains multiple auth entries.
+	// contains multiple auth entries, and send no Authorization header when no credentials match.
 	if c.authSecret != nil && c.authSecret.Type == corev1.SecretTypeDockerConfigJson {
 		registryHost := strings.SplitN(ref, "/", 2)[0]
 
@@ -247,14 +244,24 @@ func (c *OCIRepoClient) GetChart(details *ChartDetails, repoURL string) (*chart.
 				return nil, fmt.Errorf("unable to get auth for registry %s: %w", registryHost, err)
 			}
 
-			// Re-create the puller with registry-specific auth if different from the default
-			if auth != "" {
-				headers := http.Header{
-					"User-Agent":    []string{c.userAgent},
-					"Authorization": []string{auth},
-				}
-				c.puller = &helm.OCIPuller{Resolver: helm.NewOCIResolver(headers, c.netClient)}
+			// Always re-create the puller with registry-specific credentials (or no auth if no match).
+			// This prevents sending credentials for registry A to registry B.
+			headers := http.Header{
+				"User-Agent": []string{c.userAgent},
 			}
+			if auth != "" {
+				headers.Set("Authorization", auth)
+			}
+
+			// Determine if plain HTTP should be used based on the repository URL scheme
+			usePlainHTTP := false
+			if c.appRepo != nil {
+				if parsedURL, err := url.Parse(c.appRepo.Spec.URL); err == nil && parsedURL.Scheme == "http" {
+					usePlainHTTP = true
+				}
+			}
+
+			c.puller = &helm.OCIPuller{Resolver: helm.NewOCIResolver(headers, c.netClient, usePlainHTTP)}
 		}
 	}
 
