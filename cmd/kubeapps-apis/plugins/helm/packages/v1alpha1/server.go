@@ -945,14 +945,23 @@ func (s *Server) fetchChartWithRegistrySecrets(ctx context.Context, headers http
 		// ChartVersions[0].URLs, which stores the chart's source-code URLs
 		// (e.g. GitHub links) and not the OCI pull reference.
 		//
-		// chartDetails.ChartName arrives double-encoded from the UI: the asset-syncer
-		// stores the OCI path with url.PathEscape() (e.g. "k8s-ec-pipeline-dev%2Fjenkins-ecpipeline"),
-		// then GetUnescapedPackageID re-escapes the part after the first slash
-		// (e.g. "k8s-ec-pipeline-dev%252Fjenkins-ecpipeline"). We must unescape
-		// once to get the single-encoded form that matches the database.
+		// chartDetails.ChartName encoding can vary:
+		// - Double-encoded from UI: asset-syncer stores "k8s-ec-pipeline-dev%2Fjenkins-ecpipeline",
+		//   then GetUnescapedPackageID re-escapes to "k8s-ec-pipeline-dev%252Fjenkins-ecpipeline"
+		// - Single-encoded from cache: "repo/project%2Fchart"
+		// We need to detect which case we have and normalize to single-encoded for database lookup.
 		decodedChartName := chartDetails.ChartName
-		if d, err := url.PathUnescape(decodedChartName); err == nil {
-			decodedChartName = d
+
+		// Try unescaping once
+		if d, err := url.PathUnescape(decodedChartName); err == nil && d != decodedChartName {
+			// Check if it's still encoded (double-encoded case)
+			if d2, err2 := url.PathUnescape(d); err2 == nil && d2 != d {
+				// Was double-encoded, but we want single-encoded for DB lookup
+				decodedChartName = d
+			} else {
+				// Was single-encoded, use the decoded value for DB lookup
+				decodedChartName = d
+			}
 		}
 
 		// Build chartID using the single-encoded chart name to match what the asset-syncer stored.
