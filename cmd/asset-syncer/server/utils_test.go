@@ -19,12 +19,10 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/disintegration/imaging"
-	"github.com/google/go-cmp/cmp"
-	"github.com/stretchr/testify/assert"
 	apprepov1alpha1 "github.com/SAP/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
 	ocicatalog "github.com/SAP/kubeapps/cmd/oci-catalog/gen/catalog/v1alpha1"
 	"github.com/SAP/kubeapps/pkg/chart/models"
@@ -36,6 +34,9 @@ import (
 	"github.com/SAP/kubeapps/pkg/ocicatalog_client"
 	"github.com/SAP/kubeapps/pkg/ocicatalog_client/ocicatalog_clienttest"
 	tartest "github.com/SAP/kubeapps/pkg/tarutil/test"
+	"github.com/disintegration/imaging"
+	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/assert"
 	"helm.sh/helm/v3/pkg/chart"
 	log "k8s.io/klog/v2"
 	"oras.land/oras-go/v2/registry/remote/errcode"
@@ -165,6 +166,97 @@ func newFakeServer(t *testing.T, responses map[string]*http.Response) *httptest.
 		}
 		w.WriteHeader(404)
 	}))
+}
+
+type recordingOCIPuller struct {
+	mu        sync.Mutex
+	artifacts map[string][]byte
+	digests   map[string]string
+	calls     []string
+}
+
+func (p *recordingOCIPuller) PullOCIChart(ref string) (*bytes.Buffer, string, error) {
+	p.mu.Lock()
+	p.calls = append(p.calls, ref)
+	p.mu.Unlock()
+
+	separator := strings.LastIndex(ref, ":")
+	if separator == -1 {
+		return nil, "", fmt.Errorf("invalid OCI reference %q", ref)
+	}
+	tag := ref[separator+1:]
+	artifact, ok := p.artifacts[tag]
+	if !ok {
+		return nil, "", fmt.Errorf("no OCI artifact configured for tag %q", tag)
+	}
+	return bytes.NewBuffer(append([]byte(nil), artifact...)), p.digests[tag], nil
+}
+
+func (p *recordingOCIPuller) callCount() int {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return len(p.calls)
+}
+
+func (p *recordingOCIPuller) calledRefs() []string {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return append([]string(nil), p.calls...)
+}
+
+type fakeOCIManifest struct {
+	body   string
+	digest string
+}
+
+func newFakeOCIManifest(t *testing.T, marker string) fakeOCIManifest {
+	t.Helper()
+	body := fmt.Sprintf(`{"schemaVersion":2,"config":{"mediaType":"application/vnd.cncf.helm.config.v1+json","digest":"sha256:0000000000000000000000000000000000000000000000000000000000000000","size":3},"annotations":{"test-marker":%q}}`, marker)
+	digest, err := getSha256([]byte(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return fakeOCIManifest{body: body, digest: "sha256:" + digest}
+}
+
+func newFakeOCIRegistryServer(t *testing.T, repository string, tags []string, manifests map[string]fakeOCIManifest) *httptest.Server {
+	t.Helper()
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/v2/"+repository+"/tags/list":
+			w.Header().Set("Content-Type", "application/json")
+			if err := json.NewEncoder(w).Encode(TagList{Name: repository, Tags: tags}); err != nil {
+				t.Errorf("encoding tag list: %v", err)
+			}
+		case strings.HasPrefix(r.URL.Path, "/v2/"+repository+"/manifests/"):
+			tag := path.Base(r.URL.Path)
+			manifest, ok := manifests[tag]
+			if !ok {
+				http.NotFound(w, r)
+				return
+			}
+			w.Header().Set("Content-Type", "application/vnd.oci.image.manifest.v1+json")
+			w.Header().Set("Content-Length", fmt.Sprintf("%d", len(manifest.body)))
+			w.Header().Set("Docker-Content-Digest", manifest.digest)
+			if r.Method != http.MethodHead {
+				_, _ = io.WriteString(w, manifest.body)
+			}
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+}
+
+func newChartArchive(t *testing.T, chartYAML string, files ...tartest.TarballFile) []byte {
+	t.Helper()
+	archive := bytes.Buffer{}
+	gzw := gzip.NewWriter(&archive)
+	allFiles := append([]tartest.TarballFile{{Name: "Chart.yaml", Body: chartYAML}}, files...)
+	tartest.CreateTestTarball(gzw, allFiles)
+	if err := gzw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return archive.Bytes()
 }
 
 func Test_syncURLInvalidity(t *testing.T) {
@@ -704,6 +796,59 @@ func Test_fetchAndImportFiles(t *testing.T) {
 	})
 }
 
+func TestOCIFileImporterUpdatesFilesForChangedDigest(t *testing.T) {
+	const (
+		chartID      = "gar-pipelines/project%2Fjenkins"
+		chartVersion = "2.0.0"
+		newDigest    = "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+	)
+	repo := &models.AppRepository{Namespace: "pipelines", Name: "gar-pipelines", URL: "oci://registry.example/project", Type: "oci"}
+	version := models.ChartVersion{
+		Version:                 chartVersion,
+		Digest:                  newDigest,
+		Readme:                  "new readme",
+		DefaultValues:           "new: values",
+		AdditionalDefaultValues: map[string]string{"values-production": "production: values"},
+		Schema:                  `{"type":"object"}`,
+	}
+	chartFilesID := chartID + "-" + chartVersion
+	filesRepo := &models.AppRepository{Namespace: repo.Namespace, Name: repo.Name, URL: repo.URL}
+	expectedFiles := models.ChartFiles{
+		ID:                      chartFilesID,
+		Readme:                  version.Readme,
+		DefaultValues:           version.DefaultValues,
+		AdditionalDefaultValues: version.AdditionalDefaultValues,
+		Schema:                  version.Schema,
+		Repo:                    filesRepo,
+		Digest:                  newDigest,
+	}
+
+	manager, mockDB, cleanup := getMockManager(t)
+	defer cleanup()
+	// A row with the old digest does not satisfy filesExist for newDigest, so
+	// the importer must execute the existing upsert path with the new files.
+	mockDB.ExpectQuery(`SELECT EXISTS*`).
+		WithArgs(chartFilesID, repo.Name, repo.Namespace, newDigest).
+		WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(false))
+	mockDB.ExpectQuery("INSERT INTO files *").
+		WithArgs(chartID, repo.Name, repo.Namespace, chartFilesID, expectedFiles).
+		WillReturnRows(sqlmock.NewRows([]string{"ID"}).AddRow(1))
+
+	registry := &OCIRegistry{AppRepositoryInternal: &models.AppRepositoryInternal{
+		Namespace: repo.Namespace,
+		Name:      repo.Name,
+		URL:       repo.URL,
+		Type:      repo.Type,
+	}}
+	importer := fileImporter{manager: manager, netClient: http.DefaultClient}
+	if err := importer.fetchAndImportFiles(chartID, registry, version, "test-agent", false); err != nil {
+		t.Fatal(err)
+	}
+	if err := mockDB.ExpectationsWereMet(); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func Test_ociAPICli(t *testing.T) {
 	t.Run("TagList - failed request", func(t *testing.T) {
 		server := newFakeServer(t, map[string]*http.Response{
@@ -755,6 +900,88 @@ func Test_ociAPICli(t *testing.T) {
 		expectedTagList := &TagList{Name: "apache", Tags: []string{"7.5.1", "8.1.1"}}
 		if !cmp.Equal(result, expectedTagList) {
 			t.Errorf("Unexpected result %v", cmp.Diff(result, expectedTagList))
+		}
+	})
+
+	t.Run("ResolveDigest - successful request", func(t *testing.T) {
+		manifest := newFakeOCIManifest(t, "apache-8.1.1")
+		server := newFakeOCIRegistryServer(t, "test/apache", []string{"8.1.1"}, map[string]fakeOCIManifest{
+			"8.1.1": manifest,
+		})
+		defer server.Close()
+		registryURL, err := parseRepoURL(server.URL)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		apiCli := &OciAPIClient{RegistryNamespaceUrl: registryURL, HttpClient: server.Client()}
+		digest, err := apiCli.ResolveDigest(context.Background(), "test/apache", "8.1.1", "my-user-agent")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if digest != manifest.digest {
+			t.Fatalf("got digest %q, want %q", digest, manifest.digest)
+		}
+	})
+
+	t.Run("ResolveDigest - failed request", func(t *testing.T) {
+		server := newFakeServer(t, map[string]*http.Response{
+			"/v2/test/apache/manifests/8.1.1": {StatusCode: http.StatusInternalServerError},
+		})
+		defer server.Close()
+		registryURL, err := parseRepoURL(server.URL)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		apiCli := &OciAPIClient{RegistryNamespaceUrl: registryURL, HttpClient: server.Client()}
+		_, err = apiCli.ResolveDigest(context.Background(), "test/apache", "8.1.1", "my-user-agent")
+		if err == nil {
+			t.Fatal("got nil, want digest resolution error")
+		}
+		errResponse, ok := err.(*errcode.ErrorResponse)
+		if !ok {
+			t.Fatalf("got %T, want *errcode.ErrorResponse", err)
+		}
+		if got, want := errResponse.StatusCode, http.StatusInternalServerError; got != want {
+			t.Fatalf("got status %d, want %d", got, want)
+		}
+	})
+
+	t.Run("ResolveDigest - GET fallback when HEAD is unavailable", func(t *testing.T) {
+		manifest := newFakeOCIManifest(t, "get-fallback")
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/v2/test/apache/manifests/8.1.1" {
+				http.NotFound(w, r)
+				return
+			}
+			if r.Method == http.MethodHead {
+				w.WriteHeader(http.StatusMethodNotAllowed)
+				return
+			}
+			if r.Method != http.MethodGet {
+				t.Errorf("unexpected method %s", r.Method)
+				w.WriteHeader(http.StatusMethodNotAllowed)
+				return
+			}
+			w.Header().Set("Content-Type", "application/vnd.oci.image.manifest.v1+json")
+			w.Header().Set("Content-Length", fmt.Sprintf("%d", len(manifest.body)))
+			w.Header().Set("Docker-Content-Digest", manifest.digest)
+			_, _ = io.WriteString(w, manifest.body)
+		}))
+		defer server.Close()
+		registryURL, err := parseRepoURL(server.URL)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		apiCli := &OciAPIClient{RegistryNamespaceUrl: registryURL, HttpClient: server.Client()}
+		digest, err := apiCli.ResolveDigest(context.Background(), "test/apache", "8.1.1", "my-user-agent")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if digest != manifest.digest {
+			t.Fatalf("got digest %q, want %q", digest, manifest.digest)
 		}
 	})
 
@@ -1115,7 +1342,7 @@ maintainers:
     name: Bitnami
 name: kubeapps
 sources:
-  - https://github.com/vmware-tanzu/kubeapps
+  - https://github.com/SAP/kubeapps
 version: 1.0.0
 `
 	tests := []struct {
@@ -1142,7 +1369,7 @@ version: 1.0.0
 					Home:        "https://kubeapps.com",
 					Keywords:    []string{"helm"},
 					Maintainers: []chart.Maintainer{{Name: "Bitnami", Email: "containers@bitnami.com"}},
-					Sources:     []string{"https://github.com/vmware-tanzu/kubeapps"},
+					Sources:     []string{"https://github.com/SAP/kubeapps"},
 					Icon:        "https://logo.png",
 					Category:    "Infrastructure",
 					ChartVersions: []models.ChartVersion{
@@ -1150,7 +1377,7 @@ version: 1.0.0
 							Version:                 "1.0.0",
 							AppVersion:              "2.0.0",
 							Digest:                  "123",
-							URLs:                    []string{"https://github.com/vmware-tanzu/kubeapps"},
+							URLs:                    []string{"https://github.com/SAP/kubeapps"},
 							AdditionalDefaultValues: map[string]string{},
 						},
 					},
@@ -1177,14 +1404,14 @@ version: 1.0.0
 					Home:        "https://kubeapps.com",
 					Keywords:    []string{"helm"},
 					Maintainers: []chart.Maintainer{{Name: "Bitnami", Email: "containers@bitnami.com"}},
-					Sources:     []string{"https://github.com/vmware-tanzu/kubeapps"},
+					Sources:     []string{"https://github.com/SAP/kubeapps"},
 					Icon:        "https://logo.png",
 					Category:    "Infrastructure",
 					ChartVersions: []models.ChartVersion{
 						{
 							Version:                 "1.0.0",
 							AppVersion:              "2.0.0",
-							URLs:                    []string{"https://github.com/vmware-tanzu/kubeapps"},
+							URLs:                    []string{"https://github.com/SAP/kubeapps"},
 							Digest:                  "123",
 							Readme:                  "chart readme",
 							DefaultValues:           "chart values",
@@ -1217,14 +1444,14 @@ version: 1.0.0
 					Home:        "https://kubeapps.com",
 					Keywords:    []string{"helm"},
 					Maintainers: []chart.Maintainer{{Name: "Bitnami", Email: "containers@bitnami.com"}},
-					Sources:     []string{"https://github.com/vmware-tanzu/kubeapps"},
+					Sources:     []string{"https://github.com/SAP/kubeapps"},
 					Icon:        "https://logo.png",
 					Category:    "Infrastructure",
 					ChartVersions: []models.ChartVersion{
 						{
 							Version:       "1.0.0",
 							AppVersion:    "2.0.0",
-							URLs:          []string{"https://github.com/vmware-tanzu/kubeapps"},
+							URLs:          []string{"https://github.com/SAP/kubeapps"},
 							Digest:        "123",
 							Readme:        "chart readme",
 							DefaultValues: "chart values",
@@ -1260,14 +1487,14 @@ version: 1.0.0
 					Home:        "https://kubeapps.com",
 					Keywords:    []string{"helm"},
 					Maintainers: []chart.Maintainer{{Name: "Bitnami", Email: "containers@bitnami.com"}},
-					Sources:     []string{"https://github.com/vmware-tanzu/kubeapps"},
+					Sources:     []string{"https://github.com/SAP/kubeapps"},
 					Icon:        "https://logo.png",
 					Category:    "Infrastructure",
 					ChartVersions: []models.ChartVersion{
 						{
 							Version:       "1.0.0",
 							AppVersion:    "2.0.0",
-							URLs:          []string{"https://github.com/vmware-tanzu/kubeapps"},
+							URLs:          []string{"https://github.com/SAP/kubeapps"},
 							Digest:        "123",
 							Readme:        "chart readme",
 							DefaultValues: "chart values",
@@ -1301,14 +1528,14 @@ version: 1.0.0
 					Home:        "https://kubeapps.com",
 					Keywords:    []string{"helm"},
 					Maintainers: []chart.Maintainer{{Name: "Bitnami", Email: "containers@bitnami.com"}},
-					Sources:     []string{"https://github.com/vmware-tanzu/kubeapps"},
+					Sources:     []string{"https://github.com/SAP/kubeapps"},
 					Icon:        "https://logo.png",
 					Category:    "Infrastructure",
 					ChartVersions: []models.ChartVersion{
 						{
 							Version:                 "1.0.0",
 							AppVersion:              "2.0.0",
-							URLs:                    []string{"https://github.com/vmware-tanzu/kubeapps"},
+							URLs:                    []string{"https://github.com/SAP/kubeapps"},
 							Digest:                  "123",
 							Readme:                  "chart readme",
 							DefaultValues:           "chart values",
@@ -1321,7 +1548,7 @@ version: 1.0.0
 			false,
 		},
 		{
-			"Multiple chart versions",
+			"Multiple tags with the same Chart.yaml version are deduplicated",
 			"repo/kubeapps",
 			[]tartest.TarballFile{
 				{Name: "Chart.yaml", Body: chartYAML},
@@ -1339,26 +1566,14 @@ version: 1.0.0
 					Home:        "https://kubeapps.com",
 					Keywords:    []string{"helm"},
 					Maintainers: []chart.Maintainer{{Name: "Bitnami", Email: "containers@bitnami.com"}},
-					Sources:     []string{"https://github.com/vmware-tanzu/kubeapps"},
+					Sources:     []string{"https://github.com/SAP/kubeapps"},
 					Icon:        "https://logo.png",
 					Category:    "Infrastructure",
 					ChartVersions: []models.ChartVersion{
 						{
 							Version:                 "1.0.0",
 							AppVersion:              "2.0.0",
-							URLs:                    []string{"https://github.com/vmware-tanzu/kubeapps"},
-							Digest:                  "123",
-							Readme:                  "chart readme",
-							DefaultValues:           "chart values",
-							AdditionalDefaultValues: map[string]string{},
-							Schema:                  "chart schema",
-						},
-						{
-							// The test passes the one yaml file for both tags,
-							// hence the same version number here.
-							Version:                 "1.0.0",
-							AppVersion:              "2.0.0",
-							URLs:                    []string{"https://github.com/vmware-tanzu/kubeapps"},
+							URLs:                    []string{"https://github.com/SAP/kubeapps"},
 							Digest:                  "123",
 							Readme:                  "chart readme",
 							DefaultValues:           "chart values",
@@ -1389,14 +1604,14 @@ version: 1.0.0
 					Home:        "https://kubeapps.com",
 					Keywords:    []string{"helm"},
 					Maintainers: []chart.Maintainer{{Name: "Bitnami", Email: "containers@bitnami.com"}},
-					Sources:     []string{"https://github.com/vmware-tanzu/kubeapps"},
+					Sources:     []string{"https://github.com/SAP/kubeapps"},
 					Icon:        "https://logo.png",
 					Category:    "Infrastructure",
 					ChartVersions: []models.ChartVersion{
 						{
 							Version:                 "1.0.0",
 							AppVersion:              "2.0.0",
-							URLs:                    []string{"https://github.com/vmware-tanzu/kubeapps"},
+							URLs:                    []string{"https://github.com/SAP/kubeapps"},
 							Digest:                  "123",
 							Readme:                  "chart readme",
 							DefaultValues:           "chart values",
@@ -1450,8 +1665,7 @@ version: 1.0.0
 			pgManager, mockDB, cleanup := getMockManager(t)
 			defer cleanup()
 			mockDB.ExpectQuery("SELECT info FROM charts *").
-				WillReturnRows(sqlmock.NewRows([]string{"info"}).
-					AddRow(string("{}")))
+				WillReturnRows(sqlmock.NewRows([]string{"info"}))
 			chartsRepo := OCIRegistry{
 				repositories:          []string{tt.chartName},
 				AppRepositoryInternal: &models.AppRepositoryInternal{Name: tt.expected[0].Repo.Name, URL: tt.expected[0].Repo.URL},
@@ -1530,8 +1744,7 @@ version: 1.0.0
 		pgManager, mockDB, cleanup := getMockManager(t)
 		defer cleanup()
 		mockDB.ExpectQuery("SELECT info FROM charts *").
-			WillReturnRows(sqlmock.NewRows([]string{"info"}).
-				AddRow(string("{}")))
+			WillReturnRows(sqlmock.NewRows([]string{"info"}))
 
 		chartsRepo := OCIRegistry{
 			repositories:          []string{},
@@ -1574,6 +1787,526 @@ version: 1.0.0
 		assert.NoError(t, err)
 		assert.Equal(t, result, files, "expected files")
 	})
+}
+
+func TestMergeOCIChartReplacesVersionsAndPreservesMetadata(t *testing.T) {
+	existing := &models.Chart{
+		ID:              "gar-pipelines/project%2Fjenkins",
+		Name:            "jenkins",
+		Description:     "persisted description",
+		RawIcon:         []byte("persisted icon"),
+		IconContentType: "image/png",
+		ChartVersions: []models.ChartVersion{
+			{Version: "2.0.0", Digest: "old-latest-digest"},
+			{Version: "1.0.0", Digest: "old-digest"},
+			{Version: "1.0.0", Digest: "duplicate-digest"},
+		},
+	}
+	pulled := &models.Chart{
+		ID:          existing.ID,
+		Name:        existing.Name,
+		Description: "republished description",
+		ChartVersions: []models.ChartVersion{
+			{Version: "1.0.0", Digest: "new-digest", Readme: "new readme"},
+		},
+	}
+
+	merged := mergeOCIChart(existing, pulled)
+	if got, want := merged.ChartVersions, []models.ChartVersion{
+		{Version: "2.0.0", Digest: "old-latest-digest"},
+		{Version: "1.0.0", Digest: "new-digest", Readme: "new readme"},
+	}; !cmp.Equal(got, want) {
+		t.Fatalf("merged versions mismatch (-got +want):\n%s", cmp.Diff(got, want))
+	}
+	if got, want := merged.Description, existing.Description; got != want {
+		t.Errorf("got description %q, want persisted description %q", got, want)
+	}
+	if !cmp.Equal(merged.RawIcon, existing.RawIcon) || merged.IconContentType != existing.IconContentType {
+		t.Errorf("persisted icon metadata was not preserved: %+v", merged)
+	}
+	if got, want := len(existing.ChartVersions), 3; got != want {
+		t.Errorf("merge mutated the existing chart: got %d versions, want %d", got, want)
+	}
+}
+
+func TestOCIRegistrySkipsTagWithUnchangedDigest(t *testing.T) {
+	const (
+		appRepositoryName = "gar-pipelines"
+		namespace         = "pipelines"
+		repositoryPath    = "project/jenkins"
+		version           = "1.0.0"
+	)
+	manifest := newFakeOCIManifest(t, "unchanged")
+	registryServer := newFakeOCIRegistryServer(t, repositoryPath, []string{version}, map[string]fakeOCIManifest{version: manifest})
+	defer registryServer.Close()
+
+	repo := &models.AppRepository{Namespace: namespace, Name: appRepositoryName, URL: registryServer.URL, Type: "oci"}
+	existingChart := models.Chart{
+		ID:            appRepositoryName + "/project%2Fjenkins",
+		Name:          "jenkins",
+		Repo:          repo,
+		ChartVersions: []models.ChartVersion{{Version: version, Digest: manifest.digest}},
+	}
+	existingJSON, err := json.Marshal(existingChart)
+	if err != nil {
+		t.Fatal(err)
+	}
+	manager, mockDB, cleanup := getMockManager(t)
+	defer cleanup()
+	mockDB.ExpectQuery("SELECT info FROM charts *").
+		WithArgs(namespace, appRepositoryName).
+		WillReturnRows(sqlmock.NewRows([]string{"info"}).AddRow(existingJSON))
+	registryURL, err := parseRepoURL(registryServer.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	puller := &recordingOCIPuller{artifacts: map[string][]byte{}, digests: map[string]string{}}
+	registry := OCIRegistry{
+		repositories:          []string{repositoryPath},
+		AppRepositoryInternal: &models.AppRepositoryInternal{Namespace: namespace, Name: appRepositoryName, URL: registryServer.URL, Type: "oci"},
+		puller:                puller,
+		ociCli:                &OciAPIClient{RegistryNamespaceUrl: registryURL, HttpClient: registryServer.Client()},
+		manager:               manager,
+	}
+
+	chartResults := make(chan pullChartResult, 1)
+	chartIDsToDelete, err := registry.Charts(context.Background(), false, chartResults)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Empty(t, chartIDsToDelete)
+	for result := range chartResults {
+		t.Errorf("unexpected chart result for unchanged digest: %+v", result)
+	}
+	if got := puller.callCount(); got != 0 {
+		t.Fatalf("unchanged tag was pulled %d times, want 0", got)
+	}
+	if err := mockDB.ExpectationsWereMet(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestOCIRegistryFailsWhenManifestDigestCannotBeResolved(t *testing.T) {
+	const (
+		appRepositoryName = "gar-pipelines"
+		namespace         = "pipelines"
+		repositoryPath    = "project/jenkins"
+	)
+	tags := []string{"6.0.0", "5.0.0", "4.0.0", "3.0.0", "2.0.0", "1.0.0"}
+	var manifestRequestsMu sync.Mutex
+	manifestRequests := 0
+	registryServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/v2/"+repositoryPath+"/tags/list":
+			w.Header().Set("Content-Type", "application/json")
+			if err := json.NewEncoder(w).Encode(TagList{Name: repositoryPath, Tags: tags}); err != nil {
+				t.Errorf("encoding tag list: %v", err)
+			}
+		case strings.HasPrefix(r.URL.Path, "/v2/"+repositoryPath+"/manifests/"):
+			manifestRequestsMu.Lock()
+			manifestRequests++
+			manifestRequestsMu.Unlock()
+			http.Error(w, "digest resolution unavailable", http.StatusInternalServerError)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer registryServer.Close()
+
+	repo := &models.AppRepository{Namespace: namespace, Name: appRepositoryName, URL: registryServer.URL, Type: "oci"}
+	existingChart := models.Chart{
+		ID:   appRepositoryName + "/project%2Fjenkins",
+		Name: "jenkins",
+		Repo: repo,
+	}
+	for _, tag := range tags {
+		existingChart.ChartVersions = append(existingChart.ChartVersions, models.ChartVersion{Version: tag, Digest: "sha256:stored-" + tag})
+	}
+	existingJSON, err := json.Marshal(existingChart)
+	if err != nil {
+		t.Fatal(err)
+	}
+	manager, mockDB, cleanup := getMockManager(t)
+	defer cleanup()
+	registryURL, err := parseRepoURL(registryServer.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	puller := &recordingOCIPuller{artifacts: map[string][]byte{}, digests: map[string]string{}}
+	registry := OCIRegistry{
+		repositories:          []string{repositoryPath},
+		AppRepositoryInternal: &models.AppRepositoryInternal{Namespace: namespace, Name: appRepositoryName, URL: registryServer.URL, Type: "oci"},
+		puller:                puller,
+		ociCli:                &OciAPIClient{RegistryNamespaceUrl: registryURL, HttpClient: registryServer.Client()},
+		manager:               manager,
+	}
+
+	// Repeat the attempt to prove persistent resolver failures are surfaced on
+	// every run rather than silently re-pulling a fixed prefix of five tags and
+	// starving the remaining mutable tags.
+	for attempt := 0; attempt < 2; attempt++ {
+		mockDB.ExpectQuery("SELECT info FROM charts *").
+			WithArgs(namespace, appRepositoryName).
+			WillReturnRows(sqlmock.NewRows([]string{"info"}).AddRow(existingJSON))
+		chartResults := make(chan pullChartResult, 1)
+		chartIDsToDelete, err := registry.Charts(context.Background(), false, chartResults)
+		if err == nil {
+			t.Fatal("got nil, want digest resolution error")
+		}
+		if chartIDsToDelete != nil {
+			t.Fatalf("got chart IDs to delete %v, want nil on planning failure", chartIDsToDelete)
+		}
+		if !strings.Contains(err.Error(), `unable to resolve OCI manifest digest for "project/jenkins" tag "6.0.0"`) {
+			t.Fatalf("unexpected error: %v", err)
+		}
+	}
+	manifestRequestsMu.Lock()
+	gotManifestRequests := manifestRequests
+	manifestRequestsMu.Unlock()
+	if got, want := gotManifestRequests, 4; got != want {
+		t.Fatalf("got %d manifest requests, want HEAD+GET on each attempt (%d)", got, want)
+	}
+	if got := puller.callCount(); got != 0 {
+		t.Fatalf("resolver failure pulled %d tags, want 0", got)
+	}
+	if err := mockDB.ExpectationsWereMet(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestOCIRegistryRefreshesMissingAndChangedTags(t *testing.T) {
+	const (
+		appRepositoryName = "gar-pipelines"
+		namespace         = "pipelines"
+		repositoryPath    = "project/jenkins"
+		chartID           = appRepositoryName + "/project%2Fjenkins"
+	)
+	oldLatestManifest := newFakeOCIManifest(t, "old-latest")
+	newLatestManifest := newFakeOCIManifest(t, "new-latest")
+	missingManifest := newFakeOCIManifest(t, "missing")
+	stableManifest := newFakeOCIManifest(t, "stable")
+	registryServer := newFakeOCIRegistryServer(t, repositoryPath, []string{"3.0.0", "2.0.0", "1.0.0"}, map[string]fakeOCIManifest{
+		"3.0.0": missingManifest,
+		"2.0.0": newLatestManifest,
+		"1.0.0": stableManifest,
+	})
+	defer registryServer.Close()
+
+	repo := &models.AppRepository{Namespace: namespace, Name: appRepositoryName, URL: registryServer.URL, Type: "oci"}
+	existingChart := models.Chart{
+		ID:              chartID,
+		Name:            "jenkins",
+		Repo:            repo,
+		Description:     "persisted description",
+		RawIcon:         []byte("persisted icon"),
+		IconContentType: "image/png",
+		ChartVersions: []models.ChartVersion{
+			{Version: "2.0.0", AppVersion: "old-app", Digest: oldLatestManifest.digest, Readme: "old readme"},
+			{Version: "1.0.0", AppVersion: "stable-app", Digest: stableManifest.digest, Readme: "stable readme"},
+		},
+	}
+	existingJSON, err := json.Marshal(existingChart)
+	if err != nil {
+		t.Fatal(err)
+	}
+	manager, mockDB, cleanup := getMockManager(t)
+	defer cleanup()
+	mockDB.ExpectQuery("SELECT info FROM charts *").
+		WithArgs(namespace, appRepositoryName).
+		WillReturnRows(sqlmock.NewRows([]string{"info"}).AddRow(existingJSON))
+	registryURL, err := parseRepoURL(registryServer.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	missingArchive := newChartArchive(t, `
+apiVersion: v2
+name: jenkins
+appVersion: missing-app
+version: 3.0.0
+`,
+		tartest.TarballFile{Name: "README.md", Body: "missing readme"},
+	)
+	changedArchive := newChartArchive(t, `
+apiVersion: v2
+name: jenkins
+description: republished description
+appVersion: new-app
+version: 2.0.0
+`,
+		tartest.TarballFile{Name: "README.md", Body: "new readme"},
+		tartest.TarballFile{Name: "values.yaml", Body: "new: values"},
+	)
+	puller := &recordingOCIPuller{
+		artifacts: map[string][]byte{"3.0.0": missingArchive, "2.0.0": changedArchive},
+		digests:   map[string]string{"3.0.0": missingManifest.digest, "2.0.0": newLatestManifest.digest},
+	}
+	registry := OCIRegistry{
+		repositories:          []string{repositoryPath},
+		AppRepositoryInternal: &models.AppRepositoryInternal{Namespace: namespace, Name: appRepositoryName, URL: registryServer.URL, Type: "oci"},
+		puller:                puller,
+		ociCli:                &OciAPIClient{RegistryNamespaceUrl: registryURL, HttpClient: registryServer.Client()},
+		manager:               manager,
+	}
+
+	chartResults := make(chan pullChartResult, 1)
+	chartIDsToDelete, err := registry.Charts(context.Background(), false, chartResults)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Empty(t, chartIDsToDelete)
+	var results []pullChartResult
+	for result := range chartResults {
+		results = append(results, result)
+	}
+	if got, want := len(results), 1; got != want {
+		t.Fatalf("got %d chart results, want %d", got, want)
+	}
+	if len(results[0].Errors) != 0 {
+		t.Fatalf("unexpected pull errors: %v", results[0].Errors)
+	}
+	gotChart := results[0].Chart
+	if got, want := gotChart.ChartVersions, []models.ChartVersion{
+		{Version: "3.0.0", AppVersion: "missing-app", Digest: missingManifest.digest, Readme: "missing readme", AdditionalDefaultValues: map[string]string{}},
+		{Version: "2.0.0", AppVersion: "new-app", Digest: newLatestManifest.digest, Readme: "new readme", DefaultValues: "new: values", AdditionalDefaultValues: map[string]string{}},
+		{Version: "1.0.0", AppVersion: "stable-app", Digest: stableManifest.digest, Readme: "stable readme"},
+	}; !cmp.Equal(got, want) {
+		t.Fatalf("refreshed versions mismatch (-got +want):\n%s", cmp.Diff(got, want))
+	}
+	if gotChart.Description != existingChart.Description || !cmp.Equal(gotChart.RawIcon, existingChart.RawIcon) || gotChart.IconContentType != existingChart.IconContentType {
+		t.Errorf("stored chart metadata was not preserved: %+v", gotChart)
+	}
+	if got := puller.callCount(); got != 2 {
+		t.Fatalf("missing/changed tag pull count = %d, want 2", got)
+	}
+	calledRefs := puller.calledRefs()
+	if len(calledRefs) != 2 || !strings.HasSuffix(calledRefs[0], ":3.0.0") || !strings.HasSuffix(calledRefs[1], ":2.0.0") {
+		t.Fatalf("tags were not pulled in expected order: %v", calledRefs)
+	}
+
+	// A repeat against the newly stored digests must do no work.
+	refreshedJSON, err := json.Marshal(gotChart)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mockDB.ExpectQuery("SELECT info FROM charts *").
+		WithArgs(namespace, appRepositoryName).
+		WillReturnRows(sqlmock.NewRows([]string{"info"}).AddRow(refreshedJSON))
+	repeatedResults := make(chan pullChartResult, 1)
+	chartIDsToDelete, err = registry.Charts(context.Background(), false, repeatedResults)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Empty(t, chartIDsToDelete)
+	for result := range repeatedResults {
+		t.Errorf("unexpected repeated-sync result: %+v", result)
+	}
+	if got := puller.callCount(); got != 2 {
+		t.Fatalf("repeat sync pulled %d total tags, want 2", got)
+	}
+	if err := mockDB.ExpectationsWereMet(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestOCIRegistryMatchesExistingChartByStoredRepositoryPath(t *testing.T) {
+	const (
+		appRepositoryName = "gar-modelt"
+		namespace         = "modelt"
+		repositoryPath    = "k8s-modelt-dev/jenkins-modelt"
+		chartID           = appRepositoryName + "/k8s-modelt-dev%2Fjenkins-modelt"
+	)
+
+	persistedManifest := newFakeOCIManifest(t, "persisted")
+	newManifest := newFakeOCIManifest(t, "new")
+	tagServer := newFakeOCIRegistryServer(t, repositoryPath, []string{"2.0.0", "1.0.0"}, map[string]fakeOCIManifest{
+		"2.0.0": newManifest,
+		"1.0.0": persistedManifest,
+	})
+	defer tagServer.Close()
+
+	chartYAML := `
+apiVersion: v2
+name: jenkins-modelt
+version: 2.0.0
+`
+	recorder := httptest.NewRecorder()
+	gzw := gzip.NewWriter(recorder)
+	tartest.CreateTestTarball(gzw, []tartest.TarballFile{{Name: "Chart.yaml", Body: chartYAML}})
+	if err := gzw.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	repo := &models.AppRepository{
+		Namespace: namespace,
+		Name:      appRepositoryName,
+		URL:       tagServer.URL,
+		Type:      "oci",
+	}
+	existingChart := models.Chart{
+		ID:   chartID,
+		Name: "jenkins-modelt",
+		Repo: repo,
+		ChartVersions: []models.ChartVersion{
+			{Version: "1.0.0", Digest: persistedManifest.digest},
+		},
+	}
+
+	pgManager, mockDB, cleanup := getMockManager(t)
+	defer cleanup()
+	registryURL, err := parseRepoURL(tagServer.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	chartsRepo := OCIRegistry{
+		repositories:          []string{repositoryPath},
+		AppRepositoryInternal: &models.AppRepositoryInternal{Namespace: namespace, Name: appRepositoryName, URL: tagServer.URL, Type: "oci"},
+		puller: &helmfake.OCIPuller{
+			Content:  map[string]*bytes.Buffer{"2.0.0": recorder.Body},
+			Checksum: newManifest.digest,
+		},
+		ociCli: &OciAPIClient{
+			RegistryNamespaceUrl: registryURL,
+			HttpClient:           tagServer.Client(),
+		},
+		manager: pgManager,
+	}
+
+	existingJSON, err := json.Marshal(existingChart)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mockDB.ExpectQuery("SELECT info FROM charts *").
+		WithArgs(namespace, appRepositoryName).
+		WillReturnRows(sqlmock.NewRows([]string{"info"}).AddRow(existingJSON))
+
+	chartResults := make(chan pullChartResult, 2)
+	chartIDsToDelete, err := chartsRepo.Charts(context.Background(), false, chartResults)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Empty(t, chartIDsToDelete)
+
+	var syncedCharts []models.Chart
+	for result := range chartResults {
+		assert.Empty(t, result.Errors)
+		syncedCharts = append(syncedCharts, result.Chart)
+	}
+	if got, want := len(syncedCharts), 1; got != want {
+		t.Fatalf("got %d synced charts, want %d", got, want)
+	}
+	if got, want := syncedCharts[0].ID, chartID; got != want {
+		t.Errorf("got chart ID %q, want %q", got, want)
+	}
+	if got, want := syncedCharts[0].ChartVersions, []models.ChartVersion{
+		{Version: "2.0.0", Digest: newManifest.digest, AdditionalDefaultValues: map[string]string{}},
+		{Version: "1.0.0", Digest: persistedManifest.digest},
+	}; !cmp.Equal(got, want) {
+		t.Errorf("versions mismatch (-got +want):\n%s", cmp.Diff(got, want))
+	}
+
+	// A subsequent run with the just-synced chart must neither pull existing
+	// versions again nor mark the chart as stale.
+	syncedJSON, err := json.Marshal(syncedCharts[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	mockDB.ExpectQuery("SELECT info FROM charts *").
+		WithArgs(namespace, appRepositoryName).
+		WillReturnRows(sqlmock.NewRows([]string{"info"}).AddRow(syncedJSON))
+
+	repeatedResults := make(chan pullChartResult, 2)
+	chartIDsToDelete, err = chartsRepo.Charts(context.Background(), false, repeatedResults)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Empty(t, chartIDsToDelete)
+	for result := range repeatedResults {
+		t.Errorf("unexpected chart on repeated sync: %+v", result.Chart)
+	}
+	if err := mockDB.ExpectationsWereMet(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestOCIRegistryReturnsExactStaleChartID(t *testing.T) {
+	const (
+		appRepositoryName    = "gar-pipelines"
+		namespace            = "pipelines"
+		configuredRepository = "project-a/jenkins"
+		configuredChartID    = appRepositoryName + "/project-a%2Fjenkins"
+		staleChartID         = appRepositoryName + "/project-b%2Fjenkins"
+		sharedChartMetadata  = "jenkins"
+	)
+
+	configuredManifest := newFakeOCIManifest(t, "configured")
+	tagServer := newFakeOCIRegistryServer(t, configuredRepository, []string{"1.0.0"}, map[string]fakeOCIManifest{
+		"1.0.0": configuredManifest,
+	})
+	defer tagServer.Close()
+	registryURL, err := parseRepoURL(tagServer.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	repo := &models.AppRepository{Namespace: namespace, Name: appRepositoryName, URL: tagServer.URL, Type: "oci"}
+	configuredChart := models.Chart{
+		ID:            configuredChartID,
+		Name:          sharedChartMetadata,
+		Repo:          repo,
+		ChartVersions: []models.ChartVersion{{Version: "1.0.0", Digest: configuredManifest.digest}},
+	}
+	staleChart := models.Chart{
+		ID:            staleChartID,
+		Name:          sharedChartMetadata,
+		Repo:          repo,
+		ChartVersions: []models.ChartVersion{{Version: "1.0.0", Digest: configuredManifest.digest}},
+	}
+	configuredJSON, err := json.Marshal(configuredChart)
+	if err != nil {
+		t.Fatal(err)
+	}
+	staleJSON, err := json.Marshal(staleChart)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	pgManager, mockDB, cleanup := getMockManager(t)
+	defer cleanup()
+	mockDB.ExpectQuery("SELECT info FROM charts *").
+		WithArgs(namespace, appRepositoryName).
+		WillReturnRows(sqlmock.NewRows([]string{"info"}).AddRow(configuredJSON).AddRow(staleJSON))
+
+	chartsRepo := OCIRegistry{
+		repositories:          []string{configuredRepository},
+		AppRepositoryInternal: &models.AppRepositoryInternal{Namespace: namespace, Name: appRepositoryName, URL: tagServer.URL, Type: "oci"},
+		puller:                &helmfake.OCIPuller{},
+		ociCli: &OciAPIClient{
+			RegistryNamespaceUrl: registryURL,
+			HttpClient:           tagServer.Client(),
+		},
+		manager: pgManager,
+	}
+
+	chartResults := make(chan pullChartResult, 2)
+	chartIDsToDelete, err := chartsRepo.Charts(context.Background(), false, chartResults)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := chartIDsToDelete, []string{staleChartID}; !cmp.Equal(got, want) {
+		t.Errorf("stale chart IDs mismatch (-got +want):\n%s", cmp.Diff(got, want))
+	}
+	for result := range chartResults {
+		t.Errorf("unexpected chart result: %+v", result.Chart)
+	}
+	if err := mockDB.ExpectationsWereMet(); err != nil {
+		t.Fatal(err)
+	}
+
+	// Both charts intentionally share the same Chart.yaml name. The stored IDs
+	// are what distinguish the configured nested OCI path from the stale one.
+	if configuredChart.Name != staleChart.Name {
+		t.Fatal("invalid test setup")
+	}
 }
 
 func Test_filterMatches(t *testing.T) {
@@ -1850,7 +2583,7 @@ func TestHelmRepoAppliesUnescape(t *testing.T) {
 	pgManager, mock, cleanup := getMockManager(t)
 	defer cleanup()
 	mock.ExpectQuery("SELECT info FROM charts").
-		WillReturnRows(sqlmock.NewRows([]string{"info"}).AddRow("{}"))
+		WillReturnRows(sqlmock.NewRows([]string{"info"}))
 	helmRepo := &HelmRepo{
 		content:               []byte(repoIndexYAML),
 		AppRepositoryInternal: repo,

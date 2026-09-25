@@ -270,7 +270,7 @@ func TestKindClusterGetAvailablePackageSummariesForLargeReposAndTinyRedis(t *tes
 //     b) with 3b) => should fail 2 times with PermissionDenied error
 //     c) with 3c) => should fail once and work once
 //
-// ref https://github.com/vmware-tanzu/kubeapps/issues/4390
+// ref https://github.com/SAP/kubeapps/issues/4390
 func TestKindClusterRepoAndChartRBAC(t *testing.T) {
 	fluxPluginClient, _, rnd, err := checkEnv(t)
 	if err != nil {

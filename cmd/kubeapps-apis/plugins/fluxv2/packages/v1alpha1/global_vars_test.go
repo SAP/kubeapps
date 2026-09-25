@@ -24,7 +24,7 @@ import (
 )
 
 // global vars
-// why define these here? see https://github.com/vmware-tanzu/kubeapps/pull/3736#discussion_r745246398
+// why define these here? see https://github.com/SAP/kubeapps/pull/3736#discussion_r745246398
 // plus I am putting them in a separate file, since they take up so much space they distract from
 // overall test logic
 var (

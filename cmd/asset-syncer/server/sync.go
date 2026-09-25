@@ -104,7 +104,7 @@ func Sync(serveOpts Config, version string, args []string) error {
 		// Create the file importer to handle the icon and chart file imports.
 		fImporter := fileImporter{manager, netClient}
 		fileImporterJobs := make(chan models.Chart)
-		fileImportsDone := make(chan bool)
+		fileImportsDone := make(chan fileImportResult)
 		go fImporter.fetchFiles(fileImporterJobs, repoIface, serveOpts.UserAgent, serveOpts.PassCredentials, fileImportsDone)
 
 		// We want to receive results per app so that we can sync that app
@@ -112,7 +112,7 @@ func Sync(serveOpts Config, version string, args []string) error {
 		// gives us a way to pull results as they're generated (like an
 		// iterator).
 		chartResults := make(chan pullChartResult, 2)
-		chartsToDelete, err := repoIface.Charts(ctx, fetchLatestOnly, chartResults)
+		chartIDsToDelete, err := repoIface.Charts(ctx, fetchLatestOnly, chartResults)
 		if err != nil {
 			return fmt.Errorf("error: %v", err)
 		}
@@ -150,17 +150,32 @@ func Sync(serveOpts Config, version string, args []string) error {
 
 		close(fileImporterJobs)
 
+		// Wait for file imports to complete.
+		log.V(4).Infof("Chart data syncing complete. Waiting for file imports to complete.")
+		importResult := <-fileImportsDone
+
+		// Check if there were any file import errors
+		if len(importResult.errors) > 0 {
+			log.Errorf("File import errors occurred (%d total). Repository checksum will not be updated to allow retry on next sync.", len(importResult.errors))
+			// Log first few errors for debugging
+			for i, err := range importResult.errors {
+				if i >= 5 {
+					log.Errorf("... and %d more errors", len(importResult.errors)-5)
+					break
+				}
+				log.Errorf("  - %v", err)
+			}
+			return fmt.Errorf("file imports failed: %d errors occurred (see logs for details)", len(importResult.errors))
+		}
+
+		// Remove missing charts AFTER file imports complete to avoid FK constraint violations
 		err = manager.RemoveMissingCharts(models.AppRepository{
 			Namespace: repo.Namespace,
 			Name:      repo.Name,
-		}, chartsToDelete)
+		}, chartIDsToDelete)
 		if err != nil {
 			return fmt.Errorf("error while removing missing charts: %w", err)
 		}
-
-		// Wait for file imports to complete.
-		log.V(4).Infof("Chart data syncing complete. Waiting for file imports to complete.")
-		<-fileImportsDone
 
 		log.V(4).Infof("Repository synced, shallow=%v", fetchLatestOnly)
 	}

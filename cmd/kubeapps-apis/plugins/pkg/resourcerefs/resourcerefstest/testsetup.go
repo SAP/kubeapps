@@ -190,7 +190,7 @@ should not be :! parsed as yaml$
 		},
 		{
 			Name: "handles duplicate labels as helm does",
-			// See https://github.com/vmware-tanzu/kubeapps/issues/632
+			// See https://github.com/SAP/kubeapps/issues/632
 			ExistingReleases: []TestReleaseStub{
 				{
 					Name:      "my-apache",
@@ -518,7 +518,7 @@ should not be :! parsed as yaml$
 		},
 		{
 			Name: "handles duplicate labels in the manifest as helm does (2)",
-			// See https://github.com/vmware-tanzu/kubeapps/issues/632
+			// See https://github.com/SAP/kubeapps/issues/632
 			ExistingReleases: []TestReleaseStub{
 				{
 					Name:      releaseName,

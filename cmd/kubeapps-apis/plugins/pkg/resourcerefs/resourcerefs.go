@@ -107,7 +107,7 @@ func GetInstalledPackageResourceRefs(
 	// certain assumptions about the RBAC of the Kubeapps user, we may be able
 	// to instead query for labelled resources. See the discussion following for
 	// more details:
-	// https://github.com/vmware-tanzu/kubeapps/pull/3811#issuecomment-977689570
+	// https://github.com/SAP/kubeapps/pull/3811#issuecomment-977689570
 	getcmd := action.NewGet(actionConfig)
 	release, err := getcmd.Run(helmReleaseName.Name)
 	if err != nil {

@@ -4,6 +4,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -11,7 +12,6 @@ import (
 	"path"
 	"strings"
 
-	"github.com/containerd/containerd/remotes/docker"
 	appRepov1 "github.com/SAP/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
 	"github.com/SAP/kubeapps/pkg/helm"
 	"github.com/SAP/kubeapps/pkg/kube"
@@ -63,8 +63,12 @@ func NewChartClient(userAgent string) ChartClient {
 
 // OCIRepoClient struct contains the clients required to retrieve charts info from an OCI registry
 type OCIRepoClient struct {
-	userAgent string
-	puller    helm.ChartPuller
+	userAgent   string
+	puller      helm.ChartPuller
+	netClient   *http.Client
+	authSecret  *corev1.Secret
+	caCertSecret *corev1.Secret
+	appRepo     *appRepov1.AppRepository
 }
 
 // NewOCIClient returns a new OCIClient
@@ -160,21 +164,41 @@ func (c *OCIRepoClient) Init(appRepo *appRepov1.AppRepository, caCertSecret *cor
 	headers := http.Header{
 		"User-Agent": []string{c.userAgent},
 	}
-	netClient, err := helm.InitHTTPClient(appRepo, caCertSecret)
+	c.netClient, err = helm.InitHTTPClient(appRepo, caCertSecret)
 	if err != nil {
 		return err
 	}
-	if authSecret != nil && appRepo.Spec.Auth.Header != nil {
+
+	// Store for potential re-initialization in GetChart when using dockerconfigjson
+	c.appRepo = appRepo
+	c.authSecret = authSecret
+	c.caCertSecret = caCertSecret
+
+	// Initialize with non-registry-specific auth if available.
+	// For dockerconfigjson secrets, we must NOT initialize with a fallback credential
+	// because the puller would retain it when GetChart() finds no matching registry.
+	// Instead, we initialize without Authorization and always rebuild in GetChart().
+	if authSecret != nil && authSecret.Type != corev1.SecretTypeDockerConfigJson {
 		var auth string
-		auth, err = kube.GetDataFromSecret(appRepo.Spec.Auth.Header.SecretKeyRef.Key, authSecret)
+		if appRepo.Spec.Auth.Header != nil {
+			auth, err = kube.GetDataFromSecret(appRepo.Spec.Auth.Header.SecretKeyRef.Key, authSecret)
+		}
 		if err != nil {
 			return err
 		}
-		headers.Set("Authorization", string(auth))
+		if auth != "" {
+			headers.Set("Authorization", auth)
+		}
 	}
 
-	c.puller = &helm.OCIPuller{Resolver: docker.NewResolver(docker.ResolverOptions{Headers: headers, Hosts: docker.ConfigureDefaultRegistries(docker.WithClient(netClient))})}
-	return err
+	// Determine if plain HTTP should be used based on the repository URL scheme
+	usePlainHTTP := false
+	if parsedURL, err := url.Parse(appRepo.Spec.URL); err == nil && parsedURL.Scheme == "http" {
+		usePlainHTTP = true
+	}
+
+	c.puller = &helm.OCIPuller{Resolver: helm.NewOCIResolver(headers, c.netClient, usePlainHTTP)}
+	return nil
 }
 
 // GetChart retrieves and loads a Chart from a OCI registry
@@ -185,12 +209,62 @@ func (c *OCIRepoClient) GetChart(details *ChartDetails, repoURL string) (*chart.
 	if details == nil || details.TarballURL == "" {
 		return nil, fmt.Errorf("unable to retrieve chart, missing chart details")
 	}
-	chartURL, err := resolveChartURL(repoURL, details.TarballURL)
-	if err != nil {
-		return nil, err
+
+	// For OCI references we must NOT use resolveChartURL / url.Parse because
+	// url.Parse decodes percent-encoded slashes (%2F → /), destroying the OCI
+	// repository name encoding that registries like GAR require.
+	// Instead we strip the "oci://" scheme prefix directly and pass the raw
+	// reference string to the puller.
+	ref := strings.TrimPrefix(strings.TrimSpace(details.TarballURL), "oci://")
+	if ref == "" {
+		// Fall back to URL-based resolution for non-oci:// tarball URLs
+		chartURL, err := resolveChartURL(repoURL, details.TarballURL)
+		if err != nil {
+			return nil, err
+		}
+		ref = path.Join(chartURL.Host, chartURL.Path)
 	}
 
-	ref := path.Join(chartURL.Host, chartURL.Path)
+	// Re-initialize the puller with registry-specific credentials when using dockerconfigjson.
+	// This ensures we select the correct credentials for the target registry when the secret
+	// contains multiple auth entries, and send no Authorization header when no credentials match.
+	if c.authSecret != nil && c.authSecret.Type == corev1.SecretTypeDockerConfigJson {
+		registryHost := strings.SplitN(ref, "/", 2)[0]
+
+		dockerConfigJson, ok := c.authSecret.Data[corev1.DockerConfigJsonKey]
+		if ok {
+			dockerConfig := &kube.DockerConfigJSON{}
+			if err := json.Unmarshal(dockerConfigJson, dockerConfig); err != nil {
+				return nil, fmt.Errorf("unable to parse dockerconfigjson: %w", err)
+			}
+
+			// Select credentials by registry host
+			auth, err := kube.GetAuthForRegistry(dockerConfig, registryHost)
+			if err != nil {
+				return nil, fmt.Errorf("unable to get auth for registry %s: %w", registryHost, err)
+			}
+
+			// Always re-create the puller with registry-specific credentials (or no auth if no match).
+			// This prevents sending credentials for registry A to registry B.
+			headers := http.Header{
+				"User-Agent": []string{c.userAgent},
+			}
+			if auth != "" {
+				headers.Set("Authorization", auth)
+			}
+
+			// Determine if plain HTTP should be used based on the repository URL scheme
+			usePlainHTTP := false
+			if c.appRepo != nil {
+				if parsedURL, err := url.Parse(c.appRepo.Spec.URL); err == nil && parsedURL.Scheme == "http" {
+					usePlainHTTP = true
+				}
+			}
+
+			c.puller = &helm.OCIPuller{Resolver: helm.NewOCIResolver(headers, c.netClient, usePlainHTTP)}
+		}
+	}
+
 	chartBuffer, _, err := c.puller.PullOCIChart(ref)
 	if err != nil {
 		return nil, err

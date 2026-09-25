@@ -231,7 +231,7 @@ func AvailablePackageSummaryFromChart(chart *models.Chart, plugin *plugins.Plugi
 // I did consider using flux's implementation of AvailablePackageDetailFromChart but did not feel comfortable
 // chaning helm plugin to use it before talking to @minelson
 // Update Michael replied he is okay with my proposal:
-// https://github.com/vmware-tanzu/kubeapps/pull/4094#discussion_r790349962.
+// https://github.com/SAP/kubeapps/pull/4094#discussion_r790349962.
 // Will come back to this
 
 // GetUnescapedPackageID takes a package id with URI-encoded characters and decode them. Ex: 'repoName/foo/bar' becomes 'repoName/foo%2Fbar'

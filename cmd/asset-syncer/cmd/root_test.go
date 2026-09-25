@@ -131,3 +131,30 @@ func TestParseFlagsCorrect(t *testing.T) {
 		})
 	}
 }
+
+func TestRedactedServerConfig(t *testing.T) {
+	original := server.Config{
+		DatabaseURL:         "database.example.test",
+		DatabasePassword:    "sensitive-database-value",
+		AuthorizationHeader: "sensitive-authorization-value",
+		DockerConfigJson:    "sensitive-docker-config-value",
+		Namespace:           "test-namespace",
+	}
+
+	got := redactedServerConfig(original)
+	if got.DatabasePassword != redactedConfigValue {
+		t.Errorf("database password was not redacted")
+	}
+	if got.AuthorizationHeader != redactedConfigValue {
+		t.Errorf("authorization header was not redacted")
+	}
+	if got.DockerConfigJson != redactedConfigValue {
+		t.Errorf("docker config JSON was not redacted")
+	}
+	if got.DatabaseURL != original.DatabaseURL || got.Namespace != original.Namespace {
+		t.Errorf("non-sensitive config fields changed: %+v", got)
+	}
+	if original.DatabasePassword == redactedConfigValue || original.AuthorizationHeader == redactedConfigValue || original.DockerConfigJson == redactedConfigValue {
+		t.Errorf("redaction mutated the original config")
+	}
+}

@@ -83,21 +83,24 @@ func (m *postgresAssetManager) UpdateLastCheck(repoNamespace, repoName, checksum
 	return err
 }
 
-func (m *postgresAssetManager) RemoveMissingCharts(repo models.AppRepository, chartNames []string) error {
-	if len(chartNames) == 0 {
+func (m *postgresAssetManager) RemoveMissingCharts(repo models.AppRepository, chartIDs []string) error {
+	if len(chartIDs) == 0 {
 		log.V(4).Infof("No synced charts missing from repository. Nothing to remove.")
 		return nil
 	}
-	var quotedChartNames []string
-	for _, chartName := range chartNames {
-		quotedChartNames = append(quotedChartNames, fmt.Sprintf("'%s'", chartName))
+
+	args := []interface{}{repo.Name, repo.Namespace}
+	placeholders := make([]string, 0, len(chartIDs))
+	for i, chartID := range chartIDs {
+		placeholders = append(placeholders, fmt.Sprintf("$%d", i+3))
+		args = append(args, chartID)
 	}
-	chartNamesString := strings.Join(quotedChartNames, ", ")
-	log.V(4).Infof("Removing the following charts that are no longer present in the repo: %s", chartNamesString)
-	rows, err := m.DB.Query(fmt.Sprintf("DELETE FROM %s WHERE info->>'name' IN (%s) AND repo_name = $1 AND repo_namespace = $2", dbutils.ChartTable, chartNamesString), repo.Name, repo.Namespace)
-	if rows != nil {
-		defer rows.Close()
-	}
+
+	log.V(4).Infof("Removing the following chart IDs that are no longer present in the repo: %q", chartIDs)
+	_, err := m.DB.Exec(
+		fmt.Sprintf("DELETE FROM %s WHERE repo_name = $1 AND repo_namespace = $2 AND chart_id IN (%s)", dbutils.ChartTable, strings.Join(placeholders, ", ")),
+		args...,
+	)
 	return err
 }
 
@@ -162,8 +165,8 @@ func (m *postgresAssetManager) insertFiles(chartId string, files models.ChartFil
 	return err
 }
 
-// ChartsForRepo returns a map of charts with all previously synced charts in
-// the repo.
+// ChartsForRepo returns all previously synced charts in the repo, keyed by
+// their stable chart ID.
 func (m *postgresAssetManager) ChartsForRepo(repo models.AppRepository) (map[string]*models.Chart, error) {
 	dbQuery := fmt.Sprintf("SELECT info FROM %s WHERE repo_namespace = $1 AND repo_name = $2 ORDER BY (info->>'name')", dbutils.ChartTable)
 
@@ -172,9 +175,9 @@ func (m *postgresAssetManager) ChartsForRepo(repo models.AppRepository) (map[str
 		return nil, err
 	}
 
-	chartsByName := map[string]*models.Chart{}
+	chartsByID := map[string]*models.Chart{}
 	for _, chart := range charts {
-		chartsByName[chart.Name] = chart
+		chartsByID[chart.ID] = chart
 	}
-	return chartsByName, nil
+	return chartsByID, nil
 }

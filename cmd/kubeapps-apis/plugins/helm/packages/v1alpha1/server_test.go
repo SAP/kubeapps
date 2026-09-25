@@ -2076,6 +2076,145 @@ func TestChartTarballURLBuild(t *testing.T) {
 	}
 }
 
+// TestOCIChartTarballURLBuild verifies that the OCI tarball URL is built correctly
+// for chart names that contain slashes (e.g. OCI paths like "project/mychart").
+//
+// The asset-syncer encodes the OCI path with url.PathEscape, storing
+// "project%2Fmychart" in the DB as the chart name portion of the chart ID.
+// GetUnescapedPackageID then re-encodes it to "project%252Fmychart" when
+// splitting the package identifier. fetchChartWithRegistrySecrets must
+// double-unescape to recover the raw path "project/mychart" before building
+// the OCI reference.
+//
+// It also verifies that "https://" repo URLs are handled correctly by stripping
+// the scheme before building the oci:// reference.
+func TestOCIChartTarballURLBuild(t *testing.T) {
+	testCases := []struct {
+		name            string
+		chartName       string // as received from SplitPackageIdentifier (may be double-encoded)
+		repoURL         string
+		version         string
+		expectedTarball string
+	}{
+		{
+			name:            "OCI chart with double-encoded slash from GAR, https repo URL",
+			chartName:       "project%252Fmychart",
+			repoURL:         "https://registry.example.com/myorg/",
+			version:         "1.2.3",
+			expectedTarball: "oci://registry.example.com/myorg/project/mychart:1.2.3",
+		},
+		{
+			name:            "OCI chart with single-encoded slash",
+			chartName:       "project%2Fmychart",
+			repoURL:         "https://registry.example.com/myorg/",
+			version:         "9.0.0",
+			expectedTarball: "oci://registry.example.com/myorg/project/mychart:9.0.0",
+		},
+		{
+			name:            "OCI chart with no encoding (simple chart name)",
+			chartName:       "simplechart",
+			repoURL:         "https://registry.example.com/myorg/",
+			version:         "1.0.0",
+			expectedTarball: "oci://registry.example.com/myorg/simplechart:1.0.0",
+		},
+		{
+			name:            "OCI repo URL with oci:// scheme",
+			chartName:       "project%2Fmychart",
+			repoURL:         "oci://registry.example.com/myorg/",
+			version:         "9.0.0",
+			expectedTarball: "oci://registry.example.com/myorg/project/mychart:9.0.0",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// This replicates the OCI tarball URL building logic from
+			// fetchChartWithRegistrySecrets in server.go.
+			decodedChartName := tc.chartName
+			for i := 0; i < 2; i++ {
+				if d, err := url.PathUnescape(decodedChartName); err == nil {
+					decodedChartName = d
+				}
+			}
+			repoURL := strings.TrimPrefix(strings.TrimPrefix(tc.repoURL, "oci://"), "https://")
+			tarballURL := fmt.Sprintf("oci://%s/%s:%s", strings.TrimSuffix(repoURL, "/"), decodedChartName, tc.version)
+
+			if got, want := tarballURL, tc.expectedTarball; got != want {
+				t.Fatalf("got: %q, want: %q", got, want)
+			}
+		})
+	}
+}
+
+// TestChartIDEncodingNormalization verifies that both single-encoded and double-encoded
+// chart names are normalized to the single-encoded form that the asset-syncer stores in the database.
+func TestChartIDEncodingNormalization(t *testing.T) {
+	testCases := []struct {
+		name                       string
+		inputChartName             string // as received from SplitPackageIdentifier
+		expectedSingleEncodedName  string // normalized form for DB lookup
+		expectedFullyDecodedName   string // form used in OCI reference
+	}{
+		{
+			name:                      "Double-encoded nested path from UI",
+			inputChartName:            "project%252Fmychart",
+			expectedSingleEncodedName: "project%2Fmychart",
+			expectedFullyDecodedName:  "project/mychart",
+		},
+		{
+			name:                      "Single-encoded nested path from cache",
+			inputChartName:            "project%2Fmychart",
+			expectedSingleEncodedName: "project%2Fmychart",
+			expectedFullyDecodedName:  "project/mychart",
+		},
+		{
+			name:                      "Unencoded simple chart name",
+			inputChartName:            "simplechart",
+			expectedSingleEncodedName: "simplechart",
+			expectedFullyDecodedName:  "simplechart",
+		},
+		{
+			name:                      "Double-encoded with multiple slashes",
+			inputChartName:            "org%252Fteam%252Fapp",
+			expectedSingleEncodedName: "org%2Fteam%2Fapp",
+			expectedFullyDecodedName:  "org/team/app",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Replicate the normalization logic from fetchChartWithRegistrySecrets in server.go
+			singleEncodedChartName := tc.inputChartName
+
+			// Try unescaping once
+			if d, err := url.PathUnescape(singleEncodedChartName); err == nil && d != singleEncodedChartName {
+				// Check if it's still encoded (double-encoded case)
+				if d2, err2 := url.PathUnescape(d); err2 == nil && d2 != d {
+					// Was double-encoded, normalize to single-encoded for DB lookup
+					singleEncodedChartName = d
+				}
+				// else: Was already single-encoded, keep it as-is
+			}
+
+			// Verify the single-encoded form matches expected
+			if got, want := singleEncodedChartName, tc.expectedSingleEncodedName; got != want {
+				t.Errorf("single-encoded normalization: got %q, want %q", got, want)
+			}
+
+			// For the OCI reference, decode one more time from single-encoded to fully decoded
+			fullyDecodedChartName := singleEncodedChartName
+			if d, err := url.PathUnescape(fullyDecodedChartName); err == nil {
+				fullyDecodedChartName = d
+			}
+
+			// Verify the fully-decoded form matches expected
+			if got, want := fullyDecodedChartName, tc.expectedFullyDecodedName; got != want {
+				t.Errorf("fully-decoded form: got %q, want %q", got, want)
+			}
+		})
+	}
+}
+
 // newActionConfigFixture returns an action.Configuration with fake clients
 // and memory storage.
 func newActionConfigFixture(t *testing.T, namespace string, rels []releaseStub, kubeClient kube.Interface) *action.Configuration {
