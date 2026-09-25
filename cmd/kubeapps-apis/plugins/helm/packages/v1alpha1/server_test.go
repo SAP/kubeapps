@@ -2146,6 +2146,75 @@ func TestOCIChartTarballURLBuild(t *testing.T) {
 	}
 }
 
+// TestChartIDEncodingNormalization verifies that both single-encoded and double-encoded
+// chart names are normalized to the single-encoded form that the asset-syncer stores in the database.
+func TestChartIDEncodingNormalization(t *testing.T) {
+	testCases := []struct {
+		name                       string
+		inputChartName             string // as received from SplitPackageIdentifier
+		expectedSingleEncodedName  string // normalized form for DB lookup
+		expectedFullyDecodedName   string // form used in OCI reference
+	}{
+		{
+			name:                      "Double-encoded nested path from UI",
+			inputChartName:            "project%252Fmychart",
+			expectedSingleEncodedName: "project%2Fmychart",
+			expectedFullyDecodedName:  "project/mychart",
+		},
+		{
+			name:                      "Single-encoded nested path from cache",
+			inputChartName:            "project%2Fmychart",
+			expectedSingleEncodedName: "project%2Fmychart",
+			expectedFullyDecodedName:  "project/mychart",
+		},
+		{
+			name:                      "Unencoded simple chart name",
+			inputChartName:            "simplechart",
+			expectedSingleEncodedName: "simplechart",
+			expectedFullyDecodedName:  "simplechart",
+		},
+		{
+			name:                      "Double-encoded with multiple slashes",
+			inputChartName:            "org%252Fteam%252Fapp",
+			expectedSingleEncodedName: "org%2Fteam%2Fapp",
+			expectedFullyDecodedName:  "org/team/app",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Replicate the normalization logic from fetchChartWithRegistrySecrets in server.go
+			singleEncodedChartName := tc.inputChartName
+
+			// Try unescaping once
+			if d, err := url.PathUnescape(singleEncodedChartName); err == nil && d != singleEncodedChartName {
+				// Check if it's still encoded (double-encoded case)
+				if d2, err2 := url.PathUnescape(d); err2 == nil && d2 != d {
+					// Was double-encoded, normalize to single-encoded for DB lookup
+					singleEncodedChartName = d
+				}
+				// else: Was already single-encoded, keep it as-is
+			}
+
+			// Verify the single-encoded form matches expected
+			if got, want := singleEncodedChartName, tc.expectedSingleEncodedName; got != want {
+				t.Errorf("single-encoded normalization: got %q, want %q", got, want)
+			}
+
+			// For the OCI reference, decode one more time from single-encoded to fully decoded
+			fullyDecodedChartName := singleEncodedChartName
+			if d, err := url.PathUnescape(fullyDecodedChartName); err == nil {
+				fullyDecodedChartName = d
+			}
+
+			// Verify the fully-decoded form matches expected
+			if got, want := fullyDecodedChartName, tc.expectedFullyDecodedName; got != want {
+				t.Errorf("fully-decoded form: got %q, want %q", got, want)
+			}
+		})
+	}
+}
+
 // newActionConfigFixture returns an action.Configuration with fake clients
 // and memory storage.
 func newActionConfigFixture(t *testing.T, namespace string, rels []releaseStub, kubeClient kube.Interface) *action.Configuration {

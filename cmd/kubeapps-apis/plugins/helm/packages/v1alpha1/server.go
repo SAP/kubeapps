@@ -950,22 +950,21 @@ func (s *Server) fetchChartWithRegistrySecrets(ctx context.Context, headers http
 		//   then GetUnescapedPackageID re-escapes to "k8s-ec-pipeline-dev%252Fjenkins-ecpipeline"
 		// - Single-encoded from cache: "repo/project%2Fchart"
 		// We need to detect which case we have and normalize to single-encoded for database lookup.
-		decodedChartName := chartDetails.ChartName
+		// The asset-syncer stores chart names in single-encoded form (e.g., "project%2Fchart").
+		singleEncodedChartName := chartDetails.ChartName
 
 		// Try unescaping once
-		if d, err := url.PathUnescape(decodedChartName); err == nil && d != decodedChartName {
+		if d, err := url.PathUnescape(singleEncodedChartName); err == nil && d != singleEncodedChartName {
 			// Check if it's still encoded (double-encoded case)
 			if d2, err2 := url.PathUnescape(d); err2 == nil && d2 != d {
-				// Was double-encoded, but we want single-encoded for DB lookup
-				decodedChartName = d
-			} else {
-				// Was single-encoded, use the decoded value for DB lookup
-				decodedChartName = d
+				// Was double-encoded, normalize to single-encoded for DB lookup
+				singleEncodedChartName = d
 			}
+			// else: Was already single-encoded, keep it as-is
 		}
 
 		// Build chartID using the single-encoded chart name to match what the asset-syncer stored.
-		chartID := fmt.Sprintf("%s/%s", appRepo.Name, decodedChartName)
+		chartID := fmt.Sprintf("%s/%s", appRepo.Name, singleEncodedChartName)
 		log.InfoS("Fetching chart with user-agent", "chartID", chartID, "userAgentString", userAgentString)
 
 		// Look up the chart version in the cache to verify it exists and get the digest.
@@ -1004,7 +1003,7 @@ func (s *Server) fetchChartWithRegistrySecrets(ctx context.Context, headers http
 
 		// For the OCI reference itself, we need the fully decoded chart name (all %2F become /).
 		// Decode one more time from the single-encoded database form.
-		fullyDecodedChartName := decodedChartName
+		fullyDecodedChartName := singleEncodedChartName
 		if d, err := url.PathUnescape(fullyDecodedChartName); err == nil {
 			fullyDecodedChartName = d
 		}
