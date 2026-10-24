@@ -103,6 +103,7 @@ func parseRepoURL(repoURL string) (*url.URL, error) {
 }
 
 type assetManager interface {
+	fileDigestsForRepo(repo models.AppRepository) (map[string]string, error)
 	Delete(repo models.AppRepository) error
 	Sync(repo models.AppRepository, chart models.Chart) error
 	LastChecksum(repo models.AppRepository) string
@@ -848,6 +849,7 @@ func chartsByOCIRepository(appRepositoryName string, charts map[string]*models.C
 
 func (r *OCIRegistry) pullChartJobs(ctx context.Context, fetchLatestOnly bool, syncedChartsByRepository map[string]*models.Chart) ([]pullChartJob, error) {
 	jobs := []pullChartJob{}
+	var fileDigests map[string]string
 	userAgent := GetUserAgent("", "")
 
 	for _, appName := range r.repositories {
@@ -883,6 +885,21 @@ func (r *OCIRegistry) pullChartJobs(ctx context.Context, fetchLatestOnly bool, s
 			remoteDigest, err := r.ociCli.ResolveDigest(ctx, appName, tag, userAgent)
 			if err != nil {
 				return nil, fmt.Errorf("unable to resolve OCI manifest digest for %q tag %q: %w", appName, tag, err)
+			}
+			if remoteDigest == storedDigest {
+				// Metadata is persisted before file import. A matching files row,
+				// even with empty payloads, is the durable completion record.
+				if fileDigests == nil {
+					fileDigests, err = r.manager.fileDigestsForRepo(models.AppRepository{Namespace: r.Namespace, Name: r.Name})
+					if err != nil {
+						return nil, fmt.Errorf("unable to read OCI file digests for repository %q: %w", r.Name, err)
+					}
+				}
+				filesDigest, exists := fileDigests[fmt.Sprintf("%s-%s", syncedChart.ID, tag)]
+				if !exists || filesDigest != remoteDigest {
+					versionsToSync = append(versionsToSync, tag)
+				}
+				continue
 			}
 			if remoteDigest != storedDigest {
 				log.V(4).Infof("OCI chart digest changed, repository=%q, tag=%q, previous=%q, current=%q", appName, tag, storedDigest, remoteDigest)

@@ -1856,6 +1856,8 @@ func TestOCIRegistrySkipsTagWithUnchangedDigest(t *testing.T) {
 	mockDB.ExpectQuery("SELECT info FROM charts *").
 		WithArgs(namespace, appRepositoryName).
 		WillReturnRows(sqlmock.NewRows([]string{"info"}).AddRow(existingJSON))
+	mockDB.ExpectQuery("SELECT chart_files_id, info").WithArgs(namespace, appRepositoryName).
+		WillReturnRows(sqlmock.NewRows([]string{"chart_files_id", "digest"}).AddRow(existingChart.ID+"-"+version, manifest.digest))
 	registryURL, err := parseRepoURL(registryServer.URL)
 	if err != nil {
 		t.Fatal(err)
@@ -1883,6 +1885,191 @@ func TestOCIRegistrySkipsTagWithUnchangedDigest(t *testing.T) {
 	}
 	if err := mockDB.ExpectationsWereMet(); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestOCIRegistryFailsWhenFileDigestLookupFails(t *testing.T) {
+	const (
+		appRepositoryName = "gar-pipelines"
+		namespace         = "pipelines"
+		repositoryPath    = "project/jenkins"
+		version           = "1.0.0"
+	)
+	manifest := newFakeOCIManifest(t, "unchanged")
+	registryServer := newFakeOCIRegistryServer(t, repositoryPath, []string{version}, map[string]fakeOCIManifest{version: manifest})
+	defer registryServer.Close()
+
+	repo := &models.AppRepository{Namespace: namespace, Name: appRepositoryName, URL: registryServer.URL, Type: "oci"}
+	existingChart := models.Chart{
+		ID:            appRepositoryName + "/project%2Fjenkins",
+		Name:          "jenkins",
+		Repo:          repo,
+		ChartVersions: []models.ChartVersion{{Version: version, Digest: manifest.digest}},
+	}
+	existingJSON, err := json.Marshal(existingChart)
+	if err != nil {
+		t.Fatal(err)
+	}
+	manager, mockDB, cleanup := getMockManager(t)
+	defer cleanup()
+	mockDB.ExpectQuery("SELECT info FROM charts *").
+		WithArgs(namespace, appRepositoryName).
+		WillReturnRows(sqlmock.NewRows([]string{"info"}).AddRow(existingJSON))
+	mockDB.ExpectQuery("SELECT chart_files_id, info").WithArgs(namespace, appRepositoryName).
+		WillReturnError(errors.New("file digest lookup failed"))
+	registryURL, err := parseRepoURL(registryServer.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	puller := &recordingOCIPuller{artifacts: map[string][]byte{}, digests: map[string]string{}}
+	registry := OCIRegistry{
+		repositories:          []string{repositoryPath},
+		AppRepositoryInternal: &models.AppRepositoryInternal{Namespace: namespace, Name: appRepositoryName, URL: registryServer.URL, Type: "oci"},
+		puller:                puller,
+		ociCli:                &OciAPIClient{RegistryNamespaceUrl: registryURL, HttpClient: registryServer.Client()},
+		manager:               manager,
+	}
+
+	chartResults := make(chan pullChartResult, 1)
+	chartIDsToDelete, err := registry.Charts(context.Background(), false, chartResults)
+	if err == nil || !strings.Contains(err.Error(), "file digest lookup failed") {
+		t.Fatalf("expected explicit file lookup error, got %v", err)
+	}
+	assert.Empty(t, chartIDsToDelete)
+	assert.Empty(t, chartResults)
+	if got := puller.callCount(); got != 0 {
+		t.Fatalf("unchanged tag was pulled %d times, want 0", got)
+	}
+	if err := mockDB.ExpectationsWereMet(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestOCIRegistryRetriesIncompleteFiles(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		stale bool
+		empty bool
+	}{
+		{name: "missing"}, {name: "stale", stale: true}, {name: "legitimately empty", empty: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			const (
+				appRepositoryName = "gar-pipelines"
+				namespace         = "pipelines"
+				repositoryPath    = "project/jenkins"
+				version           = "1.0.0"
+			)
+			manifest := newFakeOCIManifest(t, "unchanged")
+			registryServer := newFakeOCIRegistryServer(t, repositoryPath, []string{version}, map[string]fakeOCIManifest{version: manifest})
+			defer registryServer.Close()
+
+			repo := &models.AppRepository{Namespace: namespace, Name: appRepositoryName, URL: registryServer.URL, Type: "oci"}
+			existingChart := models.Chart{
+				ID:            appRepositoryName + "/project%2Fjenkins",
+				Name:          "jenkins",
+				Repo:          repo,
+				ChartVersions: []models.ChartVersion{{Version: version, Digest: manifest.digest}},
+			}
+			existingJSON, err := json.Marshal(existingChart)
+			if err != nil {
+				t.Fatal(err)
+			}
+			manager, mockDB, cleanup := getMockManager(t)
+			defer cleanup()
+			registryURL, err := parseRepoURL(registryServer.URL)
+			if err != nil {
+				t.Fatal(err)
+			}
+			archiveFiles := []tartest.TarballFile{}
+			if !tc.empty {
+				archiveFiles = append(archiveFiles, tartest.TarballFile{Name: "README.md", Body: "new readme"}, tartest.TarballFile{Name: "values.yaml", Body: "new: values"}, tartest.TarballFile{Name: "values.schema.json", Body: `{"type":"object"}`})
+			}
+			archive := newChartArchive(t, "apiVersion: v2\nname: jenkins\nversion: 1.0.0\n", archiveFiles...)
+			puller := &recordingOCIPuller{artifacts: map[string][]byte{version: archive}, digests: map[string]string{version: manifest.digest}}
+			registry := OCIRegistry{
+				repositories:          []string{repositoryPath},
+				AppRepositoryInternal: &models.AppRepositoryInternal{Namespace: namespace, Name: appRepositoryName, URL: registryServer.URL, Type: "oci"},
+				puller:                puller,
+				ociCli:                &OciAPIClient{RegistryNamespaceUrl: registryURL, HttpClient: registryServer.Client()},
+				manager:               manager,
+			}
+
+			importer := fileImporter{manager: manager}
+			filesID := existingChart.ID + "-" + version
+			expectedFiles := models.ChartFiles{ID: filesID, Repo: &models.AppRepository{Name: repo.Name, Namespace: repo.Namespace, URL: repo.URL}, Digest: manifest.digest, AdditionalDefaultValues: map[string]string{}}
+			if !tc.empty {
+				expectedFiles.Readme = "new readme"
+				expectedFiles.DefaultValues = "new: values"
+				expectedFiles.Schema = `{"type":"object"}`
+			}
+			// Metadata already contains the new digest on all three passes. The first
+			// file upsert fails; the same digest must retry, then stop after success.
+			for attempt := 0; attempt < 3; attempt++ {
+				mockDB.ExpectQuery("SELECT info FROM charts *").WithArgs(namespace, appRepositoryName).
+					WillReturnRows(sqlmock.NewRows([]string{"info"}).AddRow(existingJSON))
+				rows := sqlmock.NewRows([]string{"chart_files_id", "digest"})
+				if attempt == 2 {
+					rows.AddRow(filesID, manifest.digest)
+				} else if tc.stale {
+					rows.AddRow(filesID, "old-digest")
+				}
+				mockDB.ExpectQuery("SELECT chart_files_id, info").WithArgs(namespace, appRepositoryName).WillReturnRows(rows)
+				results := make(chan pullChartResult, 1)
+				deleted, err := registry.Charts(context.Background(), false, results)
+				if err != nil {
+					t.Fatal(err)
+				}
+				assert.Empty(t, deleted)
+				var charts []models.Chart
+				for result := range results {
+					if len(result.Errors) != 0 {
+						t.Fatal(result.Errors)
+					}
+					charts = append(charts, result.Chart)
+				}
+				if attempt == 2 {
+					assert.Empty(t, charts)
+					continue
+				}
+				if len(charts) != 1 {
+					t.Fatalf("attempt %d: got %d charts, want 1", attempt, len(charts))
+				}
+				// Persist the pulled metadata before attempting the file import,
+				// reproducing the production ordering that caused the retry gap.
+				metadata, err := json.Marshal(charts[0])
+				if err != nil {
+					t.Fatal(err)
+				}
+				mockDB.ExpectQuery("WITH new_repo AS").WithArgs(namespace, appRepositoryName).
+					WillReturnRows(sqlmock.NewRows([]string{"ID"}).AddRow(1))
+				mockDB.ExpectExec("INSERT INTO charts").WithArgs(namespace, appRepositoryName, existingChart.ID, string(metadata)).
+					WillReturnResult(sqlmock.NewResult(1, 1))
+				if err := manager.Sync(*repo, charts[0]); err != nil {
+					t.Fatal(err)
+				}
+				existingJSON = metadata
+				mockDB.ExpectQuery(`SELECT EXISTS*`).WithArgs(filesID, repo.Name, repo.Namespace, manifest.digest).
+					WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(false))
+				insert := mockDB.ExpectQuery("INSERT INTO files *").WithArgs(existingChart.ID, repo.Name, repo.Namespace, filesID, expectedFiles)
+				failure := errors.New("transient file upsert failure")
+				if attempt == 0 {
+					insert.WillReturnError(failure)
+				} else {
+					insert.WillReturnRows(sqlmock.NewRows([]string{"ID"}).AddRow(1))
+				}
+				err = importer.fetchAndImportFiles(existingChart.ID, &registry, charts[0].ChartVersions[0], "test-agent", false)
+				if attempt == 0 {
+					assert.ErrorIs(t, err, failure)
+				} else {
+					assert.NoError(t, err)
+				}
+			}
+			assert.Equal(t, 2, puller.callCount())
+			if err := mockDB.ExpectationsWereMet(); err != nil {
+				t.Fatal(err)
+			}
+		})
 	}
 }
 
@@ -2014,6 +2201,8 @@ func TestOCIRegistryRefreshesMissingAndChangedTags(t *testing.T) {
 	mockDB.ExpectQuery("SELECT info FROM charts *").
 		WithArgs(namespace, appRepositoryName).
 		WillReturnRows(sqlmock.NewRows([]string{"info"}).AddRow(existingJSON))
+	mockDB.ExpectQuery("SELECT chart_files_id, info").WithArgs(namespace, appRepositoryName).
+		WillReturnRows(sqlmock.NewRows([]string{"chart_files_id", "digest"}).AddRow(existingChart.ID+"-1.0.0", stableManifest.digest))
 	registryURL, err := parseRepoURL(registryServer.URL)
 	if err != nil {
 		t.Fatal(err)
@@ -2091,6 +2280,12 @@ version: 2.0.0
 	mockDB.ExpectQuery("SELECT info FROM charts *").
 		WithArgs(namespace, appRepositoryName).
 		WillReturnRows(sqlmock.NewRows([]string{"info"}).AddRow(refreshedJSON))
+	completedFiles := sqlmock.NewRows([]string{"chart_files_id", "digest"})
+	for _, cv := range gotChart.ChartVersions {
+		completedFiles.AddRow(gotChart.ID+"-"+cv.Version, cv.Digest)
+	}
+	mockDB.ExpectQuery("SELECT chart_files_id, info").WithArgs(namespace, appRepositoryName).WillReturnRows(completedFiles)
+
 	repeatedResults := make(chan pullChartResult, 1)
 	chartIDsToDelete, err = registry.Charts(context.Background(), false, repeatedResults)
 	if err != nil {
@@ -2178,6 +2373,8 @@ version: 2.0.0
 	mockDB.ExpectQuery("SELECT info FROM charts *").
 		WithArgs(namespace, appRepositoryName).
 		WillReturnRows(sqlmock.NewRows([]string{"info"}).AddRow(existingJSON))
+	mockDB.ExpectQuery("SELECT chart_files_id, info").WithArgs(namespace, appRepositoryName).
+		WillReturnRows(sqlmock.NewRows([]string{"chart_files_id", "digest"}).AddRow(existingChart.ID+"-1.0.0", persistedManifest.digest))
 
 	chartResults := make(chan pullChartResult, 2)
 	chartIDsToDelete, err := chartsRepo.Charts(context.Background(), false, chartResults)
@@ -2213,6 +2410,11 @@ version: 2.0.0
 	mockDB.ExpectQuery("SELECT info FROM charts *").
 		WithArgs(namespace, appRepositoryName).
 		WillReturnRows(sqlmock.NewRows([]string{"info"}).AddRow(syncedJSON))
+	completedFiles := sqlmock.NewRows([]string{"chart_files_id", "digest"})
+	for _, cv := range syncedCharts[0].ChartVersions {
+		completedFiles.AddRow(syncedCharts[0].ID+"-"+cv.Version, cv.Digest)
+	}
+	mockDB.ExpectQuery("SELECT chart_files_id, info").WithArgs(namespace, appRepositoryName).WillReturnRows(completedFiles)
 
 	repeatedResults := make(chan pullChartResult, 2)
 	chartIDsToDelete, err = chartsRepo.Charts(context.Background(), false, repeatedResults)
@@ -2275,6 +2477,8 @@ func TestOCIRegistryReturnsExactStaleChartID(t *testing.T) {
 	mockDB.ExpectQuery("SELECT info FROM charts *").
 		WithArgs(namespace, appRepositoryName).
 		WillReturnRows(sqlmock.NewRows([]string{"info"}).AddRow(configuredJSON).AddRow(staleJSON))
+	mockDB.ExpectQuery("SELECT chart_files_id, info").WithArgs(namespace, appRepositoryName).
+		WillReturnRows(sqlmock.NewRows([]string{"chart_files_id", "digest"}).AddRow(configuredChart.ID+"-1.0.0", configuredManifest.digest))
 
 	chartsRepo := OCIRegistry{
 		repositories:          []string{configuredRepository},

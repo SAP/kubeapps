@@ -184,3 +184,40 @@ func Test_PGinsertFiles(t *testing.T) {
 		t.Errorf("%+v", err)
 	}
 }
+
+func TestFileDigestsForRepo(t *testing.T) {
+	for _, failure := range []string{"", "query", "scan", "iteration"} {
+		t.Run(failure, func(t *testing.T) {
+			manager, mock, cleanup := getMockManager(t)
+			defer cleanup()
+			query := mock.ExpectQuery("SELECT chart_files_id, info").WithArgs("namespace", "repo")
+			rows := sqlmock.NewRows([]string{"chart_files_id", "digest"}).AddRow("repo/chart-1", "digest").AddRow("repo/chart-2", nil)
+			switch failure {
+			case "query":
+				query.WillReturnError(errors.New("query failed"))
+			case "scan":
+				query.WillReturnRows(sqlmock.NewRows([]string{"chart_files_id", "digest"}).AddRow(nil, "digest"))
+			case "iteration":
+				query.WillReturnRows(rows.RowError(1, errors.New("iteration failed")))
+			default:
+				query.WillReturnRows(rows)
+			}
+			got, err := manager.fileDigestsForRepo(models.AppRepository{Namespace: "namespace", Name: "repo"})
+			if failure != "" {
+				if err == nil {
+					t.Fatal("expected lookup error")
+				}
+			} else {
+				if err != nil {
+					t.Fatal(err)
+				}
+				if len(got) != 1 || got["repo/chart-1"] != "digest" {
+					t.Fatalf("unexpected digests: %v", got)
+				}
+			}
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}

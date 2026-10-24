@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	_ "github.com/lib/pq"
 	"github.com/SAP/kubeapps/pkg/chart/models"
 	"github.com/SAP/kubeapps/pkg/dbutils"
+	_ "github.com/lib/pq"
 	log "k8s.io/klog/v2"
 )
 
@@ -180,4 +180,25 @@ func (m *postgresAssetManager) ChartsForRepo(repo models.AppRepository) (map[str
 		chartsByID[chart.ID] = chart
 	}
 	return chartsByID, nil
+}
+
+// fileDigestsForRepo reads completion records once per OCI sync plan.
+func (m *postgresAssetManager) fileDigestsForRepo(repo models.AppRepository) (map[string]string, error) {
+	rows, err := m.DB.Query(fmt.Sprintf("SELECT chart_files_id, info ->> 'Digest' FROM %s WHERE repo_namespace = $1 AND repo_name = $2", dbutils.ChartFilesTable), repo.Namespace, repo.Name)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	digests := map[string]string{}
+	for rows.Next() {
+		var id string
+		var digest sql.NullString
+		if err := rows.Scan(&id, &digest); err != nil {
+			return nil, err
+		}
+		if digest.Valid {
+			digests[id] = digest.String
+		}
+	}
+	return digests, rows.Err()
 }
