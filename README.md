@@ -18,8 +18,8 @@ With Kubeapps you can:
 - Customize deployments through an intuitive user interface
 - Browse, upgrade and delete applications installed in the cluster
 - Browse and deploy [Kubernetes Operators](https://operatorhub.io/)
-- Secure authentication to Kubeapps using a [standalone OAuth2/OIDC provider](./site/content/docs/latest/tutorials/using-an-OIDC-provider.md) or [using Pinniped](./site/content/docs/latest/howto/OIDC/using-an-OIDC-provider-with-pinniped.md)
-- Secure authorization based on Kubernetes [Role-Based Access Control](./site/content/docs/latest/howto/access-control.md)
+- Secure authentication to Kubeapps using a [standalone OAuth2/OIDC provider](./site/docs/tutorials/using-an-OIDC-provider.md) or [using Pinniped](./site/docs/howto/OIDC/using-an-OIDC-provider-with-pinniped.md)
+- Secure authorization based on Kubernetes [Role-Based Access Control](./site/docs/howto/access-control.md)
 
 > Note on Carvel: the Carvel/kapp_controller plugin has been removed
 >
@@ -36,7 +36,7 @@ kubectl create namespace kubeapps
 helm install kubeapps --namespace kubeapps oci://ghcr.io/sap/kubeapps/kubeapps
 ```
 
-See the [Getting Started Guide](./site/content/docs/latest/tutorials/getting-started.md) for detailed instructions on how to install and use Kubeapps.
+See the [Getting Started Guide](./site/docs/tutorials/getting-started.md) for detailed instructions on how to install and use Kubeapps.
 
 > Kubeapps is deployed using the official [Bitnami Kubeapps chart](https://github.com/bitnami/charts/tree/main/bitnami/kubeapps) from the separate Bitnami charts repository. Although the Kubeapps repository also defines a chart, this is intended for development purposes only.
 
@@ -46,12 +46,12 @@ Complete documentation available in Kubeapps [documentation section](./site/docs
 
 For getting started into Kubeapps, please refer to:
 
-- [Getting started guide](./site/content/docs/latest/tutorials/getting-started.md)
+- [Getting started guide](./site/docs/tutorials/getting-started.md)
 - [Detailed installation instructions](./chart/kubeapps/README.md)
-- [Kubeapps user guide](./site/content/docs/latest/howto/dashboard.md) to easily manage your applications running in your cluster.
+- [Kubeapps user guide](./site/docs/howto/dashboard.md) to easily manage your applications running in your cluster.
 - [Kubeapps FAQs](./chart/kubeapps/README.md#faq).
 
-See how to deploy and configure [Kubeapps on VMware Tanzu™ Kubernetes Grid™](./site/content/docs/latest/tutorials/kubeapps-on-tkg/README.md)
+See how to deploy and configure [Kubeapps on VMware Tanzu™ Kubernetes Grid™](./site/docs/tutorials/kubeapps-on-tkg/README.md)
 
 ## Troubleshooting
 

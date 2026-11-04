@@ -34,11 +34,11 @@ This guide walks you through the process of deploying Kubeapps for your cluster 
 
 ## Step 1: Install Kubeapps
 
-Use the official [Bitnami Kubeapps chart](https://github.com/bitnami/charts/tree/main/bitnami/kubeapps) to install the latest version of Kubeapps:
+Use the helm chart to install the latest version of Kubeapps:
 
 ```bash
 kubectl create namespace kubeapps
-helm install kubeapps --namespace kubeapps oci://registry-1.docker.io/bitnamicharts/kubeapps
+helm install kubeapps --namespace kubeapps oci://ghcr.io/sap/kubeapps/kubeapps
 ```
 
 For detailed information on installing, configuring and upgrading Kubeapps, checkout the [chart README](https://github.com/sap/kubeapps/blob/main/chart/kubeapps/README.md).
