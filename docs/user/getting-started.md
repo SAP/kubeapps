@@ -1,1 +1,1 @@
-This file has moved to [/site/content/docs/latest/tutorials](/site/content/docs/latest/tutorials/getting-started.md).
+This file has moved to [/site/docs/tutorials](/site/docs/tutorials/getting-started.md).
