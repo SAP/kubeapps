@@ -18,6 +18,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"strings"
 )
 
@@ -142,4 +143,66 @@ func encodeDockerConfigFieldAuth(username, password string) string {
 	fieldValue := username + ":" + password
 
 	return base64.StdEncoding.EncodeToString([]byte(fieldValue))
+}
+
+// NormalizeRegistryHost normalizes a registry hostname for comparison.
+// It handles common variations like docker.io vs index.docker.io, and strips
+// URL components (scheme, path, port) to get the bare hostname.
+func NormalizeRegistryHost(host string) string {
+	host = strings.ToLower(strings.TrimSpace(host))
+
+	// Try parsing as URL to extract hostname
+	// Docker config may have entries like "https://index.docker.io/v1/" or "index.docker.io"
+	if parsedURL, err := url.Parse(host); err == nil && parsedURL.Host != "" {
+		// Has URL scheme - use the host part
+		host = parsedURL.Host
+	} else if strings.Contains(host, "://") {
+		// Has scheme but parsing failed - try stripping manually
+		parts := strings.SplitN(host, "://", 2)
+		if len(parts) == 2 {
+			host = parts[1]
+		}
+	}
+
+	// Strip path if present (e.g., "index.docker.io/v1/" -> "index.docker.io")
+	if idx := strings.Index(host, "/"); idx != -1 {
+		host = host[:idx]
+	}
+
+	// Docker Hub special case: docker.io, registry-1.docker.io, and index.docker.io are all equivalent
+	if host == "docker.io" || host == "registry-1.docker.io" || host == "index.docker.io" {
+		return "index.docker.io"
+	}
+
+	// Remove default HTTPS port if present
+	host = strings.TrimSuffix(host, ":443")
+	return host
+}
+
+// GetAuthForRegistry extracts credentials for a specific registry host from a DockerConfigJSON.
+// Returns the auth header (Basic base64(username:password)) if found, empty string if not found.
+// The registryHost should be the hostname (and optional port) from the OCI reference.
+func GetAuthForRegistry(dockerConfig *DockerConfigJSON, registryHost string) (string, error) {
+	if dockerConfig == nil || len(dockerConfig.Auths) == 0 {
+		return "", nil
+	}
+
+	normalizedTarget := NormalizeRegistryHost(registryHost)
+
+	// Try exact match first
+	if entry, ok := dockerConfig.Auths[normalizedTarget]; ok {
+		auth := fmt.Sprintf("%s:%s", entry.Username, entry.Password)
+		return fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte(auth))), nil
+	}
+
+	// Try matching with normalization
+	for configHost, entry := range dockerConfig.Auths {
+		if NormalizeRegistryHost(configHost) == normalizedTarget {
+			auth := fmt.Sprintf("%s:%s", entry.Username, entry.Password)
+			return fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte(auth))), nil
+		}
+	}
+
+	// No match found - return empty string (no auth header)
+	return "", nil
 }

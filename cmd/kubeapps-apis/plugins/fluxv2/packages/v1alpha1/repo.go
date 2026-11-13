@@ -55,7 +55,7 @@ var (
 func (s *Server) listReposInNamespace(ctx context.Context, headers http.Header, ns string) ([]sourcev1beta2.HelmRepository, error) {
 	// the actual List(...) call will be executed in the context of
 	// kubeapps-internal-kubeappsapis service account
-	// ref https://github.com/vmware-tanzu/kubeapps/issues/4390 for explanation
+	// ref https://github.com/SAP/kubeapps/issues/4390 for explanation
 	backgroundCtx := context.Background()
 	client, err := s.serviceAccountClientGetter.ControllerRuntime(backgroundCtx)
 	if err != nil {
@@ -194,7 +194,7 @@ func (s *Server) repoCacheEntryFromUntyped(key string, value interface{}) (*repo
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unexpected value fetched from cache: type: [%T], value: [%v]", value, value))
 	}
 	if typedValue.Type == "oci" {
-		// ref https://github.com/vmware-tanzu/kubeapps/issues/5007#issuecomment-1217293240
+		// ref https://github.com/SAP/kubeapps/issues/5007#issuecomment-1217293240
 		// helm OCI chart repos are not automatically updated when the
 		// state on remote changes. So we will force new checksum
 		// computation and update local cache if needed
@@ -226,7 +226,7 @@ func (s *Server) newRepo(ctx context.Context, request *connect.Request[corev1.Ad
 	}
 
 	// flux repositories are now considered to be namespaced, to support the most common cases.
-	// see discussion at https://github.com/vmware-tanzu/kubeapps/issues/5542
+	// see discussion at https://github.com/SAP/kubeapps/issues/5542
 	if !request.Msg.GetNamespaceScoped() {
 		return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("global-scoped repositories are not supported"))
 	}
@@ -343,7 +343,7 @@ func (s *Server) repoDetail(ctx context.Context, headers http.Header, repoRef *c
 		Name:        repo.Name,
 		Description: k8sutils.GetDescription(&repo.ObjectMeta),
 		// flux repositories are now considered to be namespaced, to support the most common cases.
-		// see discussion at https://github.com/vmware-tanzu/kubeapps/issues/5542
+		// see discussion at https://github.com/SAP/kubeapps/issues/5542
 		NamespaceScoped: true,
 		Type:            typ,
 		Url:             repo.Spec.URL,
@@ -396,7 +396,7 @@ func (s *Server) repoSummaries(ctx context.Context, headers http.Header, ns stri
 			Name:        repo.Name,
 			Description: k8sutils.GetDescription(&repo.ObjectMeta),
 			// flux repositories are now considered to be namespaced, to support the most common cases.
-			// see discussion at https://github.com/vmware-tanzu/kubeapps/issues/5542
+			// see discussion at https://github.com/SAP/kubeapps/issues/5542
 			NamespaceScoped: true,
 			Type:            typ,
 			Url:             repo.Spec.URL,
@@ -615,7 +615,7 @@ func (s *repoEventSink) indexAndEncode(checksum string, repo sourcev1beta2.HelmR
 
 	if s.chartCache != nil {
 		if opts, err := s.clientOptionsForHttpRepo(context.Background(), repo); err != nil {
-			// ref: https://github.com/vmware-tanzu/kubeapps/pull/3899#issuecomment-990446931
+			// ref: https://github.com/SAP/kubeapps/pull/3899#issuecomment-990446931
 			// I don't want this func to fail onAdd/onModify() if we can't read
 			// the corresponding secret due to something like default RBAC settings:
 			// "secrets "podinfo-basic-auth-secret" is forbidden:

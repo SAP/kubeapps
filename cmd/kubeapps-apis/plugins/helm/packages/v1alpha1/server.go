@@ -14,8 +14,6 @@ import (
 	"path"
 	"strings"
 
-	"github.com/bufbuild/connect-go"
-	imageSpecv1 "github.com/opencontainers/image-spec/specs-go/v1"
 	appRepov1 "github.com/SAP/kubeapps/cmd/apprepository-controller/pkg/apis/apprepository/v1alpha1"
 	"github.com/SAP/kubeapps/cmd/kubeapps-apis/core"
 	corev1 "github.com/SAP/kubeapps/cmd/kubeapps-apis/gen/core/packages/v1alpha1"
@@ -29,9 +27,12 @@ import (
 	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/paginate"
 	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/pkgutils"
 	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/resourcerefs"
+	"github.com/SAP/kubeapps/cmd/kubeapps-apis/plugins/pkg/safelog"
 	"github.com/SAP/kubeapps/pkg/chart/models"
 	"github.com/SAP/kubeapps/pkg/dbutils"
 	"github.com/SAP/kubeapps/pkg/kube"
+	"github.com/bufbuild/connect-go"
+	imageSpecv1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"google.golang.org/protobuf/types/known/anypb"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
@@ -929,27 +930,114 @@ func (s *Server) getAppRepoAndRelatedSecrets(ctx context.Context, headers http.H
 // Mainly to DRY up similar code in the create and update methods.
 func (s *Server) fetchChartWithRegistrySecrets(ctx context.Context, headers http.Header, chartDetails *utils.ChartDetails, client kubernetes.Interface) (*chart.Chart, map[string]string, error) {
 	// Most of the existing code that we want to reuse is based on having a typed AppRepository.
-	appRepo, caCertSecret, authSecret, _, err := s.getAppRepoAndRelatedSecrets(ctx, headers, s.globalPackagingCluster, chartDetails.AppRepositoryResourceName, chartDetails.AppRepositoryResourceNamespace)
+	appRepo, caCertSecret, authSecret, imagesPullSecret, err := s.getAppRepoAndRelatedSecrets(ctx, headers, s.globalPackagingCluster, chartDetails.AppRepositoryResourceName, chartDetails.AppRepositoryResourceNamespace)
 	if err != nil {
 		return nil, nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unable to fetch app repo %q from namespace %q: %v", chartDetails.AppRepositoryResourceName, chartDetails.AppRepositoryResourceNamespace, err))
 	}
 
 	userAgentString := fmt.Sprintf("%s/%s/%s/%s", UserAgentPrefix, pluginDetail.Name, pluginDetail.Version, version)
 
-	chartID := fmt.Sprintf("%s/%s", appRepo.Name, chartDetails.ChartName)
-	log.InfoS("Fetching chart with user-agent", "chartID", chartID, "userAgentString", userAgentString)
-
-	// Look up the cachedChart cached in our DB to populate the tarball URL
-	cachedChart, err := s.manager.GetChartVersion(chartDetails.AppRepositoryResourceNamespace, chartID, chartDetails.Version)
-	if err != nil {
-		return nil, nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unable to fetch the chart %s (version %s) from the namespace %q: %w", chartID, chartDetails.Version, chartDetails.AppRepositoryResourceNamespace, err))
-	}
 	var tarballURL string
-	// If the chart is cached, we can use the tarball URL from the cache,
-	// we assume cachedChart.ChartVersions only contains 1 element
-	if len(cachedChart.ChartVersions) == 1 && cachedChart.ChartVersions[0].URLs != nil {
-		tarballURL = chartTarballURL(cachedChart.Repo, cachedChart.ChartVersions[0])
-		log.InfoS("Using chart tarball", "url", tarballURL)
+	if appRepo.Spec.Type == OCIRepoType {
+		// For OCI repositories the chart is referenced via an OCI reference
+		// (oci://registry/namespace/chartName:version). We build this directly
+		// from the AppRepository URL and chart details rather than relying on
+		// ChartVersions[0].URLs, which stores the chart's source-code URLs
+		// (e.g. GitHub links) and not the OCI pull reference.
+		//
+		// chartDetails.ChartName encoding can vary:
+		// - Double-encoded from UI: asset-syncer stores "k8s-ec-pipeline-dev%2Fjenkins-ecpipeline",
+		//   then GetUnescapedPackageID re-escapes to "k8s-ec-pipeline-dev%252Fjenkins-ecpipeline"
+		// - Single-encoded from cache: "repo/project%2Fchart"
+		// We need to detect which case we have and normalize to single-encoded for database lookup.
+		// The asset-syncer stores chart names in single-encoded form (e.g., "project%2Fchart").
+		singleEncodedChartName := chartDetails.ChartName
+
+		// Try unescaping once
+		if d, err := url.PathUnescape(singleEncodedChartName); err == nil && d != singleEncodedChartName {
+			// Check if it's still encoded (double-encoded case)
+			if d2, err2 := url.PathUnescape(d); err2 == nil && d2 != d {
+				// Was double-encoded, normalize to single-encoded for DB lookup
+				singleEncodedChartName = d
+			}
+			// else: Was already single-encoded, keep it as-is
+		}
+
+		// Build chartID using the single-encoded chart name to match what the asset-syncer stored.
+		chartID := fmt.Sprintf("%s/%s", appRepo.Name, singleEncodedChartName)
+		log.InfoS("Fetching chart with user-agent", "chartID", chartID, "userAgentString", userAgentString)
+
+		// Look up the chart version in the cache to verify it exists and get the digest.
+		// This ensures the installed artifact matches what was synced and displayed,
+		// since OCI tags are mutable.
+		cachedChart, err := s.manager.GetChartVersion(chartDetails.AppRepositoryResourceNamespace, chartID, chartDetails.Version)
+		if err != nil {
+			return nil, nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unable to fetch the chart %s (version %s) from the namespace %q: %w", chartID, chartDetails.Version, chartDetails.AppRepositoryResourceNamespace, err))
+		}
+		if len(cachedChart.ChartVersions) != 1 {
+			return nil, nil, connect.NewError(connect.CodeInternal, fmt.Errorf("expected exactly one chart version for %s:%s, got %d", chartID, chartDetails.Version, len(cachedChart.ChartVersions)))
+		}
+
+		// Parse and normalize the repository URL to extract the host and path.
+		// The appRepo.Spec.URL may have various formats:
+		// - oci://registry.example.com/repo
+		// - https://registry.example.com/repo
+		// - http://registry.example.com/repo
+		// - registry.example.com/repo (no scheme)
+		// We need to extract the host+path and build an oci:// reference.
+		repoURL := appRepo.Spec.URL
+		var registryHostPath string
+
+		// Try parsing as a URL first
+		if parsedURL, err := url.Parse(repoURL); err == nil && parsedURL.Scheme != "" {
+			// URL has a scheme - extract host and path
+			registryHostPath = parsedURL.Host + parsedURL.Path
+		} else {
+			// No scheme or parse failed - use as-is after removing oci:// prefix if present
+			registryHostPath = strings.TrimPrefix(repoURL, "oci://")
+		}
+
+		// Prefer pulling by digest if available to ensure we get the exact artifact that was synced.
+		// OCI tags are mutable, but digests are immutable content hashes.
+		chartVersion := cachedChart.ChartVersions[0]
+
+		// For the OCI reference itself, we need the fully decoded chart name (all %2F become /).
+		// Decode one more time from the single-encoded database form.
+		fullyDecodedChartName := singleEncodedChartName
+		if d, err := url.PathUnescape(fullyDecodedChartName); err == nil {
+			fullyDecodedChartName = d
+		}
+
+		if chartVersion.Digest != "" {
+			tarballURL = fmt.Sprintf("oci://%s/%s@%s", strings.TrimSuffix(registryHostPath, "/"), fullyDecodedChartName, chartVersion.Digest)
+			log.InfoS("Using OCI chart reference with digest", "url", tarballURL, "version", chartDetails.Version)
+		} else {
+			tarballURL = fmt.Sprintf("oci://%s/%s:%s", strings.TrimSuffix(registryHostPath, "/"), fullyDecodedChartName, chartDetails.Version)
+			log.InfoS("Using OCI chart reference with tag (no digest available)", "url", tarballURL)
+		}
+	} else {
+		// For non-OCI repositories, build chartID from the raw chart name
+		chartID := fmt.Sprintf("%s/%s", appRepo.Name, chartDetails.ChartName)
+		log.InfoS("Fetching chart with user-agent", "chartID", chartID, "userAgentString", userAgentString)
+
+		// Look up the chart cached in our DB to populate the tarball URL
+		cachedChart, err := s.manager.GetChartVersion(chartDetails.AppRepositoryResourceNamespace, chartID, chartDetails.Version)
+		if err != nil {
+			return nil, nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unable to fetch the chart %s (version %s) from the namespace %q: %w", chartID, chartDetails.Version, chartDetails.AppRepositoryResourceNamespace, err))
+		}
+		// If the chart is cached, we can use the tarball URL from the cache,
+		// we assume cachedChart.ChartVersions only contains 1 element
+		if len(cachedChart.ChartVersions) == 1 && cachedChart.ChartVersions[0].URLs != nil {
+			tarballURL = chartTarballURL(cachedChart.Repo, cachedChart.ChartVersions[0])
+			log.InfoS("Using chart tarball", "url", tarballURL)
+		}
+	}
+
+	// OCI repositories may keep registry credentials in the image pull secret
+	// rather than the AppRepository authorization secret.
+	effectiveAuthSecret := authSecret
+	if effectiveAuthSecret == nil && appRepo.Spec.Type == OCIRepoType {
+		effectiveAuthSecret = imagesPullSecret
 	}
 
 	// Grab the chart itself
@@ -962,7 +1050,7 @@ func (s *Server) fetchChartWithRegistrySecrets(ctx context.Context, headers http
 			TarballURL:                     tarballURL,
 		},
 		appRepo,
-		caCertSecret, authSecret,
+		caCertSecret, effectiveAuthSecret,
 		s.chartClientFactory.New(tarballURL, userAgentString),
 	)
 	if err != nil {
@@ -1251,7 +1339,7 @@ func (s *Server) UpdatePackageRepository(ctx context.Context, request *connect.R
 }
 
 func (s *Server) DeletePackageRepository(ctx context.Context, request *connect.Request[corev1.DeletePackageRepositoryRequest]) (*connect.Response[corev1.DeletePackageRepositoryResponse], error) {
-	log.Infof("+helm DeletePackageRepository [%v]", request)
+	safelog.Request("+helm DeletePackageRepository", request)
 
 	if request == nil || request.Msg.PackageRepoRef == nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("no request PackageRepoRef provided"))

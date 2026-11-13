@@ -101,19 +101,12 @@ test("Create a new private package repository successfully", async ({ page }) =>
   expect(newPackageVersionValue).toEqual("11.4.29");
   await page.click('li:has-text("YAML editor")');
 
-  // Use the built-in search function in monaco to find the text we are looking for
-  // so that it get loaded in the DOM when using the toContainText assert
+  // Use Monaco's built-in search function to find the text we are looking for
+  // so that it gets loaded in the DOM when using the toContainText assert.
+  // Prefer the keyboard shortcut over the command palette because the palette's
+  // input is not labelled consistently across Monaco versions.
   await page.locator(".values-editor div.modified").click({ button: "right" });
-  const commandPaletteItem = page.getByRole('menuitem', { name: 'Command Palette F1' });
-  await expect(commandPaletteItem).toBeVisible({ timeout: 5000 }); // retries until visible
-  await commandPaletteItem.click();
-  await page.getByLabel("input").click({ timeout: 5000 });
-  await page.getByLabel("input").fill(">find");
-  await page
-    .locator("div")
-    .filter({ hasText: /^Find$/ })
-    .nth(1)
-    .click();
+  await page.keyboard.press("ControlOrMeta+f");
   await page.getByPlaceholder("Find").fill("tag: 2.50.1");
   await expect(page.locator(".values-editor div.modified")).toContainText(
     "tag: 2.50.1-debian-12-r31",

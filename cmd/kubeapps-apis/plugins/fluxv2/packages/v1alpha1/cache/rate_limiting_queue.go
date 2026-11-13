@@ -290,7 +290,7 @@ func (q *Type) ShuttingDown() bool {
 //
 // TODO (gfichtenholt) put a stub in here just so kubeapps can upgrade to
 // k8s.io/client-go >= 0.23.X
-// ref https://github.com/vmware-tanzu/kubeapps/pull/5123#issuecomment-1194756900
+// ref https://github.com/SAP/kubeapps/pull/5123#issuecomment-1194756900
 // I will implement once we upgrade k8s.io/client-go as stated and I can test the scenario
 func (q *Type) ShutDownWithDrain() {
 	// ref impl https://github.com/kubernetes/client-go/blob/b5c7588f8a17459d6f9c7a8dc24daecd2c35c98e/util/workqueue/queue.go#L211

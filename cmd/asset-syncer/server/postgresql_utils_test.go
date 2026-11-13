@@ -80,9 +80,9 @@ func Test_PGremoveMissingCharts(t *testing.T) {
 	defer cleanup()
 
 	repo := models.AppRepository{Name: "repo"}
-	mock.ExpectQuery(`^DELETE FROM charts WHERE info->>'name' IN \('foo', 'bar'\) AND repo_name = \$1 AND repo_namespace = \$2`).
-		WithArgs(repo.Name, repo.Namespace).
-		WillReturnRows(sqlmock.NewRows([]string{"ID"}).AddRow(1).AddRow(2))
+	mock.ExpectExec(`^DELETE FROM charts WHERE repo_name = \$1 AND repo_namespace = \$2 AND chart_id IN \(\$3, \$4\)$`).
+		WithArgs(repo.Name, repo.Namespace, "foo", "bar").
+		WillReturnResult(sqlmock.NewResult(0, 2))
 
 	err := pgManager.RemoveMissingCharts(repo, []string{"foo", "bar"})
 	if err != nil {
@@ -182,5 +182,42 @@ func Test_PGinsertFiles(t *testing.T) {
 	err := pgManager.insertFiles(chartID, files)
 	if err != nil {
 		t.Errorf("%+v", err)
+	}
+}
+
+func TestFileDigestsForRepo(t *testing.T) {
+	for _, failure := range []string{"", "query", "scan", "iteration"} {
+		t.Run(failure, func(t *testing.T) {
+			manager, mock, cleanup := getMockManager(t)
+			defer cleanup()
+			query := mock.ExpectQuery("SELECT chart_files_id, info").WithArgs("namespace", "repo")
+			rows := sqlmock.NewRows([]string{"chart_files_id", "digest"}).AddRow("repo/chart-1", "digest").AddRow("repo/chart-2", nil)
+			switch failure {
+			case "query":
+				query.WillReturnError(errors.New("query failed"))
+			case "scan":
+				query.WillReturnRows(sqlmock.NewRows([]string{"chart_files_id", "digest"}).AddRow(nil, "digest"))
+			case "iteration":
+				query.WillReturnRows(rows.RowError(1, errors.New("iteration failed")))
+			default:
+				query.WillReturnRows(rows)
+			}
+			got, err := manager.fileDigestsForRepo(models.AppRepository{Namespace: "namespace", Name: "repo"})
+			if failure != "" {
+				if err == nil {
+					t.Fatal("expected lookup error")
+				}
+			} else {
+				if err != nil {
+					t.Fatal(err)
+				}
+				if len(got) != 1 || got["repo/chart-1"] != "digest" {
+					t.Fatalf("unexpected digests: %v", got)
+				}
+			}
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Fatal(err)
+			}
+		})
 	}
 }

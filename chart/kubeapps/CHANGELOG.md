@@ -1,6 +1,17 @@
 # Changelog
 
 
+## v3.0.2 (2026-08-19)
+
+* [kubeapps/chart] Use namespaced component image paths
+* [kubeapps/asset-syncer] Wait for file imports before chart cleanup
+* [kubeapps/asset-syncer] Match OCI charts by repository path
+* [kubeapps/asset-syncer] Refresh mutable OCI tags by manifest digest
+* [kubeapps/asset-syncer] Redact registry credentials from logs
+* [kubeapps/kubeapps-apis] Build valid OCI chart references
+* [kubeapps/kubeapps-apis] Use registry secrets for OCI charts
+* [kubeapps/kubeapps-apis] Omit RPC request data from logs
+
 ## v3.0.1 (2026-07-10)
 
 * [bitnami/build] Fix OCI chart push to use correct version and image tags on release ([#61](https://github.com/SAP/kubeapps/pull/61))
