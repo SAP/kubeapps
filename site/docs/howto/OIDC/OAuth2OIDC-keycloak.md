@@ -299,7 +299,7 @@ authProxy:
   ## no storage. Note that it must be a particular number of bytes. Recommend using the
   ## following to generate a cookieSecret as per the oauth2 configuration documentation
   ## at https://pusher.github.io/oauth2_proxy/configuration :
-  ## python -c 'import os,base64; print base64.urlsafe_b64encode(os.urandom(16))'
+  ## python -c 'import os,base64; print(base64.urlsafe_b64encode(os.urandom(32)).decode())'
   cookieSecret: Y29va2llLXNlY3JldC0xNg==
   ## Use "example.com" to restrict logins to emails from example.com
   emailDomain: "*"
